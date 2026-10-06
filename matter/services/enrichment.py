@@ -1,0 +1,205 @@
+"""Every candidate carries its evidence: predictions against the target with their domain status, the chemistry
+rules with their values and windows, what the encoder says about the decoded composition, the nearest training
+materials, how much training data lies around it, whether the dataset already contains it, and the stability
+stage. The "why" sentence only repeats these facts."""
+from __future__ import annotations
+
+import dataclasses
+import os
+from dataclasses import dataclass
+
+import numpy as np
+
+from matter.services.support import DOMAIN_WORDS, box_mask, domain_status, fmt, quality, tolerance
+
+STABILITY_STAGES = ["Not screened", "ML-potential screened", "DFT relaxed", "DFT hull evaluated", "Experimentally tested"]
+AGREEMENT = {"good": "agree", "fair": "partly agree", "weak": "disagree", "not judged": "not judged"}
+
+
+@dataclass
+class EvidenceContext:
+    lm: object                       # meidnet LoadedModel
+    family: object                   # meidnet Family (filters applied)
+    artefacts: object
+    latents: object                  # LatentIndex or None
+    dataset_index: object
+    backend: object
+    goal: object                     # Goal
+    model_id: str
+    mode: str                        # "standard" | "exploratory"
+    windows: dict                    # property -> (lo, hi) from the readiness report
+    run_id: str
+    run_dir: str
+    rules: dict                      # rule id -> entry (title, text, params)
+    ranges: dict                     # property -> (min, max) of the model
+
+
+def rule_map(family) -> dict:
+    from matter.services.families import rule_entries
+    return {r["id"]: r for r in rule_entries(family)}
+
+
+def enrich(raw: dict, ctx: EvidenceContext, index: int) -> dict:
+    from meidnet.benchmark import formula_key, site_key
+    from meidnet.studio.chemiscope import structure_to_chemiscope
+    art, lm = ctx.artefacts, ctx.lm
+    columns = list(lm.stats.columns)
+    elements = dict(raw["elements"])
+    formula = raw["formula"]
+    reduced = formula_key(formula)
+    skey = site_key(elements)
+    cid = f"{ctx.run_id}-{index:03d}"
+    targets = raw.get("target_values") or {}
+    objectives = {o.property: o for o in ctx.goal.objectives}
+
+    # encoder-side latent and prediction of the decoded composition; the saved structure for the 3D view
+    zc, enc_pred, raw_structure = ctx.backend.encode_composition(lm, ctx.family, elements)
+    structure = raw_structure
+    cif_path = os.path.join(ctx.run_dir, "generation", raw["file"].replace("/", os.sep))
+    if os.path.exists(cif_path):
+        try:
+            from pymatgen.core import Structure
+            structure = Structure.from_file(cif_path)
+        except Exception:
+            structure = raw_structure
+
+    # properties
+    props = {}
+    worst = "in_distribution"
+    for c in columns:
+        p = art.property(c)
+        pred = float(raw["predictions"][c])
+        status, reason = domain_status(pred, p)
+        worst = status if ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(status) > \
+            ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(worst) else worst
+        target = targets.get(c)
+        o = objectives.get(c)
+        window = ctx.windows.get(c)
+        props[c] = {"label": p["label"], "unit": p["unit"], "objective": (o.kind if o else None), "target": target,
+                    "predicted": pred, "difference": (pred - float(target)) if target is not None else None,
+                    "uncertainty": None, "uncertainty_note": "not available for this model",
+                    "training_range": list(ctx.ranges.get(c, (p["min"], p["max"]))),
+                    "domain": {"status": status, "word": DOMAIN_WORDS[status], "reason": reason},
+                    "in_window": (bool((window[0] is None or pred >= window[0]) and (window[1] is None or pred <= window[1])) if window else None),
+                    "window": list(window) if window else None, "evidence_label": "Predicted"}
+
+    # rules
+    constraints = []
+    for r in raw.get("constraint_results", []):
+        entry = ctx.rules.get(r["name"], {})
+        constraints.append({"id": r["name"], "rule": entry.get("rule", r["name"]), "title": entry.get("title", r["name"]),
+                            "text": entry.get("text", ""), "passed": bool(r["passed"]), "value": r.get("value"),
+                            "window": r.get("window"), "detail": r.get("detail", ""),
+                            "evidence_label": "Rule passed" if r["passed"] else "Rule failed"})
+    n_pass = sum(1 for c in constraints if c["passed"])
+
+    # model evidence
+    agreement = {}
+    for c in columns:
+        p = art.property(c)
+        diff = enc_pred[c] - float(raw["predictions"][c])
+        word, ratio = quality(abs(diff), p["std"])
+        agreement[c] = {"decoder": float(raw["predictions"][c]), "encoder": enc_pred[c], "difference": diff, "in_std": ratio,
+                        "word": word, "label": AGREEMENT.get(word, word)}
+    nearest = ctx.latents.nearest(zc, 3) if ctx.latents is not None else []
+    for n in nearest:
+        n["evidence_label"] = f"DFT-computed ({art.dataset.get('title', 'dataset')})"
+    m = art.materials
+    half = {c: tolerance(art.property(c), (objectives[c].tolerance if c in objectives else None)) for c in columns}
+    local_windows = {c: (float(raw["predictions"][c]) - half[c], float(raw["predictions"][c]) + half[c]) for c in columns}
+    local_mask = box_mask(m.Y, m.columns, local_windows) & m.train_mask
+    n_within = int(local_mask.sum())
+    model_evidence = {"encoder_prediction": enc_pred, "agreement": agreement, "latent_norm": raw.get("latent_norm"),
+                      "latent_hit_clip": any("search limit" in f for f in raw.get("flags", [])), "score": raw.get("score"),
+                      "nearest_training": nearest, "latent_distance": (1.0 - nearest[0]["cosine"]) if nearest else None,
+                      "local_density": {"n_within": n_within, "fraction": n_within / max(1, int(m.train_mask.sum())),
+                                        "windows": {c: list(w) for c, w in local_windows.items()}},
+                      "latent": [round(float(v), 5) for v in zc]}
+
+    # novelty and the dataset's own values
+    novelty = ctx.dataset_index.lookup(reduced, skey)
+    match = novelty["dataset"]["match"]
+    if match:
+        for c in columns:
+            props[c]["dft_value"] = match["properties"].get(c)
+            props[c]["dft_label"] = f"DFT-computed ({art.dataset.get('title', 'dataset')})"
+
+    candidate = {
+        "candidate_id": cid, "run_id": ctx.run_id, "index": index, "target_index": raw.get("target_index"), "round": raw.get("round"),
+        "identity": {"formula": formula, "reduced_formula": reduced, "site_key": skey, "elements": elements, "family": ctx.family.name,
+                     "variant": ctx.family.variant, "backend": ctx.backend.name, "model_id": ctx.model_id},
+        "structure": {"file": "generation/" + raw["file"].replace(os.sep, "/"), "lattice_a": raw.get("lattice_a"), "n_sites": len(structure),
+                      "chemiscope": structure_to_chemiscope(structure),
+                      "sites": [{"element": str(s.specie.symbol), "frac": [round(float(x), 5) for x in s.frac_coords]} for s in structure],
+                      "lattice": [[round(float(x), 5) for x in row] for row in structure.lattice.matrix]},
+        "properties": props, "domain": {"status": worst, "word": DOMAIN_WORDS[worst]},
+        "constraints": constraints, "rules_passed": n_pass, "rules_total": len(constraints),
+        "model_evidence": model_evidence, "novelty": novelty,
+        "stability": {"status": STABILITY_STAGES[0], "stages": STABILITY_STAGES, "records": []},
+        "flags": list(raw.get("flags", [])), "mode": ctx.mode, "engine": raw,
+    }
+    candidate["why"] = why_sentence(candidate, ctx)
+    return candidate
+
+
+def why_sentence(c: dict, ctx: EvidenceContext) -> str:
+    parts = []
+    props = c["properties"]
+    targeted = [p for p in props.values() if p["target"] is not None]
+    desc = []
+    for p in targeted:
+        d = f" ({p['difference']:+.3g} from the target {fmt(p['target'], p['unit'])})" if p["difference"] is not None else ""
+        desc.append(f"predicted {p['label'].lower()} {fmt(p['predicted'], p['unit'])}{d}")
+    head = f"{c['identity']['formula']} was kept in round {c['round']}"
+    parts.append(head + (": " + ", ".join(desc) if desc else "") + ".")
+    titles = [k["title"] for k in c["constraints"] if k["passed"]]
+    parts.append(f"{c['rules_passed']} of {c['rules_total']} chemistry rules passed" + (f" ({', '.join(titles[:4])}{', …' if len(titles) > 4 else ''})." if titles else "."))
+    ag = c["model_evidence"]["agreement"]
+    for prop, a in ag.items():
+        if props[prop]["target"] is not None:
+            parts.append(f"The encoder's own prediction for this composition ({fmt(a['encoder'], props[prop]['unit'])}) and the search's "
+                         f"({fmt(a['decoder'], props[prop]['unit'])}) {a['label']} for {props[prop]['label'].lower()}.")
+    worst = max(props.values(), key=lambda p: ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(p["domain"]["status"]))
+    parts.append(f"{worst['label']}: {worst['domain']['reason']}")
+    nn = c["model_evidence"]["nearest_training"]
+    if nn:
+        n0 = nn[0]
+        vals = ", ".join(f"{props[k]['label'].lower()} {fmt(v, props[k]['unit'])}" for k, v in n0["properties"].items() if k in props)
+        parts.append(f"Nearest training material: {n0['formula']} (cosine {n0['cosine']:.2f}; {vals}).")
+    parts.append(c["novelty"]["dataset"]["label"] + ".")
+    parts.append(f"Stability: {c['stability']['status'].lower()}.")
+    text = " ".join(parts)
+    return ("Exploratory run: " + text) if ctx.mode == "exploratory" else text
+
+
+def funnel_for(tlog, family, objectives: list[dict]) -> dict:
+    """The search funnel of one target, at the latent level and at the attempt level."""
+    from meidnet.constraints import explain, rule_key
+    from meidnet.report import PRE_STAGES
+    window_ids = [rule_key(c) for c in family.constraints if c["name"] == "property_window"]
+    order = PRE_STAGES + [rule_key(c) for c in family.constraints if c["name"] == "min_distance"] + \
+        (["symmetry_refinement"] if family.refine_symmetry else []) + \
+        [rule_key(c) for c in family.constraints if c["name"] not in ("min_distance", "property_window")] + window_ids
+    tried = int(tlog.attempts)
+    left = tried
+    stages = []
+    for name in order:
+        lost = int(tlog.first_failure.get(name, 0))
+        if name in PRE_STAGES:
+            title = name
+        else:
+            title = explain(name, family.constraint_params(name) or {})[0]
+        left -= lost
+        stages.append({"id": name, "title": title, "lost": lost, "left": left, "is_window": name in window_ids})
+    chemistry_valid = tried - sum(int(tlog.first_failure.get(n, 0)) for n in order if n not in window_ids)
+    target_compatible = chemistry_valid - sum(int(tlog.first_failure.get(n, 0)) for n in window_ids)
+    return {"target_index": tlog.index, "target": dict(tlog.values), "rounds_used": tlog.rounds_used,
+            "latents": {"proposed": None, "decoded": int(tlog.latents_decoded), "passing": int(tlog.latents_passing), "retained": len(tlog.saved),
+                        "skipped_duplicate": int(tlog.skipped_duplicate), "skipped_similar": int(tlog.skipped_similar)},
+            "attempts": {"tried": tried, "chemistry_valid": chemistry_valid, "target_compatible": target_compatible, "stages": stages},
+            "rejections": {"first_failure": {k: int(v) for k, v in tlog.first_failure.items()},
+                           "failures_any": {k: int(v) for k, v in tlog.failures_any.items()},
+                           "examples": [{"formula": e.get("formula"), "first_failure": e.get("first_failure"),
+                                         "title": (explain(e["first_failure"], family.constraint_params(e["first_failure"]) or {})[0]
+                                                   if e.get("first_failure") not in PRE_STAGES and e.get("first_failure") else e.get("first_failure")),
+                                         "results": e.get("results")} for e in list(tlog.rejected_examples)[:20]]}}

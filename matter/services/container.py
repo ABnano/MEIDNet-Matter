@@ -13,6 +13,9 @@ class Services:
     artefacts: object = None            # DemoArtefacts
     registry: object = None             # ModelRegistry
     dataset_index: object = None        # DatasetIndex
+    backend: object = None              # DesignBackend (MEIDNetBackend)
+    jobs: object = None                 # JobManager
+    runs: object = None                 # RunStore
     startup_error: str | None = None
 
     @classmethod
@@ -25,6 +28,12 @@ class Services:
             except Exception:           # torch missing or blocked: the API still answers /health
                 pass
         s = cls(settings=settings)
+        from matter.backends.meidnet_backend import MEIDNetBackend
+        from matter.services.jobs import JobManager
+        from matter.services.runs import RunStore
+        s.backend = MEIDNetBackend()
+        s.jobs = JobManager(settings.public)
+        s.runs = RunStore(settings.run_root, settings.public)
         try:
             from matter.services.artefacts import DemoArtefacts
             from matter.services.novelty import DatasetIndex
