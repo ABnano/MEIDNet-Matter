@@ -5,7 +5,7 @@ import { useResource, useRunPolling } from '@/api/hooks';
 import type { DomainStatus, Run } from '@/api/types';
 import { ErrorNote, Segmented, Spinner } from '@/components/ui';
 import { CandidateDetail } from '@/features/candidates/CandidateDetail';
-import { CandidateCard, CandidateMap, CandidateTable, COLUMNS, DEFAULT_COLS, ExportMenu, SearchFunnel } from '@/features/candidates/components';
+import { CandidateCard, CandidateMap, CandidateTable, COLUMNS, DEFAULT_COLS, ExportMenu, groupByCluster, SearchFunnel } from '@/features/candidates/components';
 import { chips, DEFAULTS, filterCandidates, parseQuery, serializeQuery, sortCandidates, SORTS, type ExplorerQuery } from '@/features/candidates/explorerQuery';
 import { useProject } from '@/features/project/useProject';
 import { fmt, seconds, shortLabel } from '@/lib/format';
@@ -42,6 +42,11 @@ export default function Explorer() {
   const p = status.progress;
   const progressPct = p.targets ? Math.min(100, (100 * ((p.target - 1) * p.rounds * p.steps + (p.round - 1) * p.steps + p.step)) / Math.max(1, p.targets * p.rounds * p.steps)) : 0;
   const activeChips = chips(q, labels);
+  const hasClusters = all.some((c) => !!c.cluster);
+  const nClusters = run?.clusters?.length ?? new Set(all.map((c) => c.cluster?.id).filter((x) => x != null)).size;
+  const stages = all[0]?.stability?.stages ?? [];
+  const stageCounts = stages.map((label, i) => [label, all.filter((c) => (c.stability?.stage ?? 0) === i).length, i] as const).filter(([, n_]) => n_ > 0);
+  const card = (c: (typeof all)[number]) => <CandidateCard key={c.candidate_id} c={c} projectId={projectId} selected={q.c === c.candidate_id} compared={q.cmp.includes(c.candidate_id)} onOpen={() => open(c.candidate_id)} onCompare={() => toggleCmp(c.candidate_id)} />;
 
   return (
     <>
@@ -53,7 +58,7 @@ export default function Explorer() {
       </div>
 
       {status.mode === 'exploratory' && <div className="banner banner-warn" style={{ marginBottom: 12 }} data-testid="exploratory-banner">Exploratory run — the readiness report did not support this target. Treat the predicted values as unreliable; the chemistry rules still apply.</div>}
-      {run?.readiness.search_advice && <div className="banner banner-info small" style={{ marginBottom: 12 }}>One property target, many possible structures: the candidates below are alternatives, not a ranking of one answer.</div>}
+      {run?.readiness.search_advice && <div className="banner banner-info small" style={{ marginBottom: 12 }}>One property target, many possible structures: the candidates below are alternatives, not a ranking of one answer.{hasClusters && nClusters > 0 && <> They fall into {nClusters} cluster{nClusters === 1 ? '' : 's'} of similar encoder latents (cosine ≥ 0.9); choose what to prioritise with the control on the right.</>}</div>}
 
       {running && (
         <div className="card card-tight" style={{ marginBottom: 12 }} role="status" aria-live="polite">
@@ -74,7 +79,9 @@ export default function Explorer() {
         {activeChips.length > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setQ((x) => ({ ...DEFAULTS, view: x.view, sort: x.sort, c: x.c, cmp: x.cmp, cols: x.cols }))}>Reset filters</button>}
         <span style={{ marginLeft: 'auto' }} className="row">
           <Segmented value={q.view} label="View" options={[{ value: 'table', label: 'Table' }, { value: 'cards', label: 'Cards' }, { value: 'map', label: 'Map' }]} onChange={(v) => setQ((x) => ({ ...x, view: v }))} />
-          <select className="select" aria-label="Sort" value={q.sort} onChange={(e) => setQ((x) => ({ ...x, sort: e.target.value as ExplorerQuery['sort'] }))}>{SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}</select>
+          <label className="row small" style={{ gap: 6 }}><span className="micro">Prioritise</span>
+            <select className="select" aria-label="Prioritise" data-testid="prioritise" value={q.sort} onChange={(e) => setQ((x) => ({ ...x, sort: e.target.value as ExplorerQuery['sort'] }))}>{SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}</select>
+          </label>
           {q.view === 'table' && (
             <details style={{ position: 'relative' }}>
               <summary className="btn btn-sm" style={{ listStyle: 'none', cursor: 'pointer' }}>Columns</summary>
@@ -104,14 +111,28 @@ export default function Explorer() {
           <fieldset><legend>Novelty</legend>
             {([['not_found', 'Not found in the dataset'], ['found', 'Found in the dataset']] as const).map(([v, l]) => <label key={v} className="opt"><input type="checkbox" checked={q.novelty.includes(v)} onChange={(e) => setQ((x) => ({ ...x, novelty: e.target.checked ? [...x.novelty, v] : x.novelty.filter((y) => y !== v) }))} />{l}</label>)}
           </fieldset>
-          <fieldset><legend>Stability screen</legend><label className="opt"><input type="checkbox" checked readOnly />Not screened ({all.length})</label><span className="small faint">Other stages arrive with validation.</span></fieldset>
+          <fieldset><legend>Validation stage</legend>
+            {stageCounts.map(([label, n_, i]) => <div key={label} className="opt small">Stage {i} · {label} <b className="num">{n_}</b></div>)}
+            {stageCounts.length === 0 && <div className="opt small faint">—</div>}
+            <span className="small faint">Later stages (MLIP, DFT, experiment) are your own steps; the export page says how.</span>
+          </fieldset>
         </aside>
 
         <div className="stack" style={{ gap: 20 }}>
           {all.length === 0 && !running && <div className="card"><p>No candidate was retained. {run?.funnel ? 'The funnel below shows where the attempts were rejected.' : ''}</p><Link to={`/p/${projectId}/goal`} className="btn">Adjust the goal</Link></div>}
           {all.length > 0 && shown.length === 0 && <div className="card"><p>No candidates match the current filters — reset the filters or widen the deviation.</p></div>}
           {shown.length > 0 && q.view === 'table' && <CandidateTable cands={shown} q={q} setQ={setQ} onOpen={open} />}
-          {shown.length > 0 && q.view === 'cards' && <div className="cards-2" data-testid="candidates-cards">{shown.map((c) => <CandidateCard key={c.candidate_id} c={c} projectId={projectId} selected={q.c === c.candidate_id} compared={q.cmp.includes(c.candidate_id)} onOpen={() => open(c.candidate_id)} onCompare={() => toggleCmp(c.candidate_id)} />)}</div>}
+          {shown.length > 0 && q.view === 'cards' && !hasClusters && <div className="cards-2" data-testid="candidates-cards">{shown.map(card)}</div>}
+          {shown.length > 0 && q.view === 'cards' && hasClusters && (
+            <div className="stack" data-testid="candidates-cards" style={{ gap: 14 }}>
+              {groupByCluster(shown).map((g) => (
+                <section key={g.id} data-testid="cluster-group">
+                  <div className="small muted" style={{ margin: '0 0 8px' }}><b>Cluster {g.id || '—'}</b> · {g.cands.length} of {g.size || g.cands.length} candidate{g.size === 1 ? '' : 's'} near {g.leaderFormula} <span className="faint">(encoder latents within cosine 0.9; alternatives for the same target)</span></div>
+                  <div className="cards-2">{g.cands.map(card)}</div>
+                </section>
+              ))}
+            </div>
+          )}
           {shown.length > 0 && q.view === 'map' && <CandidateMap cands={shown} project={project} dataset={dataset ?? null} windows={windows} selected={q.c} onOpen={open} />}
           {run?.funnel && <SearchFunnel funnel={run.funnel} />}
         </div>

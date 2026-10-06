@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ExternalLink, GITHUB, MarketingHeader, PRISM, SiteFooter } from '@/components/shell';
+import { ExternalLink, GITHUB, MarketingHeader, PRISM, PRISM_ECOSYSTEM, PRISM_SCORE, SiteFooter } from '@/components/shell';
 import { CellViewer } from '@/components/structure/CellViewer';
 import { Site } from '@/components/ui';
 import { landing as L, previewCandidates, previewRequest } from '@/copy/landing';
@@ -99,7 +99,7 @@ export default function Landing() {
                 <div className="micro">{sub}</div>
                 <h3>{name}</h3>
                 <p className="muted">{d}</p>
-                {name.endsWith('Prism') ? <ExternalLink href={PRISM}>Open MEIDNet Prism ↗</ExternalLink> : <span className="small faint">You are here.</span>}
+                {name.endsWith('Prism') ? <span className="row" style={{ gap: 12 }}><ExternalLink href={PRISM}>Open MEIDNet Prism ↗</ExternalLink><ExternalLink href={PRISM_SCORE} className="small">Score a run's candidates there ↗</ExternalLink><ExternalLink href={PRISM_ECOSYSTEM} className="small">The ecosystem ↗</ExternalLink></span> : <span className="small faint">You are here.</span>}
               </div>
             ))}
           </div>

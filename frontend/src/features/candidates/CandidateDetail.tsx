@@ -25,7 +25,8 @@ export function CandidateDetail({ c, projectId, variant, onClose, compared, onCo
           <div className="row" style={{ gap: 6, marginTop: 6 }}>
             <DomainBadge status={c.domain.status} word={c.domain.word} />
             <span className={`badge ${c.novelty.dataset.found ? 'badge-neutral' : 'badge-info'}`}>{c.novelty.dataset.found ? 'Found in the dataset' : 'Not found in the dataset'}</span>
-            <span className="badge badge-neutral">{c.stability.status}</span>
+            <span className="badge badge-neutral">{c.stability.label ?? c.stability.status}</span>
+            {c.cluster && <span className="badge badge-neutral" title={`${c.cluster.size} candidates share this cluster (encoder latents within cosine 0.9 of ${c.cluster.leader})`}>Cluster {c.cluster.id} · {c.cluster.rank}/{c.cluster.size}</span>}
             {c.mode === 'exploratory' && <span className="badge badge-warn">Exploratory run</span>}
           </div>
         </div>
@@ -96,8 +97,12 @@ export function CandidateDetail({ c, projectId, variant, onClose, compared, onCo
       <section style={{ marginTop: 16 }}>
         <h3>Novelty</h3>
         <p className="small">{c.novelty.dataset.label}. {c.novelty.training_split.label}. <span className="faint">Method: {c.novelty.method}.</span></p>
-        <h3>Stability</h3>
-        <div className="row small" style={{ gap: 4 }}>{c.stability.stages.map((s) => <span key={s} className={`badge ${s === c.stability.status ? 'badge-info' : 'badge-neutral'}`}>{s}</span>)}</div>
+        <h3>Validation ladder</h3>
+        <div className="row small" style={{ gap: 4 }} data-testid="ladder">{c.stability.stages.map((s, i) => <span key={s} className={`badge ${i <= c.stability.stage ? 'badge-info' : 'badge-neutral'}`} title={i <= c.stability.stage ? 'reached' : 'not reached'}>{i} · {s}</span>)}</div>
+        <ul className="small muted" style={{ margin: '6px 0 0 18px' }}>
+          {c.stability.records.map((r) => <li key={r.stage}>Stage {r.stage} · {r.label}: {r.outcome} ({r.method}){r.passed === false ? ' — not passed' : ''}</li>)}
+          {c.stability.next && <li>Next: {c.stability.next} — your own screening, DFT or experiment; the run bundle has the CIFs and targets.csv.</li>}
+        </ul>
       </section>
 
       <section style={{ marginTop: 16 }}>

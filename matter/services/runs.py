@@ -27,7 +27,8 @@ import traceback
 from matter.api.errors import ApiError
 from matter.jsonsafe import finite
 from matter.services import goals as G
-from matter.services.enrichment import EvidenceContext, enrich, funnel_for, rule_map
+from matter.services.enrichment import EvidenceContext, assign_clusters, enrich, funnel_for, rule_map
+from matter.version import build_info
 
 SESSION_TTL = 3600
 LOG_TAIL = 400
@@ -125,13 +126,16 @@ class RunStore:
                                                            "windows", "ambiguity", "summary")},
                "progress": {"target": 0, "targets": len(validated.generation["targets"]), "round": 0, "rounds": validated.generation["rounds"],
                             "step": 0, "steps": validated.generation["steps"], "loss": None, "seconds": 0.0},
-               "log": [], "candidates": [], "funnel": None, "timings": {}, "manifest": None}
+               "log": [], "candidates": [], "funnel": None, "clusters": None, "timings": {}, "manifest": None}
         with self.lock:
             self.runs[run_id] = run
             self.locks[run_id] = threading.Lock()
         os.makedirs(os.path.join(self.path(run_id), "validation"), exist_ok=True)
         with open(os.path.join(self.path(run_id), "validation", "README.txt"), "w", encoding="utf-8", newline="\n") as f:
-            f.write("No validation records. Stability status of every candidate: Not screened.\n")
+            f.write("The validation ladder: 0 Generated, 1 Chemistry checked, 2 MLIP screened, 3 DFT relaxed, 4 DFT property confirmed, "
+                    "5 Experimentally tested.\nThis version records stages 0 and 1 (the family's chemistry rules) for every candidate; "
+                    "later stages are added by the user's own screening, DFT or experiment.\n"
+                    "To score the candidates on MEIDNet Prism: meidnet score cifs/ --targets targets.csv --reference data/perov5\n")
         with open(os.path.join(self.path(run_id), "readiness.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(finite(readiness), f, indent=1, allow_nan=False, ensure_ascii=False)
         self.save(run)
@@ -183,11 +187,18 @@ def execute_search(job, run: dict, services) -> None:
         goal = Goal.model_validate(run["goal"])
         v = G.validate(goal, services, run_dir=run_dir)
         lm = services.registry.load(run["model_id"])
+        entry = services.registry.entry(run["model_id"])
+        info = build_info(services.settings.build_info, services.settings.public)
+        d = services.artefacts.dataset
+        provenance = {"matter_version": info["matter"], "meidnet_version": info["meidnet"], "git_commit": info["git_sha"],
+                      "model_sha256": entry.get("sha256"), "dataset_id": d.get("dataset_id"),
+                      "dataset_fingerprint": (d.get("fingerprint") or {}).get("combined"), "goal_hash": run["readiness"].get("goal_hash"),
+                      "project_id": run["project_id"]}
         ctx = EvidenceContext(lm=lm, family=v.family, artefacts=services.artefacts, latents=services.artefacts.latents(run["model_id"]),
                               dataset_index=services.dataset_index, backend=services.backend, goal=goal, model_id=run["model_id"],
                               mode=run["mode"], windows={k: tuple(w) for k, w in (run["readiness"].get("windows") or {}).items()},
                               run_id=run["run_id"], run_dir=run_dir, rules=rule_map(v.family),
-                              ranges={c: tuple(r) for c, r in services.registry.entry(run["model_id"]).get("property_ranges", {}).items()})
+                              ranges={c: tuple(r) for c, r in entry.get("property_ranges", {}).items()}, provenance=provenance)
 
         def on_candidate(sc, tlog):
             raw = sc.to_dict()
@@ -207,13 +218,16 @@ def execute_search(job, run: dict, services) -> None:
         objectives = v.generation["objectives"]
         with lock:
             run["funnel"] = [funnel_for(t, v.family, objectives, v.generation.get("population")) for t in res.targets]
+            run["clusters"] = assign_clusters(run["candidates"])       # one-to-many: alternatives grouped by encoder latent
             run["timings"] = {"search_s": round(time.time() - t0, 1)}
         with open(os.path.join(run_dir, "config.yaml"), "w", encoding="utf-8", newline="\n") as f:
             f.write(dump_config(v.config))
         with open(os.path.join(run_dir, "metrics.json"), "w", encoding="utf-8", newline="\n") as f:
-            json.dump(finite({"funnel": run["funnel"], "timings": run["timings"]}), f, indent=1, allow_nan=False)
+            json.dump(finite({"funnel": run["funnel"], "clusters": run["clusters"], "timings": run["timings"]}), f, indent=1, allow_nan=False)
         with open(os.path.join(run_dir, "candidates.csv"), "w", encoding="utf-8", newline="") as f:
             f.write(export.candidates_csv(run))
+        with open(os.path.join(run_dir, "targets.csv"), "w", encoding="utf-8", newline="") as f:
+            f.write(export.targets_csv(run))
         final = "stopped" if job.stop_flag else "done"
         finished = now_iso()
         manifest_doc = M.build_manifest(dict(run, status=final, finished=finished), services)

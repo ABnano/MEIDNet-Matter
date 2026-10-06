@@ -25,7 +25,7 @@ export function CandidateCard({ c, selected, compared, onOpen, onCompare, projec
         <div className="row" style={{ gap: 6 }}>{Object.entries(c.identity.elements).map(([g, e]) => <Site key={g} group={g} element={e} />)} <span className="small faint num">a = {fmt(c.structure.lattice_a)} Å</span></div>
         <div className="lines" style={{ marginTop: 6 }}>
           {props.map(([k, p]) => <div key={k}>{shortLabel(p.label)} <b className="num">{fmt(p.predicted, p.unit)}</b>{p.target != null && <span className="muted"> · target {fmt(p.target)} ({signed(p.difference)})</span>} <span className="faint">{p.evidence_label}</span></div>)}
-          <div>Rule passed {c.rules_passed}/{c.rules_total} · {c.novelty.dataset.found ? 'Found in the dataset' : 'Not found in the dataset'} · {c.stability.status}</div>
+          <div>Rule passed {c.rules_passed}/{c.rules_total} · {c.novelty.dataset.found ? 'Found in the dataset' : 'Not found in the dataset'} · {c.stability.label ?? c.stability.status}{c.cluster && <span className="faint"> · cluster {c.cluster.id}</span>}</div>
           {c.flags.map((f) => <div key={f} className="small" style={{ color: 'var(--warn)' }}>{f}</div>)}
         </div>
         <div className="foot">
@@ -42,9 +42,21 @@ export function CandidateCard({ c, selected, compared, onOpen, onCompare, projec
 export const COLUMNS: Array<{ id: string; label: string; always?: boolean }> = [
   { id: 'formula', label: 'Formula', always: true }, { id: 'predicted', label: 'Predicted', always: true }, { id: 'domain', label: 'Domain' }, { id: 'rules', label: 'Rules' },
   { id: 'novelty', label: 'Novelty' }, { id: 'agreement', label: 'Encoder vs search' }, { id: 'nearest', label: 'Nearest training material' }, { id: 'a', label: 'a (Å)' },
-  { id: 'sites', label: 'Sites' }, { id: 'score', label: 'Score' }, { id: 'latent', label: 'Latent norm' }, { id: 'round', label: 'Round' }, { id: 'stability', label: 'Stability' },
+  { id: 'sites', label: 'Sites' }, { id: 'score', label: 'Score' }, { id: 'latent', label: 'Latent norm' }, { id: 'round', label: 'Round' }, { id: 'stability', label: 'Validation stage' },
+  { id: 'cluster', label: 'Cluster' },
 ];
 export const DEFAULT_COLS = ['formula', 'predicted', 'domain', 'rules', 'novelty', 'agreement', 'score'];
+
+/** Candidates grouped by their cluster, in the order the clusters first appear in the (sorted) list. */
+export function groupByCluster(cands: Candidate[]): Array<{ id: number; size: number; leaderFormula: string; cands: Candidate[] }> {
+  const groups = new Map<number, { id: number; size: number; leaderFormula: string; cands: Candidate[] }>();
+  for (const c of cands) {
+    const id = c.cluster?.id ?? 0;
+    if (!groups.has(id)) groups.set(id, { id, size: c.cluster?.size ?? 0, leaderFormula: cands.find((x) => x.candidate_id === c.cluster?.leader)?.identity.formula ?? c.identity.formula, cands: [] });
+    groups.get(id)!.cands.push(c);
+  }
+  return [...groups.values()];
+}
 
 export function CandidateTable({ cands, q, setQ, onOpen }: { cands: Candidate[]; q: ExplorerQuery; setQ: (f: (q: ExplorerQuery) => ExplorerQuery) => void; onOpen: (id: string) => void }) {
   const cols = q.cols ?? DEFAULT_COLS;
@@ -69,7 +81,8 @@ export function CandidateTable({ cands, q, setQ, onOpen }: { cands: Candidate[];
           {show('score') && <th scope="col" className="num">Score</th>}
           {show('latent') && <th scope="col" className="num">Latent norm</th>}
           {show('round') && <th scope="col" className="num">Round</th>}
-          {show('stability') && <th scope="col">Stability</th>}
+          {show('stability') && <th scope="col">Validation stage</th>}
+          {show('cluster') && <th scope="col" className="num">Cluster</th>}
           <th scope="col"><span className="sr-only">Actions</span></th>
         </tr></thead>
         <tbody>
@@ -88,7 +101,8 @@ export function CandidateTable({ cands, q, setQ, onOpen }: { cands: Candidate[];
               {show('score') && <td className="num">{c.model_evidence.score?.toExponential(2)}</td>}
               {show('latent') && <td className="num">{fmt(c.model_evidence.latent_norm)}</td>}
               {show('round') && <td className="num">{c.round}</td>}
-              {show('stability') && <td className="small">{c.stability.status}</td>}
+              {show('stability') && <td className="small">{c.stability.label ?? c.stability.status}</td>}
+              {show('cluster') && <td className="num small">{c.cluster ? `${c.cluster.id} (${c.cluster.rank}/${c.cluster.size})` : '—'}</td>}
               <td onClick={(e) => e.stopPropagation()}><a className="btn btn-sm" href={api.urls.cif(c.run_id, c.candidate_id)} download>CIF ↓</a></td>
             </tr>
           ))}

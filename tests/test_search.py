@@ -1,4 +1,5 @@
 """A real search through the API with the published model: candidates with evidence, exports, stop, restart."""
+import csv
 import io
 import json
 import time
@@ -6,6 +7,7 @@ import zipfile
 
 import pytest
 
+from matter.schemas.candidate import CandidateRecord
 from matter.services.jobs import MAX_RUNNING, JobManager
 from tests.conftest import make_client
 
@@ -72,13 +74,23 @@ def test_search_candidates_evidence_and_exports(client, checkpoint):
             assert c["model_evidence"]["agreement"][p]["label"] in ("agree", "partly agree", "disagree", "not judged")
         assert len(c["model_evidence"]["nearest_training"]) == 3 and c["model_evidence"]["nearest_training"][0]["cosine"] <= 1.0
         assert c["novelty"]["dataset"]["label"].startswith(("Not found in the Perov-5 dataset", "Found in the Perov-5 dataset"))
-        assert c["stability"]["status"] == "Not screened"
+        v = c["stability"]
+        assert v["stages"] == ["Generated", "Chemistry checked", "MLIP screened", "DFT relaxed", "DFT property confirmed", "Experimentally tested"]
+        assert v["stage"] == (1 if c["rules_passed"] == c["rules_total"] else 0) and v["status"] == v["stages"][v["stage"]]
+        assert v["label"] == f"Stage {v['stage']} · {v['status']}" and v["next"] == v["stages"][v["stage"] + 1] and len(v["records"]) == 2
+        assert c["schema"] == "meidnet-matter/candidate-record/1"
+        assert c["provenance"]["model_sha256"] and c["provenance"]["goal_hash"] and c["provenance"]["run_id"] == run_id
+        assert c["cluster"] and c["cluster"]["id"] >= 1 and c["cluster"]["size"] >= 1 and c["cluster"]["rank"] <= c["cluster"]["size"]
+        CandidateRecord.model_validate(c)                                     # every candidate is a record of the published schema
         assert c["rules_total"] >= 4 and all(k["evidence_label"] in ("Rule passed", "Rule failed") for k in c["constraints"])
-        assert c["why"].startswith("Exploratory run: ") and c["identity"]["formula"] in c["why"]
+        assert c["why"].startswith("Exploratory run: ") and c["identity"]["formula"] in c["why"] and "Validation: stage" in c["why"]
         assert len(c["model_evidence"]["latent"]) == 128 and c["structure"]["chemiscope"]["size"] == 5
     full = client.get(f"/api/runs/{run_id}?view=full").json()
     assert full["funnel"] and full["funnel"][0]["attempts"]["tried"] > 0 and full["manifest"]["model"]["sha256"]
     assert full["manifest"]["exported_files"]["config.yaml"] and full["manifest"]["candidates"][0]["sha256"]
+    assert full["clusters"] and sum(g["size"] for g in full["clusters"]) == len(cands) and full["clusters"][0]["leader"] == cands[0]["candidate_id"]
+    assert full["manifest"]["validation"]["highest_stage"] in (0, 1) and full["manifest"]["validation"]["ladder"][1] == "Chemistry checked"
+    assert full["manifest"]["exported_files"]["targets.csv"]
     # CIF
     cid = cands[0]["candidate_id"]
     cif = client.get(f"/api/runs/{run_id}/candidates/{cid}/cif")
@@ -96,8 +108,16 @@ def test_search_candidates_evidence_and_exports(client, checkpoint):
     # bundle
     z = zipfile.ZipFile(io.BytesIO(client.get(f"/api/runs/{run_id}/export/bundle.zip").content))
     names = z.namelist()
-    assert {"run.json", "config.yaml", "metrics.json", "readiness.json", "candidates.csv", "manifest.json", "environment.json", "hashes.json"} <= set(names)
+    assert {"run.json", "config.yaml", "metrics.json", "readiness.json", "candidates.csv", "targets.csv", "candidate-record.schema.json",
+            "manifest.json", "environment.json", "hashes.json", "validation/README.txt"} <= set(names)
     assert any(n.startswith("cifs/") for n in names) and any(n.startswith("generation/cifs/") for n in names)
+    targets = list(csv.DictReader(io.StringIO(z.read("targets.csv").decode("utf-8"))))
+    assert len(targets) == len(cands) and all(f"cifs/{t['file']}" in names for t in targets)
+    assert targets[0]["dir_gap_target"] == "2.0" and targets[0]["source"].startswith("predicted (") and targets[0]["validation_stage"] in ("0", "1")
+    assert (targets[0]["dir_gap_min"], targets[0]["dir_gap_max"]) == ("1.0", "3.0")                      # 2.0 ± 1.0
+    assert (targets[0]["heat_all_target"], targets[0]["heat_all_min"], targets[0]["heat_all_max"]) == ("", "", "1.5")   # at most 1.5
+    schema = json.loads(z.read("candidate-record.schema.json"))
+    assert schema["$id"] == "meidnet-matter/candidate-record/1" and "cluster" in schema["properties"]
     hashes = json.loads(z.read("hashes.json"))
     import hashlib
     assert hashes["config.yaml"] == hashlib.sha256(z.read("config.yaml")).hexdigest()

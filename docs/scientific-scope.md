@@ -25,7 +25,8 @@ The Perov-5 demo project, end to end:
 * No upload of your own data and no training (Phase 1).
 * No free-geometry generation: candidates are compositions placed on a family's prototype (cubic ABX₃ or A₂BB′X₆).
 * No uncertainty per prediction (the model has no uncertainty head; the field is present and says so).
-* No stability screening, DFT or experiment: every candidate carries the stage "Not screened". The validation levels are shown so that later records have their place.
+* No stability screening, DFT or experiment here: every candidate stands at stage 0 ("Generated") or stage 1 ("Chemistry checked", every rule of the family passed) of the six-stage validation ladder (Generated · Chemistry checked · MLIP screened · DFT relaxed · DFT property confirmed · Experimentally tested). The later stages are the user's own steps; the run bundle's `cifs/` and `targets.csv` are laid out for `meidnet screen` and for `meidnet score` on Prism, and the candidate record keeps a place for each stage's result.
+* Clusters are a grouping of the search's own candidates by encoder latent (cosine ≥ 0.9), not a statement about polymorphs or phase stability: two candidates in one cluster are alternatives the model cannot tell apart well, not variants of one material.
 * A second model, the seed-3 re-run of the paper's alignment training, is not offered: measured the way this search uses it (after the projection heads) its property decoder gives a formation-enthalpy error of 5.3 eV/atom. It aligns before the heads, and a readiness measured in its own space is future work.
 
 ## Evidence labels

@@ -4,6 +4,21 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-06
+
+Validation ladder, versioned candidate records, candidate clusters, and the link to Prism's scoring.
+
+### Added
+- The six-stage validation ladder (Generated · Chemistry checked · MLIP screened · DFT relaxed · DFT property confirmed · Experimentally tested). Every candidate records the highest stage it reached and the result of each stage; this version records stages 0 and 1 (a candidate that passed every chemistry rule stands at "Stage 1 · Chemistry checked"). The export page shows how many candidates reached each stage and which stages are the user's own.
+- The candidate record is versioned: every candidate carries `"schema": "meidnet-matter/candidate-record/1"` and a provenance block (software versions, git commit, model sha256, dataset fingerprint, goal hash, run id). `GET /api/schema/candidate-record` returns the JSON Schema; the run bundle holds it as `candidate-record.schema.json`.
+- One target, many structures: when the search has finished, candidates are grouped into clusters of similar encoder latents (cosine ≥ 0.9, leader clustering). The candidate carries its cluster, the run lists the clusters, the cards view shows them as groups, and the "Prioritise" control orders candidates by target accuracy, diversity (one per cluster first), stability, novelty, search score, encoder agreement or order found.
+- `targets.csv` in the run bundle (and `GET /api/schema/targets-csv`): the layout that `meidnet score` (MEIDNet 2.3.1 or later) reads, so a run's candidates can be scored on Prism with the LeMat-GenBench metric families and the conditional extension. Each property carries the point target and/or the window that was asked for: "1.5 ± 0.3 eV" is target 1.5 with window 1.2–1.8, "at most 1.0 eV/atom" is a window with only its upper edge. The export page gives the three commands and links to the metric definitions.
+- The candidate table exports `validation_stage`, `validation` and `cluster`; the manifest's validation block reports the ladder, the highest stage reached, the candidates per stage and the number of clusters.
+
+### Changed
+- The candidate's stability block is now the validation block (`status`, `stage`, `label`, `stages`, `next`, `records`); "Not screened" is replaced by the ladder's stage names.
+- The landing page's ecosystem section links to Prism's scoring and ecosystem pages.
+
 ## [0.1.0] - 2026-10-06
 
 Phase 0: the Perov-5 demo project end to end, live at https://babu09-meidnet-matter.hf.space/.

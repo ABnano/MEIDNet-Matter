@@ -16,7 +16,8 @@ function cand(over: Partial<Candidate> & { formula: string; gap: number; dhf: nu
     domain: { status: 'in_distribution', word: 'Interpolating' }, constraints: [], rules_passed: 8, rules_total: 8,
     model_evidence: { encoder_prediction: {}, agreement: { dir_gap: { decoder: gap, encoder: gap, difference: 0, in_std: 0, word: 'good', label: 'agree' } }, latent_norm: 1, latent_hit_clip: false, score, nearest_training: [], latent_distance: 0.1, local_density: { n_within: 1, fraction: 0, windows: {} }, latent: [] },
     novelty: { method: '', dataset: { checked_against: '', found, match: null, label: found ? 'Found' : 'Not found' }, training_split: { checked_against: '', found, match: null, label: '' } },
-    stability: { status: 'Not screened', stages: [], records: [] }, flags: [], mode: 'standard', why: '', engine: {}, ...rest,
+    stability: { status: 'Chemistry checked', stage: 1, label: 'Stage 1 · Chemistry checked', stages: [], next: 'MLIP screened', records: [] },
+    cluster: null, schema: 'meidnet-matter/candidate-record/1', provenance: {}, flags: [], mode: 'standard', why: '', engine: {}, ...rest,
   } as Candidate;
 }
 
@@ -45,6 +46,17 @@ describe('explorer query', () => {
     expect(sortCandidates(cs, 'closest').map((c) => c.identity.formula)).toEqual(['C', 'A', 'B']);   // both properties count, scaled by 5 % of the range
     expect(sortCandidates(cs, 'stable').map((c) => c.identity.formula)).toEqual(['B', 'C', 'A']);
     expect(sortCandidates(cs, 'novel').map((c) => c.identity.formula)[2]).toBe('B');
+  });
+
+  it('prioritising diversity takes one candidate per cluster first, the closest of each', () => {
+    const cl = (id: number, rank: number, size: number) => ({ id, rank, size, leader: `L${id}`, cosine_to_leader: 0.95 });
+    const cs = [
+      cand({ formula: 'A1', gap: 2.4, dhf: 1.0, cluster: cl(1, 1, 3) }), cand({ formula: 'A2', gap: 2.1, dhf: 1.0, cluster: cl(1, 2, 3) }), cand({ formula: 'A3', gap: 2.2, dhf: 1.0, cluster: cl(1, 3, 3) }),
+      cand({ formula: 'B1', gap: 2.3, dhf: 1.0, cluster: cl(2, 1, 1) }),
+      cand({ formula: 'C1', gap: 2.05, dhf: 1.0, cluster: null }),
+    ];
+    expect(sortCandidates(cs, 'diverse').map((c) => c.identity.formula)).toEqual(['C1', 'A2', 'B1', 'A3', 'A1']);
+    expect(sortCandidates(cs, 'closest').map((c) => c.identity.formula)).toEqual(['C1', 'A2', 'A3', 'B1', 'A1']);
   });
 
   it('describes the active filters as chips', () => {

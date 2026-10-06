@@ -93,6 +93,8 @@ try {
   // 5. a candidate's detail
   check('explorer: open first candidate', await click('[data-testid="candidate-row"]'));
   check('candidate: detail with domain status', await waitFor(`/Interpolating|Boundary|Extrapolating/.test((document.querySelector('[data-testid="candidate-detail"]')||{}).textContent || '')`, 10000));
+  check('candidate: validation ladder with a reached stage', await ev(`/Stage [01] · (Generated|Chemistry checked)/.test((document.querySelector('[data-testid="candidate-detail"]')||{}).textContent || '') && !!document.querySelector('[data-testid="ladder"]')`));
+  check('explorer: prioritise control', await ev(`!!document.querySelector('[data-testid="prioritise"]') && document.querySelector('[data-testid="prioritise"]').options.length >= 6`));
   await shot('candidates.png');
   // 6. the CIF and the CSV
   const cifHref = await ev(`(document.querySelector('[data-testid="download-cif"]')||{}).getAttribute?.('href')`);
@@ -103,6 +105,10 @@ try {
   check('export: CSV carries the domain status', csv && csv.status === 200 && csv.head.includes('domain_dir_gap') && csv.head.includes('flags'), csv && csv.head.slice(0, 120));
   const bundle = await ev(`fetch('/api/runs/' + ${JSON.stringify(runId)} + '/export/bundle.zip').then(r => ({status: r.status, type: r.headers.get('content-type')}))`);
   check('export: bundle', bundle && bundle.status === 200 && /zip/.test(bundle.type), JSON.stringify(bundle));
+  const schema = await ev(`fetch('/api/schema/candidate-record').then(r => r.json().then(j => ({status: r.status, id: j.schema, stages: (j.validation_stages||[]).length})))`);
+  check('export: candidate-record schema', schema && schema.status === 200 && schema.id === 'meidnet-matter/candidate-record/1' && schema.stages === 6, JSON.stringify(schema));
+  const cands = await ev(`fetch('/api/runs/' + ${JSON.stringify(runId)} + '/candidates').then(r => r.json().then(cs => ({n: cs.length, clustered: cs.filter(c => c.cluster).length, schema: cs[0] && cs[0].schema})))`);
+  check('candidates: every candidate is a versioned record with a cluster', cands && cands.n > 0 && cands.clustered === cands.n && cands.schema === 'meidnet-matter/candidate-record/1', JSON.stringify(cands));
   // 7. the direct-app link is hidden outside a frame; no page errors
   check('shell: direct-app link hidden outside a frame', !(await ev(`!!document.querySelector('a[title*="outside the Hugging Face frame"]')`)));
   const unexpected = errors.filter((e) => !/favicon|og\.png/.test(e));

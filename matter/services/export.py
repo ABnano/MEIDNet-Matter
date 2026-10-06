@@ -41,7 +41,9 @@ def candidate_rows(run: dict) -> tuple[list[str], list[dict]]:
         row["local_density_n"] = c["model_evidence"]["local_density"]["n_within"]
         row["novelty_dataset"] = c["novelty"]["dataset"]["label"]
         row["novelty_training"] = c["novelty"]["training_split"]["label"]
-        row["stability"] = c["stability"]["status"]
+        row["validation_stage"] = c["stability"].get("stage")
+        row["validation"] = c["stability"]["status"]
+        row["cluster"] = (c.get("cluster") or {}).get("id")
         row["latent_norm"] = c["model_evidence"]["latent_norm"]
         row["score"] = c["model_evidence"]["score"]
         row["round"] = c["round"]
@@ -71,9 +73,55 @@ def candidate_json(c: dict) -> str:
     return json.dumps(finite(c), indent=1, allow_nan=False, ensure_ascii=False)
 
 
+def request_of(objective: dict | None, prop: dict) -> tuple[float | None, float | None, float | None]:
+    """(point target, window min, window max) of what was asked for one property. A value with a tolerance is a point
+    target with its window; a range or a bound is a window only ("at most 1.0" is max = 1.0); maximise/minimise use the
+    bound the goal was translated to."""
+    if not objective:
+        return None, None, None
+    kind, t = objective.get("kind"), prop.get("target")
+    if kind in ("value", "values"):
+        tol = objective.get("tolerance")
+        return (t, t - tol, t + tol) if (t is not None and tol) else (t, None, None)
+    if kind == "range":
+        return None, objective.get("low"), objective.get("high")
+    if kind == "at_least":
+        return None, objective.get("value"), None
+    if kind == "at_most":
+        return None, None, objective.get("value")
+    w = prop.get("window") or [None, None]                 # maximize / minimize
+    return None, w[0], w[1]
+
+
+def targets_csv(run: dict) -> str:
+    """targets.csv for Prism's `meidnet score` (MEIDNet >= 2.3.1): one row per candidate CIF of the bundle
+    (cifs/<candidate_id>.cif); per property the point target and/or the window that was asked for and the reported
+    value; the source of the value, the validation stage and the cluster."""
+    cands = [c for c in run.get("candidates", []) if "properties" in c]
+    props = list(cands[0]["properties"].keys()) if cands else []
+    objectives = {o["property"]: o for o in (run.get("goal") or {}).get("objectives", [])}
+    columns = (["file", "candidate_id", "formula"] + [f"{p}_{k}" for p in props for k in ("target", "min", "max", "value")]
+               + ["source", "validation_stage", "cluster"])
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=columns, lineterminator="\n")
+    w.writeheader()
+    for c in cands:
+        row = {"file": f"{c['candidate_id']}.cif", "candidate_id": c["candidate_id"], "formula": c["identity"]["formula"],
+               "source": f"predicted ({c['identity']['model_id']})", "validation_stage": c["stability"].get("stage"),
+               "cluster": (c.get("cluster") or {}).get("id")}
+        for p in props:
+            t, lo, hi = request_of(objectives.get(p), c["properties"][p])
+            row[f"{p}_target"], row[f"{p}_min"], row[f"{p}_max"] = t, lo, hi
+            row[f"{p}_value"] = c["properties"][p]["predicted"]
+        w.writerow({k: ("" if v is None else v) for k, v in row.items()})
+    return buf.getvalue()
+
+
 def bundle_zip(run: dict, services) -> bytes:
-    """run.json, config.yaml, metrics.json, readiness.json, candidates.csv, the engine's generation/ folder, one CIF
-    per candidate under cifs/, the validation folder, environment.json and hashes.json."""
+    """run.json, config.yaml, metrics.json, readiness.json, candidates.csv, targets.csv (for `meidnet score`), the
+    candidate-record schema, the engine's generation/ folder, one CIF per candidate under cifs/, the validation
+    folder, environment.json and hashes.json."""
+    from matter.schemas.candidate import json_schema
     from matter.version import build_info
     run_dir = services.runs.path(run["run_id"])
     buf = io.BytesIO()
@@ -89,6 +137,8 @@ def bundle_zip(run: dict, services) -> bytes:
             if os.path.exists(p):
                 with open(p, "rb") as f:
                     add_bytes(name.replace(os.sep, "/"), f.read())
+        add_bytes("targets.csv", targets_csv(run).encode("utf-8"))
+        add_bytes("candidate-record.schema.json", json.dumps(json_schema(), indent=1).encode("utf-8"))
         gen = os.path.join(run_dir, "generation")
         for d, _, files in os.walk(gen):
             for fn in files:

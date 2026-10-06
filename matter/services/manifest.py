@@ -4,6 +4,8 @@ from __future__ import annotations
 import hashlib
 import os
 
+from matter.schemas.candidate import SCHEMA_ID
+from matter.services.enrichment import VALIDATION_STAGES
 from matter.version import build_info
 
 
@@ -30,10 +32,17 @@ def build_manifest(run: dict, services) -> dict:
         candidates.append({"candidate_id": c["candidate_id"], "formula": c.get("identity", {}).get("formula"), "file": rel, "sha256": digest})
         if digest:
             exported[rel] = digest
-    for name in ("config.yaml", "metrics.json", "readiness.json", "candidates.csv"):
+    for name in ("config.yaml", "metrics.json", "readiness.json", "candidates.csv", "targets.csv"):
         p = os.path.join(run_dir, name)
         if os.path.exists(p):
             exported[name] = sha256_file(p)
+    stages = VALIDATION_STAGES
+    reached = {s: 0 for s in stages}
+    for c in run.get("candidates", []):
+        st = (c.get("stability") or {}).get("status")
+        if st in reached:
+            reached[st] += 1
+    highest = max((i for i, s in enumerate(stages) if reached[s]), default=0)
     gen = run["generation"]
     return {
         "manifest_version": 1, "run_id": run["run_id"], "created": run["created"], "started": run["started"], "finished": run["finished"],
@@ -54,7 +63,9 @@ def build_manifest(run: dict, services) -> dict:
                                    "only_elements": gen.get("only_elements", {})},
                    "search_config": gen, "seed": gen.get("seed"),
                    "candidate_budget": {"per_target": gen.get("per_target"), "targets": len(gen["targets"])}},
-        "validation": {"config": None, "status": "Not screened"},
+        "validation": {"config": None, "ladder": stages, "highest_stage": highest, "status": f"Stage {highest} · {stages[highest]}",
+                       "candidates_per_stage": reached, "clusters": len(run.get("clusters") or []) or None,
+                       "candidate_record_schema": SCHEMA_ID},
         "timestamps": {"created": run["created"], "started": run["started"], "finished": run["finished"]},
         "durations_s": run.get("timings", {}),
         "funnel": run.get("funnel"),

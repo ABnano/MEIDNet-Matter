@@ -1,15 +1,17 @@
 import type { Candidate, DomainStatus } from '@/api/types';
 
 export type View = 'table' | 'cards' | 'map';
-export type Sort = 'best' | 'closest' | 'novel' | 'stable' | 'agreement' | 'round';
+export type Sort = 'closest' | 'diverse' | 'stable' | 'novel' | 'best' | 'agreement' | 'round';
 export interface ExplorerQuery {
   view: View; sort: Sort; dev: Record<string, number>; domain: DomainStatus[]; el: string[]; xel: string[];
   novelty: Array<'not_found' | 'found'>; rules: 'passed' | 'any'; c: string | null; cmp: string[]; cols: string[] | null;
 }
 export const DEFAULTS: ExplorerQuery = { view: 'table', sort: 'best', dev: {}, domain: [], el: [], xel: [], novelty: [], rules: 'any', c: null, cmp: [], cols: null };
+/** The "Prioritise" control: what comes first when one target has many possible structures. */
 export const SORTS: Array<{ value: Sort; label: string }> = [
-  { value: 'best', label: 'Best overall (search score)' }, { value: 'closest', label: 'Closest to target' }, { value: 'novel', label: 'Not in the dataset first' },
-  { value: 'stable', label: 'Lowest predicted formation enthalpy' }, { value: 'agreement', label: 'Encoder and search agree' }, { value: 'round', label: 'Order found' },
+  { value: 'best', label: 'Search score' }, { value: 'closest', label: 'Target accuracy' }, { value: 'diverse', label: 'Diversity (one per cluster first)' },
+  { value: 'stable', label: 'Stability (lowest predicted formation enthalpy)' }, { value: 'novel', label: 'Novelty (not in the dataset first)' },
+  { value: 'agreement', label: 'Encoder and search agree' }, { value: 'round', label: 'Order found' },
 ];
 
 const list = (v: string | null) => (v ? v.split(',').filter(Boolean) : []);
@@ -69,12 +71,24 @@ export function sortCandidates(cands: Candidate[], sort: Sort): Candidate[] {
   const by: Record<Sort, (a: Candidate, b: Candidate) => number> = {
     best: (a, b) => (a.model_evidence.score ?? 0) - (b.model_evidence.score ?? 0),
     closest: (a, b) => closeness(a) - closeness(b),
+    diverse: (a, b) => closeness(a) - closeness(b),
     novel: (a, b) => Number(a.novelty.dataset.found) - Number(b.novelty.dataset.found) || (b.model_evidence.latent_distance ?? 0) - (a.model_evidence.latent_distance ?? 0),
     stable: (a, b) => (formation(a) ?? Infinity) - (formation(b) ?? Infinity),
     agreement: (a, b) => Math.max(...Object.values(a.model_evidence.agreement).map((x) => agreementRank[x.label] ?? 3)) - Math.max(...Object.values(b.model_evidence.agreement).map((x) => agreementRank[x.label] ?? 3)),
     round: (a, b) => a.index - b.index,
   };
-  return [...cands].filter((c) => !!c.properties).sort(by[sort]);
+  const sorted = [...cands].filter((c) => !!c.properties).sort(by[sort]);
+  if (sort !== 'diverse') return sorted;
+  // one candidate per cluster first (the closest of each), then the second of each cluster, and so on
+  const lists = new Map<number | string, Candidate[]>();
+  for (const c of sorted) {
+    const key = c.cluster?.id ?? c.candidate_id;
+    if (!lists.has(key)) lists.set(key, []);
+    lists.get(key)!.push(c);
+  }
+  const out: Candidate[] = [];
+  for (let i = 0; out.length < sorted.length; i++) for (const l of lists.values()) if (l[i]) out.push(l[i]);
+  return out;
 }
 
 function formation(c: Candidate): number | null {

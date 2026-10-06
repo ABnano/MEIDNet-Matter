@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
-from matter.api import routes_read, routes_readiness, routes_runs
+from matter.api import routes_read, routes_readiness, routes_runs, routes_schema
 from matter.api.errors import NotAvailableInPhase
 from matter.version import build_info
 
@@ -11,6 +11,7 @@ api_router = APIRouter()
 api_router.include_router(routes_read.router)
 api_router.include_router(routes_readiness.router)
 api_router.include_router(routes_runs.router)
+api_router.include_router(routes_schema.router)
 
 
 @api_router.get("/version", summary="What is running: versions, git commit, mode")

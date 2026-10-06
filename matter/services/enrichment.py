@@ -5,6 +5,7 @@ stage. The "why" sentence only repeats these facts."""
 from __future__ import annotations
 
 import dataclasses
+import datetime
 import os
 from dataclasses import dataclass
 
@@ -12,8 +13,56 @@ import numpy as np
 
 from matter.services.support import DOMAIN_WORDS, box_mask, domain_status, fmt, quality, tolerance
 
-STABILITY_STAGES = ["Not screened", "ML-potential screened", "DFT relaxed", "DFT hull evaluated", "Experimentally tested"]
+VALIDATION_STAGES = ["Generated", "Chemistry checked", "MLIP screened", "DFT relaxed", "DFT property confirmed", "Experimentally tested"]
+STABILITY_STAGES = VALIDATION_STAGES          # the earlier name
+SCHEMA_ID = "meidnet-matter/candidate-record/1"
+CLUSTER_COSINE = 0.9                          # candidates whose encoder latents are at least this close form one cluster
 AGREEMENT = {"good": "agree", "fair": "partly agree", "weak": "disagree", "not judged": "not judged"}
+
+
+def validation_block(n_pass: int, n_total: int) -> dict:
+    """Where a candidate stands on the validation ladder. This version reaches stage 1 (the family's chemistry rules)
+    for a candidate that passed every rule; MLIP, DFT and experiment are later records."""
+    stage = 1 if (n_total and n_pass == n_total) else 0
+    records = [{"stage": 0, "label": VALIDATION_STAGES[0], "method": "latent-space search and decoding (meidnet)", "outcome": "decoded to a structure", "passed": True}]
+    if n_total:
+        records.append({"stage": 1, "label": VALIDATION_STAGES[1], "method": "the family's chemistry rules (deterministic)",
+                        "outcome": f"{n_pass} of {n_total} rules passed", "passed": n_pass == n_total})
+    return {"status": VALIDATION_STAGES[stage], "stage": stage, "label": f"Stage {stage} · {VALIDATION_STAGES[stage]}", "stages": VALIDATION_STAGES,
+            "next": VALIDATION_STAGES[stage + 1] if stage + 1 < len(VALIDATION_STAGES) else None, "records": records}
+
+
+def assign_clusters(candidates: list[dict], cosine: float = CLUSTER_COSINE) -> list[dict]:
+    """Leader clustering of the candidates' encoder latents: a candidate joins the first leader it is at least `cosine`
+    close to. Writes each candidate's `cluster` block and returns the run-level list (one entry per cluster)."""
+    leaders: list[tuple[np.ndarray, dict]] = []
+    for c in candidates:
+        z = (c.get("model_evidence") or {}).get("latent")
+        if not z:
+            c["cluster"] = None
+            continue
+        v = np.asarray(z, dtype=float)
+        v = v / (np.linalg.norm(v) or 1.0)
+        best, best_cos = None, -1.0
+        for k, (lz, entry) in enumerate(leaders):
+            cs = float(lz @ v)
+            if cs >= cosine and cs > best_cos:
+                best, best_cos = k, cs
+        if best is None:
+            leaders.append((v, {"id": len(leaders) + 1, "leader": c["candidate_id"], "leader_formula": c["identity"]["formula"], "members": [], "formulas": []}))
+            best, best_cos = len(leaders) - 1, 1.0
+        entry = leaders[best][1]
+        entry["members"].append(c["candidate_id"])
+        entry["formulas"].append(c["identity"]["formula"])
+        c["cluster"] = {"id": entry["id"], "leader": entry["leader"], "rank": len(entry["members"]), "cosine_to_leader": round(best_cos, 4)}
+    out = []
+    for _, entry in leaders:
+        entry["size"] = len(entry["members"])
+        out.append(entry)
+    for c in candidates:
+        if c.get("cluster"):
+            c["cluster"]["size"] = out[c["cluster"]["id"] - 1]["size"]
+    return out
 
 
 @dataclass
@@ -32,6 +81,7 @@ class EvidenceContext:
     run_dir: str
     rules: dict                      # rule id -> entry (title, text, params)
     ranges: dict                     # property -> (min, max) of the model
+    provenance: dict = dataclasses.field(default_factory=dict)   # versions, model sha256, dataset fingerprint, goal hash
 
 
 def rule_map(family) -> dict:
@@ -135,8 +185,13 @@ def enrich(raw: dict, ctx: EvidenceContext, index: int) -> dict:
         "properties": props, "domain": {"status": worst, "word": DOMAIN_WORDS[worst]},
         "constraints": constraints, "rules_passed": n_pass, "rules_total": len(constraints),
         "model_evidence": model_evidence, "novelty": novelty,
-        "stability": {"status": STABILITY_STAGES[0], "stages": STABILITY_STAGES, "records": []},
+        "stability": validation_block(n_pass, len(constraints)),
+        "cluster": None,                                   # assigned when the search has finished (assign_clusters)
         "flags": list(raw.get("flags", [])), "mode": ctx.mode, "engine": raw,
+        "schema": SCHEMA_ID,
+        "provenance": {**ctx.provenance, "run_id": ctx.run_id, "model_id": ctx.model_id, "backend": ctx.backend.name, "mode": ctx.mode,
+                       "family": ctx.family.name, "variant": ctx.family.variant,
+                       "created": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")},
     }
     candidate["why"] = why_sentence(candidate, ctx)
     return candidate
@@ -171,7 +226,8 @@ def why_sentence(c: dict, ctx: EvidenceContext) -> str:
     if match:
         vals = ", ".join(f"{props[k]['label'].lower()} {fmt(v, props[k]['unit'])}" for k, v in match["properties"].items() if k in props)
         parts.append(f"The dataset's DFT values for it: {vals}.")
-    parts.append(f"Stability: {c['stability']['status'].lower()}.")
+    v = c["stability"]
+    parts.append(f"Validation: stage {v['stage']} of {len(v['stages']) - 1}, {v['status'].lower()}" + (f"; next: {v['next'].lower()}." if v.get("next") else "."))
     text = " ".join(parts)
     return ("Exploratory run: " + text) if ctx.mode == "exploratory" else text
 

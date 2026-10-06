@@ -109,7 +109,7 @@ export interface Funnel {
 export interface Run extends RunStatus {
   goal: Goal; generation: Record<string, unknown>; explained: string[];
   readiness: Pick<Readiness, 'verdict' | 'exploratory_required' | 'reasons' | 'goal_hash' | 'caveats' | 'search_advice' | 'windows' | 'ambiguity' | 'summary'>;
-  funnel: Funnel[] | null; timings: Record<string, number>; manifest: Manifest | null;
+  funnel: Funnel[] | null; clusters: RunCluster[] | null; timings: Record<string, number>; manifest: Manifest | null;
 }
 
 export interface CandidateProperty {
@@ -135,9 +135,16 @@ export interface Candidate {
     local_density: { n_within: number; fraction: number; windows: Record<string, [number, number]> }; latent: number[];
   };
   novelty: { method: string; dataset: NoveltyCheck; training_split: NoveltyCheck };
-  stability: { status: string; stages: string[]; records: unknown[] };
+  /** The validation ladder: 0 Generated · 1 Chemistry checked · 2 MLIP screened · 3 DFT relaxed · 4 DFT property confirmed · 5 Experimentally tested. */
+  stability: { status: string; stage: number; label: string; stages: string[]; next: string | null; records: ValidationRecord[] };
+  /** Candidates whose encoder latents lie within the cluster cosine of a leader: alternatives for the same target. Assigned when the search has finished. */
+  cluster: CandidateCluster | null;
+  schema: string; provenance: Record<string, unknown>;
   flags: string[]; mode: 'standard' | 'exploratory'; why: string; engine: Record<string, unknown>; enrichment_error?: string;
 }
+export interface ValidationRecord { stage: number; label: string; method: string; outcome: string; passed: boolean | null }
+export interface CandidateCluster { id: number; size: number; leader: string; rank: number; cosine_to_leader: number }
+export interface RunCluster { id: number; size: number; leader: string; leader_formula: string; members: string[]; formulas: string[] }
 export interface Manifest { manifest_version: number; run_id: string; status: string; mode: string; software: Record<string, string | null>; dataset: Record<string, unknown>; model: Record<string, unknown>; design: Record<string, unknown>; candidates: Array<{ candidate_id: string; formula: string; file: string; sha256: string | null }>; exported_files: Record<string, string>; durations_s: Record<string, number>; [k: string]: unknown }
 export interface CompareResult { candidates: Candidate[]; pairwise_cosine: number[][]; properties: Record<string, { label: string; unit: string }> }
 export interface Health { status: string; version: string; meidnet_version: string; mode: string; model_loaded: boolean }

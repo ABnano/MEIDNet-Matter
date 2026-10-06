@@ -6,6 +6,8 @@ import { useProject } from '@/features/project/useProject';
 
 export const PRISM = 'https://babu09-meidnet.hf.space';
 export const PRISM_METHOD = `${PRISM}/docs/understand/how-it-works.html`;
+export const PRISM_SCORE = `${PRISM}/docs/benchmarks/compatibility.html`;
+export const PRISM_ECOSYSTEM = `${PRISM}/docs/ecosystem.html`;
 export const GITHUB = 'https://github.com/ABnano/MEIDNet-Matter';
 export const ENGINE = 'https://github.com/ABnano/MEIDNet';
 
