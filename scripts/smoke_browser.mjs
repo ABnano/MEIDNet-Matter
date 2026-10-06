@@ -5,6 +5,10 @@
 //   node scripts/smoke_browser.mjs http://127.0.0.1:8000 build/smoke
 //
 // Exit code 1 on any failed step, page error or failed request. Writes <out>/landing.png, readiness.png, candidates.png.
+//
+// On a network whose DNS blocks *.hf.space, pass the address from a public resolver to the browser only:
+//   SMOKE_HOST_RESOLVER_RULES="MAP babu09-meidnet-matter.hf.space 54.72.207.44" node scripts/smoke_browser.mjs https://babu09-meidnet-matter.hf.space
+// (TLS still verifies the real certificate.)
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -20,8 +24,9 @@ const BIN = CANDIDATES.find((p) => fs.existsSync(p));
 if (!BIN) { console.error('no Chrome or Edge found; set BROWSER=<path>'); process.exit(2); }
 const PORT = 9300 + Math.floor(Math.random() * 500);
 const prof = fs.mkdtempSync(path.join(os.tmpdir(), 'matter-smoke-'));
+const resolverRules = process.env.SMOKE_HOST_RESOLVER_RULES ? [`--host-resolver-rules=${process.env.SMOKE_HOST_RESOLVER_RULES}`] : [];
 const browser = spawn(BIN, ['--headless=new', `--remote-debugging-port=${PORT}`, '--no-sandbox', '--disable-gpu', '--no-first-run', '--disable-extensions',
-  `--user-data-dir=${prof}`, '--window-size=1366,900', 'about:blank'], { stdio: 'ignore' });
+  `--user-data-dir=${prof}`, '--window-size=1366,900', ...resolverRules, 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const t0 = Date.now();
 const errors = [];
