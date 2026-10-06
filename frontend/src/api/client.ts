@@ -1,0 +1,32 @@
+import { sessionId } from '@/lib/session';
+
+export class ApiError extends Error {
+  status: number;
+  code: string;
+  fields: Array<{ loc: string; msg: string }>;
+  retryAfter: number | null;
+  constructor(status: number, code: string, message: string, fields: Array<{ loc: string; msg: string }> = [], retryAfter: number | null = null) {
+    super(message);
+    this.status = status; this.code = code; this.fields = fields; this.retryAfter = retryAfter;
+  }
+}
+
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers);
+  headers.set('Accept', 'application/json');
+  headers.set('X-Matter-Session', sessionId());
+  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  const res = await fetch(path, { ...init, headers });
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  let body: unknown = null;
+  try { body = text ? JSON.parse(text) : null; } catch { body = null; }
+  if (!res.ok) {
+    const err = (body as { error?: { code?: string; message?: string; fields?: Array<{ loc: string; msg: string }>; retry_after_s?: number } } | null)?.error;
+    throw new ApiError(res.status, err?.code ?? 'http_error', err?.message ?? `${res.status} ${res.statusText}`, err?.fields ?? [], err?.retry_after_s ?? null);
+  }
+  return body as T;
+}
+
+export const get = <T,>(path: string, signal?: AbortSignal) => request<T>(path, { signal });
+export const post = <T,>(path: string, body: unknown, signal?: AbortSignal) => request<T>(path, { method: 'POST', body: JSON.stringify(body), signal });

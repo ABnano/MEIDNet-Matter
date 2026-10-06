@@ -206,7 +206,7 @@ def execute_search(job, run: dict, services) -> None:
         res = services.backend.search(lm, v.config, v.family, os.path.join(run_dir, "generation"), hooks)
         objectives = v.generation["objectives"]
         with lock:
-            run["funnel"] = [funnel_for(t, v.family, objectives) for t in res.targets]
+            run["funnel"] = [funnel_for(t, v.family, objectives, v.generation.get("population")) for t in res.targets]
             run["timings"] = {"search_s": round(time.time() - t0, 1)}
         with open(os.path.join(run_dir, "config.yaml"), "w", encoding="utf-8", newline="\n") as f:
             f.write(dump_config(v.config))

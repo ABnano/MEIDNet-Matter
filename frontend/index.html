@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MEIDNet Matter — from your materials data to candidate structures</title>
+    <meta name="description" content="MEIDNet Matter is a multimodal inverse-design workbench for crystalline materials: define property targets and chemistry rules, see whether the data and the model support them, and search for candidate structures with their evidence." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MEIDNet Matter" />
+    <meta property="og:title" content="MEIDNet Matter — from your materials data to candidate structures" />
+    <meta property="og:description" content="Define property targets and chemistry rules, see whether the data and the model support them, and search for candidate crystal structures with their evidence." />
+    <meta property="og:image" content="/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/plusjakartasans-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibmplexmono-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      /* theme before first paint: the visitor's choice, else what the Hugging Face page asks for (?__theme=), else the system's */
+      (function () {
+        var d = document.documentElement, t = null;
+        try { t = localStorage.getItem('matter_theme'); } catch (e) {}
+        var q = new URLSearchParams(location.search).get('__theme');
+        if (t === 'light' || t === 'dark') d.dataset.theme = t;
+        else if (q === 'light' || q === 'dark') d.dataset.theme = q;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -286,9 +286,9 @@ def indicator_family_support(v: ValidatedGoal, artefacts, dataset_index, model_e
         elif absent:
             statuses.append("caution")
         if absent:
-            sentences.append(f"Of the {len(allowed)} elements allowed on the {g} site of the {fam.variant or ''} {fam.title.lower()}, "
-                             f"{len(present)} occur in the dataset; {', '.join(absent)} {'does' if len(absent) == 1 else 'do'} not occur in any of "
-                             f"the {d['rows']['all']:,} materials.")
+            sentences.append(f"Of the {len(allowed)} elements allowed on the {g} site of the {fam.title}"
+                             f"{' (' + fam.variant + ' variant)' if fam.variant else ''}, {len(present)} occur in the dataset; "
+                             f"{', '.join(absent)} {'does' if len(absent) == 1 else 'do'} not occur in any of the {d['rows']['all']:,} materials.")
     like_train, n_train = d["family_like_rows"]["train"], d["rows"]["train"]
     if fam.name == "perovskite_abx3":
         sentences.append(f"{like_train:,} of the {n_train:,} training materials are single-anion ABX3 cells like this family's prototype; "
@@ -353,8 +353,8 @@ def summary_of(verdict: str, ind: dict, goal, artefacts) -> list[str]:
     out = []
     fid = ind["fidelity"]["per_property"] or {}
     if fid:
-        parts = [f"{e['label'].lower()} {e['word']} (MAE {fmt(e['mae'], e['unit'])})" for e in fid.values() if e["word"] != "not judged"]
-        out.append("On held-out data the model predicts " + " and ".join(parts) + ".")
+        parts = [f"of the {e['label'].lower()} is {e['word']} (MAE {fmt(e['mae'], e['unit'])})" for e in fid.values() if e["word"] != "not judged"]
+        out.append("On held-out data the model's prediction " + " and its prediction ".join(parts) + ".")
     tgt = ind["target_support"]
     out.append(" ".join(f"{e['label']}: {e['word'].lower()} — {e['reason']}" for e in (tgt["per_property"] or {}).values()))
     if ind["ambiguity"]["one_to_many"]:

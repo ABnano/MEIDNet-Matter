@@ -167,12 +167,16 @@ def why_sentence(c: dict, ctx: EvidenceContext) -> str:
         vals = ", ".join(f"{props[k]['label'].lower()} {fmt(v, props[k]['unit'])}" for k, v in n0["properties"].items() if k in props)
         parts.append(f"Nearest training material: {n0['formula']} (cosine {n0['cosine']:.2f}; {vals}).")
     parts.append(c["novelty"]["dataset"]["label"] + ".")
+    match = c["novelty"]["dataset"]["match"]
+    if match:
+        vals = ", ".join(f"{props[k]['label'].lower()} {fmt(v, props[k]['unit'])}" for k, v in match["properties"].items() if k in props)
+        parts.append(f"The dataset's DFT values for it: {vals}.")
     parts.append(f"Stability: {c['stability']['status'].lower()}.")
     text = " ".join(parts)
     return ("Exploratory run: " + text) if ctx.mode == "exploratory" else text
 
 
-def funnel_for(tlog, family, objectives: list[dict]) -> dict:
+def funnel_for(tlog, family, objectives: list[dict], population: int | None = None) -> dict:
     """The search funnel of one target, at the latent level and at the attempt level."""
     from meidnet.constraints import explain, rule_key
     from meidnet.report import PRE_STAGES
@@ -194,7 +198,7 @@ def funnel_for(tlog, family, objectives: list[dict]) -> dict:
     chemistry_valid = tried - sum(int(tlog.first_failure.get(n, 0)) for n in order if n not in window_ids)
     target_compatible = chemistry_valid - sum(int(tlog.first_failure.get(n, 0)) for n in window_ids)
     return {"target_index": tlog.index, "target": dict(tlog.values), "rounds_used": tlog.rounds_used,
-            "latents": {"proposed": None, "decoded": int(tlog.latents_decoded), "passing": int(tlog.latents_passing), "retained": len(tlog.saved),
+            "latents": {"proposed": (int(population) * int(tlog.rounds_used) if population else None), "decoded": int(tlog.latents_decoded), "passing": int(tlog.latents_passing), "retained": len(tlog.saved),
                         "skipped_duplicate": int(tlog.skipped_duplicate), "skipped_similar": int(tlog.skipped_similar)},
             "attempts": {"tried": tried, "chemistry_valid": chemistry_valid, "target_compatible": target_compatible, "stages": stages},
             "rejections": {"first_failure": {k: int(v) for k, v in tlog.first_failure.items()},
