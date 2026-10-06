@@ -1,0 +1,20 @@
+{
+ "artefacts_version": 1,
+ "built_with": {
+  "meidnet": "2.2.0",
+  "numpy": "2.5.1",
+  "torch": "2.12.1+cpu"
+ },
+ "computed_at": "2026-10-06",
+ "dataset_fingerprint": "059d638f59d81c05f6e38ce2efb5db59bc6cdcbe2df8f4fd5bf85d1286f43e04",
+ "limit": null,
+ "models": {
+  "meidnet-2k": "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87"
+ },
+ "rows": {
+  "all": 18928,
+  "test": 3785,
+  "train": 11356,
+  "val": 3787
+ }
+}

@@ -1,0 +1,47 @@
+[
+ {
+  "backend": "meidnet",
+  "description": "The published Perov-5 model of the MEIDNet paper (MEIDNet v1 checkpoint).",
+  "family": "perovskite_abx3",
+  "file": "dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth",
+  "latent_dim": 128,
+  "latents_file": "latents_train.meidnet-2k.npz",
+  "legacy": true,
+  "max_sites": 20,
+  "model_id": "meidnet-2k",
+  "note": "Published MEIDNet v1 model trained on Perov-5 (CDVAE split); properties are not normalised.",
+  "properties": [
+   {
+    "column": "heat_all",
+    "label": "Formation enthalpy",
+    "max": null,
+    "mean": 0.0,
+    "min": null,
+    "std": 1.0,
+    "unit": "eV/atom"
+   },
+   {
+    "column": "dir_gap",
+    "label": "Direct band gap",
+    "max": null,
+    "mean": 0.0,
+    "min": null,
+    "std": 1.0,
+    "unit": "eV"
+   }
+  ],
+  "property_ranges": {
+   "dir_gap": [
+    0.0,
+    7.9
+   ],
+   "heat_all": [
+    -0.64,
+    5.16
+   ]
+  },
+  "sha256": "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87",
+  "trained_on": "all",
+  "training_rows": 18928
+ }
+]

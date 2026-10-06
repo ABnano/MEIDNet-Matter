@@ -1,0 +1,77 @@
+{
+ "citations": [
+  {
+   "doi": "10.1038/s41524-026-02153-3",
+   "key": "meidnet",
+   "text": "A. Babu, R. Almeida Gouvêa, P. Vandergheynst, G.-M. Rignanese, MEIDNet: Multimodal generative AI framework for inverse materials design, npj Computational Materials 12, 287 (2026)."
+  },
+  {
+   "doi": "10.1039/C2EE22341D",
+   "key": "perov5",
+   "text": "I. E. Castelli et al., New cubic perovskites for one- and two-photon water splitting using the computational materials repository, Energy Environ. Sci. 5, 9034 (2012)."
+  },
+  {
+   "key": "cdvae",
+   "text": "T. Xie, X. Fu, O.-E. Ganea, R. Barzilay, T. Jaakkola, Crystal diffusion variational autoencoder for periodic material generation, ICLR (2022).",
+   "url": "https://github.com/txie-93/cdvae"
+  }
+ ],
+ "dataset_id": "perov5",
+ "default_goal": {
+  "budget": {
+   "min_cosine_sep": 0.98,
+   "per_target": 3,
+   "population": 24,
+   "rounds": 3,
+   "seed": 937,
+   "steps": 300
+  },
+  "disabled_rules": [],
+  "diverse_set": null,
+  "elements": {
+   "exclude": [
+    "Pb"
+   ],
+   "only": {},
+   "presets": [
+    "pb_free"
+   ]
+  },
+  "family": "perovskite_abx3",
+  "max_elements": null,
+  "model_id": "meidnet-2k",
+  "novelty": {
+   "require_not_in_dataset": false
+  },
+  "objectives": [
+   {
+    "kind": "value",
+    "priority": "primary",
+    "property": "dir_gap",
+    "tolerance": 0.3,
+    "value": 2.0
+   },
+   {
+    "kind": "at_most",
+    "priority": "secondary",
+    "property": "heat_all",
+    "value": 1.0
+   }
+  ],
+  "project_id": "perov5-demo",
+  "rule_overrides": {},
+  "variant": "oxide"
+ },
+ "default_model": "meidnet-2k",
+ "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the formation energy, and the published MEIDNet model trained on them.",
+ "models": [
+  "meidnet-2k"
+ ],
+ "privacy": {
+  "hosted": "On the shared Space, a search runs in the container; its run folder lives on the container's disk, is removed after an hour of inactivity and on every restart, and is never used to train anything. No account, no analytics beyond the Space's own metrics.",
+  "local": "Run locally, nothing leaves your computer."
+ },
+ "project_id": "perov5-demo",
+ "scope_statement": "Matter currently searches property-conditioned candidates within supported structural families. Free-geometry crystal generation is planned as additional design backends mature.",
+ "title": "Perov-5 example"
+}

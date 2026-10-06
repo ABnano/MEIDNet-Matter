@@ -1,0 +1,72 @@
+{
+ "caveats": [
+  "test split was part of this model's training data"
+ ],
+ "checkpoint_sha256": "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87",
+ "columns": [
+  "heat_all",
+  "dir_gap"
+ ],
+ "evaluation": {
+  "property_prediction": {
+   "mae_dir_gap": 2.79178998614948,
+   "mae_dir_gap_nonzero": 1.6761308354257747,
+   "mae_heat_all": 0.40447624721300335,
+   "mae_heat_all_nonzero": 0.4043139391872898,
+   "n_evaluated": 3785.0,
+   "r2_dir_gap": -31.399695328831598,
+   "r2_heat_all": 0.4754060701408176,
+   "rmse_dir_gap": 3.0510660440470807,
+   "rmse_heat_all": 0.5389006877765684
+  },
+  "representation": {
+   "chance_top1": 0.0027247956403269754,
+   "chance_top5": 0.013623978201634877,
+   "cosine_encoder": -0.008391765877604485,
+   "cosine_matched": 0.7717390656471252,
+   "cosine_projection": 0.7717390656471252,
+   "knn_mae_dir_gap": 0.055291941875825625,
+   "knn_mae_dir_gap_nonzero": 1.029933774834437,
+   "knn_mae_heat_all": 0.021445706737120217,
+   "knn_mae_heat_all_nonzero": 0.02144503171247358,
+   "l2_matched": 0.6753583550453186,
+   "n_evaluated": 3785.0,
+   "n_profiles": 367.0,
+   "retrieval_top1": 0.33606340819022457,
+   "retrieval_top5": 0.8964332892998679,
+   "reverse_top1": 0.17983651226158037,
+   "reverse_top5": 0.6103542234332425
+  }
+ },
+ "k": 5,
+ "limit": null,
+ "meidnet_version": "2.2.0",
+ "model_id": "meidnet-2k",
+ "n": 3785,
+ "recoverability": {
+  "from_joint": {
+   "composition_exact_pct": 86.05019815059445,
+   "coord_mae_frac": 0.042782223430342846,
+   "lattice_mae_angstrom": 0.10928694081154856,
+   "n": 3785,
+   "site_accuracy_pct": 96.99867899603699,
+   "structure_match_pct": 82.08718626155878
+  },
+  "from_property": {
+   "composition_exact_pct": 0.0,
+   "coord_mae_frac": 0.2444081437634981,
+   "lattice_mae_angstrom": 0.22849374072062764,
+   "n": 3785,
+   "site_accuracy_pct": 19.968295904887714,
+   "structure_match_pct": 0.0
+  },
+  "matcher": {
+   "angle_tol": 10,
+   "element": "most likely per site",
+   "ltol": 0.3,
+   "stol": 0.5
+  }
+ },
+ "space": "projection",
+ "split": "test"
+}

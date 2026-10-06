@@ -3,16 +3,22 @@ import os
 import re
 
 from matter import __version__
-from tests.conftest import ROOT
+from tests.conftest import ROOT, make_client
 
 
-def test_health_answers_without_a_model(client):
-    r = client.get("/health")
+def test_health_answers_without_a_model(settings, tmp_path):
+    settings.checkpoints_dir = str(tmp_path / "no-checkpoints")           # nothing to load: the API still answers
+    with make_client(settings) as c:
+        r = c.get("/health")
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "ok" and body["version"] == __version__ and body["mode"] == "local"
     assert body["model_loaded"] is False
     assert re.match(r"^\d+\.\d+\.\d+", body["meidnet_version"])
+
+
+def test_health_reports_the_loaded_model(client, checkpoint):
+    assert client.get("/health").json()["model_loaded"] is True
 
 
 def test_version_route_reports_the_engine_and_the_commit(client):
