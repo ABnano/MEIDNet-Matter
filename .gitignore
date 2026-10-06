@@ -1,0 +1,27 @@
+# fetched or generated, never committed
+checkpoints/
+data/
+runs/
+build/
+dist/
+matter/static/
+docs/assets/smoke/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# local secrets and editors
+.env
+.env.*
+*.local
+.vscode/
+.idea/

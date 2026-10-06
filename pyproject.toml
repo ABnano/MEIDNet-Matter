@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meidnet-matter"
+dynamic = ["version"]
+description = "MEIDNet Matter: multimodal inverse design for materials discovery, from your materials data to candidate structures"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [
+    { name = "Anand Babu" },
+]
+keywords = ["materials", "inverse design", "multimodal learning", "crystal structures", "perovskite", "generative model"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "meidnet>=2.2.0,<3",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "pydantic>=2.5",
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+    "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+deploy = ["huggingface_hub>=0.25"]
+
+[project.scripts]
+meidnet-matter = "matter.cli:main"
+
+[project.urls]
+Homepage = "https://babu09-meidnet-matter.hf.space/"
+Source = "https://github.com/ABnano/MEIDNet-Matter"
+Issues = "https://github.com/ABnano/MEIDNet-Matter/issues"
+Engine = "https://github.com/ABnano/MEIDNet"
+Models = "https://huggingface.co/Babu09/MEIDNet"
+Paper = "https://doi.org/10.1038/s41524-026-02153-3"
+
+[tool.setuptools.dynamic]
+version = { attr = "matter.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["matter", "matter.*"]
+
+[tool.setuptools.package-data]
+matter = ["static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: loads a checkpoint or runs a search",
+    "network: needs internet access",
+    "browser: needs a headless browser",
+]

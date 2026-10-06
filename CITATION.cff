@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use MEIDNet Matter, please cite the MEIDNet paper and the software."
+title: "MEIDNet Matter: from your materials data to candidate structures"
+abstract: "A multimodal inverse-design workbench for crystalline materials. A researcher brings crystal structures and properties; Matter reports what the data and the model support, then runs a constrained, property-conditioned search and returns candidate structures with their evidence and provenance. MEIDNet is the scientific engine."
+type: software
+version: "0.1.0"
+date-released: "2026-10-06"
+license: MIT
+repository-code: "https://github.com/ABnano/MEIDNet-Matter"
+url: "https://babu09-meidnet-matter.hf.space/"
+keywords:
+  - materials science
+  - inverse design
+  - multimodal learning
+  - crystal structures
+  - perovskites
+authors:
+  - family-names: Babu
+    given-names: Anand
+    affiliation: "Université catholique de Louvain (UCLouvain)"
+preferred-citation:
+  type: article
+  title: "MEIDNet: Multimodal generative AI framework for inverse materials design"
+  authors:
+    - family-names: Babu
+      given-names: Anand
+    - family-names: Almeida Gouvêa
+      given-names: Rogério
+    - family-names: Vandergheynst
+      given-names: Pierre
+    - family-names: Rignanese
+      given-names: Gian-Marco
+  journal: "npj Computational Materials"
+  year: 2026
+  doi: "10.1038/s41524-026-02153-3"
