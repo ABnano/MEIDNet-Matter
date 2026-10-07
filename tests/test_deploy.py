@@ -65,60 +65,87 @@ def test_space_card_and_dockerfile_agree():
     assert mod.space_host("Babu09/MEIDNet-Matter") == "babu09-meidnet-matter.hf.space"
 
 
-def test_requirements_pin_matches_pyproject():
+def test_requirements_take_the_engine_from_the_bundle_not_pypi():
     with open(os.path.join(ROOT, "deploy", "requirements.txt"), encoding="utf-8") as f:
         req = f.read()
-    with open(os.path.join(ROOT, "pyproject.toml"), encoding="utf-8") as f:
-        pyproject = f.read()
-    pin = re.search(r"^meidnet==(\S+)$", req, re.M).group(1)
-    assert re.search(rf'"meidnet>={re.escape(pin.split(".")[0])}\.', pyproject) or f'"meidnet>={pin}' in pyproject
-    assert "uvicorn[standard]" not in req and "--extra-index-url https://download.pytorch.org/whl/cpu" in req
+    with open(os.path.join(ROOT, "deploy", "Dockerfile"), encoding="utf-8") as f:
+        docker = f.read()
+    with open(os.path.join(ROOT, "engine", "pyproject.toml"), encoding="utf-8") as f:
+        engine = f.read()
+    assert not re.search(r"^meidnet", req, re.M), "the engine is installed from ./engine, never from PyPI"
+    assert "pip install --no-cache-dir --no-deps ./engine" in docker and "download.pytorch.org/whl/cpu" in docker
+    assert re.search(r'^name = "meidnet"', engine, re.M) and 'version = "2.4.0' in engine
+    for dep in ("matgl==4.0.3", "torch-geometric", "pymatgen", "pandas", "scipy", "ase", "spglib"):
+        assert dep in req, dep
 
 
-def test_stage_layout_on_a_fake_tree(tmp_path, monkeypatch):
-    mod = _deploy()
-    root = tmp_path / "repo"
+def _fake_tree(root, mod, token_in_tree=False):
     (root / "matter" / "static").mkdir(parents=True)
     (root / "matter" / "__init__.py").write_text('__version__ = "9.9.9"\n', encoding="utf-8")
     (root / "matter" / "static" / "index.html").write_bytes(b"<!doctype html>\r\n<title>x</title>\r\n")
     (root / "matter" / "__pycache__").mkdir()
     (root / "matter" / "__pycache__" / "x.pyc").write_bytes(b"\0\0")
+    if token_in_tree:
+        (root / "matter" / "leak.txt").write_text("token hf_" + "a" * 34 + " here", encoding="utf-8")
     (root / "examples" / "perov5").mkdir(parents=True)
     (root / "examples" / "perov5" / "project.json").write_text("{}", encoding="utf-8")
-    (root / "checkpoints").mkdir()
+    (root / "examples" / "research" / "pipeline").mkdir(parents=True)
+    (root / "examples" / "research" / "pipeline" / "blocks.json").write_text("{}", encoding="utf-8")
+    (root / "engine" / "meidnet").mkdir(parents=True)
+    (root / "engine" / "SNAPSHOT.json").write_text("{}", encoding="utf-8")
+    (root / "engine" / "meidnet" / "__init__.py").write_text("", encoding="utf-8")
+    (root / "engine" / "meidnet" / "__pycache__").mkdir()
+    (root / "engine" / "meidnet" / "__pycache__" / "y.pyc").write_bytes(b"\0")
+    (root / "engine" / "tests").mkdir()
+    (root / "engine" / "tests" / "test_x.py").write_text("", encoding="utf-8")
+    (root / "checkpoints" / "configs").mkdir(parents=True)
+    (root / "checkpoints" / "configs" / "a.yaml").write_text("x: 1\n", encoding="utf-8")
     (root / "checkpoints" / mod.CKPT_NAME).write_bytes(b"model")
+    (root / "checkpoints" / "other.pt").write_bytes(b"m2")
+    manifest = {"checkpoints": [
+        {"id": "perov5-2k", "file": mod.CKPT_NAME, "sha256": mod.CKPT_SHA256, "ship": True},
+        {"id": "other", "file": "other.pt", "sha256": "abc", "ship": True},
+        {"id": "missing", "file": "missing.pt", "sha256": "abc", "ship": True},
+        {"id": "kept-back", "file": "kept_back.pt", "sha256": "abc", "ship": False}]}
+    (root / "checkpoints" / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     (root / "deploy").mkdir()
     (root / "deploy" / "Dockerfile").write_text("FROM x\n", encoding="utf-8")
-    (root / "deploy" / "requirements.txt").write_text("meidnet==2.2.0\n", encoding="utf-8")
+    (root / "deploy" / "requirements.txt").write_text("fastapi\n", encoding="utf-8")
+
+
+def test_stage_layout_on_a_fake_tree(tmp_path, monkeypatch):
+    mod = _deploy()
+    root = tmp_path / "repo"
+    _fake_tree(root, mod)
+    monkeypatch.setattr(mod, "MANIFEST", str(root / "checkpoints" / "manifest.json"))
     monkeypatch.setattr(mod, "sha256_file", lambda p: mod.CKPT_SHA256 if p.endswith(".pth") else "abc")
-    stage = mod.build_stage(str(root), str(tmp_path / "stage"), fetch=False, version="9.9.9")
+    with pytest.raises(SystemExit) as e:                                        # a shipped checkpoint that is not on disk
+        mod.build_stage(str(root), str(tmp_path / "stage0"), fetch=False, version="9.9.9")
+    assert "missing.pt" in str(e.value) and "--only missing" in str(e.value)
+    stage = mod.build_stage(str(root), str(tmp_path / "stage"), fetch=False, version="9.9.9", allow_missing=True)
     names = {os.path.relpath(os.path.join(d, f), stage).replace(os.sep, "/") for d, _, fs in os.walk(stage) for f in fs}
     assert {"README.md", ".gitattributes", "build_info.json", "requirements.txt", "Dockerfile", "matter/static/index.html",
-            "examples/perov5/project.json", f"checkpoints/{mod.CKPT_NAME}"} <= names
-    assert not any("__pycache__" in n for n in names)
+            "examples/perov5/project.json", "examples/research/pipeline/blocks.json", f"checkpoints/{mod.CKPT_NAME}",
+            "checkpoints/other.pt", "checkpoints/manifest.json", "checkpoints/configs/a.yaml",
+            "engine/SNAPSHOT.json", "engine/meidnet/__init__.py"} <= names
+    assert "checkpoints/kept_back.pt" not in names and "checkpoints/missing.pt" not in names
+    assert not any("__pycache__" in n for n in names) and not any(n.startswith("engine/tests/") for n in names)
     assert b"\r\n" not in (tmp_path / "stage" / "matter" / "static" / "index.html").read_bytes()
     info = json.loads((tmp_path / "stage" / "build_info.json").read_text(encoding="utf-8"))
     assert info["matter_version"] == "9.9.9" and info["checkpoint_sha256"] == mod.CKPT_SHA256
+    assert info["checkpoints"] == {"perov5-2k": mod.CKPT_SHA256, "other": "abc"} and info["engine_snapshot_sha256"] == "abc"
     attrs = (tmp_path / "stage" / ".gitattributes").read_text(encoding="utf-8")
-    assert "*.pth filter=lfs" in attrs and "*.npz filter=lfs" in attrs
+    assert "*.pth filter=lfs" in attrs and "*.npz filter=lfs" in attrs and "*.pt filter=lfs" in attrs
 
 
 def test_a_token_in_the_stage_aborts(tmp_path, monkeypatch):
     mod = _deploy()
     root = tmp_path / "repo"
-    (root / "matter" / "static").mkdir(parents=True)
-    (root / "matter" / "__init__.py").write_text('__version__ = "0"\n', encoding="utf-8")
-    (root / "matter" / "static" / "index.html").write_text("ok", encoding="utf-8")
-    (root / "matter" / "leak.txt").write_text("token hf_" + "a" * 34 + " here", encoding="utf-8")
-    (root / "examples" / "perov5").mkdir(parents=True)
-    (root / "checkpoints").mkdir()
-    (root / "checkpoints" / mod.CKPT_NAME).write_bytes(b"m")
-    (root / "deploy").mkdir()
-    (root / "deploy" / "Dockerfile").write_text("FROM x\n", encoding="utf-8")
-    (root / "deploy" / "requirements.txt").write_text("", encoding="utf-8")
+    _fake_tree(root, mod, token_in_tree=True)
+    monkeypatch.setattr(mod, "MANIFEST", str(root / "checkpoints" / "manifest.json"))
     monkeypatch.setattr(mod, "sha256_file", lambda p: mod.CKPT_SHA256 if p.endswith(".pth") else "abc")
     with pytest.raises(SystemExit) as e:
-        mod.build_stage(str(root), str(tmp_path / "stage"), fetch=False, version="0")
+        mod.build_stage(str(root), str(tmp_path / "stage"), fetch=False, version="0", allow_missing=True)
     assert "token-like" in str(e.value)
 
 
