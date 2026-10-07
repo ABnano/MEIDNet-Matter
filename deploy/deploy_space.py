@@ -7,7 +7,8 @@ The token comes from the environment for that one command and is never written a
 Babu09/MEIDNet-Matter only; Babu09/MEIDNet and Babu09/MEIDNet-Prism are other products and are refused unless
 --allow-other-space is given on purpose.
 
-The bundle: matter/ (with the built frontend in matter/static), examples/perov5/, the model file with its checksum,
+The bundle: matter/ (with the built frontend in matter/static), engine/ (the vendored MEIDNet snapshot), examples/perov5/,
+examples/research/, every checkpoint the manifest marks for shipping (each verified against its sha256), the configs,
 deploy/Dockerfile, deploy/requirements.txt, a README card, a .gitattributes that lists every binary type for LFS (the
 Space build restores only the types named there; an unlisted binary arrives as a pointer file), and build_info.json.
 """
@@ -32,6 +33,7 @@ TARGET = "Babu09/MEIDNet-Matter"
 PROTECTED = ("Babu09/MEIDNet", "Babu09/MEIDNet-Prism")
 CKPT_NAME = "dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth"
 CKPT_SHA256 = "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87"
+MANIFEST = os.path.join(ROOT, "checkpoints", "manifest.json")
 TEXT_TYPES = (".html", ".js", ".css", ".md", ".json", ".txt", ".py", ".yaml", ".yml", ".svg", ".csv", ".cff")
 LFS_EXTENSIONS = ["pth", "npz", "npy", "pt", "safetensors", "csv", "gz", "zip", "png", "jpg", "jpeg", "gif", "webp", "ico",
                   "woff", "woff2", "ttf", "pdf", "wasm", "mp4", "webm"]
@@ -119,7 +121,9 @@ def frontend_is_fresh(root: str) -> bool:
     return True
 
 
-def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, version: str | None = None) -> str:
+def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, version: str | None = None,
+                allow_missing: bool = False) -> str:
+    """Stage the bundle.  allow_missing (dry runs only) skips checkpoints that are not on disk instead of failing."""
     """Copy what the Space needs into `stage` and write the card, the LFS list and the build info."""
     index = os.path.join(root, "matter", "static", "index.html")
     if not os.path.exists(index):
@@ -129,16 +133,35 @@ def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, versio
     os.makedirs(stage)
     shutil.copytree(os.path.join(root, "matter"), os.path.join(stage, "matter"), ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"))
     shutil.copytree(os.path.join(root, "examples", "perov5"), os.path.join(stage, "examples", "perov5"))
-    ckpt = os.path.join(root, "checkpoints", CKPT_NAME)
-    if not os.path.exists(ckpt) and fetch:
-        from scripts.fetch_assets import fetch as fetch_asset
-        fetch_asset(CKPT_NAME, os.path.join(root, "checkpoints"))
-    if not os.path.exists(ckpt):
-        raise SystemExit(f"{ckpt} is missing: run python scripts/fetch_assets.py")
-    if sha256_file(ckpt) != CKPT_SHA256:
-        raise SystemExit(f"{ckpt} does not match the expected checksum")
+    for extra in ("examples/research",):                                   # the studies, blocks and support files
+        if os.path.isdir(os.path.join(root, extra)):
+            shutil.copytree(os.path.join(root, extra), os.path.join(stage, extra))
+    shutil.copytree(os.path.join(root, "engine"), os.path.join(stage, "engine"),
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo", "tests", "build", "*.egg-info"))
+    # every checkpoint the manifest marks for shipping, each verified against its recorded checksum
+    with open(MANIFEST, encoding="utf-8") as f:
+        manifest = json.load(f)
     os.makedirs(os.path.join(stage, "checkpoints"))
-    shutil.copy2(ckpt, os.path.join(stage, "checkpoints", CKPT_NAME))
+    shipped = {}
+    for entry in manifest["checkpoints"]:
+        if not entry.get("ship") or "file" not in entry:
+            continue
+        ckpt = os.path.join(root, "checkpoints", entry["file"])
+        if not os.path.exists(ckpt) and fetch:
+            from scripts.fetch_assets import fetch as fetch_asset
+            fetch_asset(entry["id"], os.path.join(root, "checkpoints"))
+        if not os.path.exists(ckpt):
+            if allow_missing:
+                print(f"  (dry run) {entry['file']} is not on disk; skipped")
+                continue
+            raise SystemExit(f"{ckpt} is missing: run python scripts/fetch_assets.py --only {entry['id']}")
+        if entry.get("sha256") and sha256_file(ckpt) != entry["sha256"]:
+            raise SystemExit(f"{ckpt} does not match the checksum in the manifest")
+        shutil.copy2(ckpt, os.path.join(stage, "checkpoints", entry["file"]))
+        shipped[entry["id"]] = entry.get("sha256")
+    shutil.copy2(MANIFEST, os.path.join(stage, "checkpoints", "manifest.json"))
+    if os.path.isdir(os.path.join(root, "checkpoints", "configs")):
+        shutil.copytree(os.path.join(root, "checkpoints", "configs"), os.path.join(stage, "checkpoints", "configs"))
     shutil.copy2(os.path.join(root, "deploy", "Dockerfile"), os.path.join(stage, "Dockerfile"))
     shutil.copy2(os.path.join(root, "deploy", "requirements.txt"), os.path.join(stage, "requirements.txt"))
     with open(os.path.join(stage, "README.md"), "w", encoding="utf-8", newline="\n") as f:
@@ -149,7 +172,8 @@ def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, versio
     if version is None:
         from matter import __version__ as version  # type: ignore[no-redef]
     info = {"matter_version": version, "git_sha": sha, "git_dirty": dirty, "built_at": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
-            "frontend_index_sha256": sha256_file(index), "checkpoint_sha256": CKPT_SHA256}
+            "frontend_index_sha256": sha256_file(index), "checkpoint_sha256": shipped.get("perov5-2k", CKPT_SHA256),
+            "checkpoints": shipped, "engine_snapshot_sha256": sha256_file(os.path.join(stage, "engine", "SNAPSHOT.json"))}
     with open(os.path.join(stage, "build_info.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(info, f, indent=1)
     # text files with LF line endings, no secrets anywhere
@@ -168,6 +192,12 @@ def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, versio
                         f.write(data)
                 if SECRET_RE.search(data.decode("utf-8", "replace")):
                     raise SystemExit(f"a token-like string is in {os.path.relpath(p, stage)}; nothing was uploaded")
+    sizes = {}
+    for top in sorted(os.listdir(stage)):
+        p = os.path.join(stage, top)
+        sizes[top] = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(p) for f in fs) if os.path.isdir(p) else os.path.getsize(p)
+    for top, n in sorted(sizes.items(), key=lambda kv: -kv[1]):
+        print(f"  {n / 1e6:6.1f} MB  {top}")
     if total > MAX_STAGE_MB * 1024 * 1024:
         raise SystemExit(f"the bundle is {total / 1e6:.0f} MB, above the {MAX_STAGE_MB} MB cap")
     print(f"staged {stage} ({total / 1e6:.1f} MB)")
@@ -175,7 +205,8 @@ def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, versio
 
 
 def check_live(host: str, tries: int = 30, log=print) -> None:
-    paths = ["/health", "/", "/api/projects/perov5-demo", "/p/perov5-demo/goal", "/favicon.svg"]
+    paths = ["/health", "/", "/api/projects/perov5-demo", "/p/perov5-demo/goal", "/favicon.svg",
+             "/api/pipeline/blocks", "/api/studies", "/api/studies/mp20", "/api/checkpoints", "/pipeline", "/studies/mp20", "/play"]
     for path in paths:
         ok = False
         for _ in range(tries):
@@ -190,6 +221,18 @@ def check_live(host: str, tries: int = 30, log=print) -> None:
         log(f"  {path:28s} {'200' if ok else 'FAILED'}")
         if not ok:
             raise SystemExit(f"https://{host}{path} did not answer 200")
+    # the generator and the judge load in a warm-start thread: give them a few minutes, then insist
+    for _ in range(tries):
+        try:
+            with urllib.request.urlopen(f"https://{host}/health", timeout=30) as r:
+                h = json.load(r)
+        except Exception:
+            h = {}
+        if h.get("generation_model_loaded") and h.get("judge_ready"):
+            log(f"  engine {h.get('engine', {}).get('version')}  symmetry decoder {h.get('engine', {}).get('symmetry_decoder')}  judge ready")
+            return
+        time.sleep(10)
+    raise SystemExit(f"https://{host}/health never reported the generator and the judge as ready: {h}")
 
 
 def main(argv=None):
@@ -207,7 +250,7 @@ def main(argv=None):
     if a.build or not frontend_is_fresh(ROOT):
         print("building the frontend ..." if a.build else "the frontend build is older than the sources: building ...")
         build_frontend(ROOT)
-    stage = build_stage(ROOT, STAGE)
+    stage = build_stage(ROOT, STAGE, allow_missing=a.dry_run)
     if a.dry_run:
         print("dry run: nothing uploaded")
         return

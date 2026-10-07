@@ -27,17 +27,22 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "meidnet>=2.2.0,<3",
+    "meidnet>=2.4.0.dev0,<3",  # installed from ./engine (the vendored snapshot), not from PyPI
     "fastapi>=0.115",
     "uvicorn>=0.30",
     "pydantic>=2.5",
     "numpy>=1.24",
     "pyyaml>=6.0",
     "python-multipart>=0.0.9",
+    "pandas>=2.2",
+    "scipy>=1.11",
+    "spglib>=2.5",
+    "ase>=3.23",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "httpx>=0.27"]
+judge = ["matgl==4.0.3", "torch-geometric>=2.6"]
 deploy = ["huggingface_hub>=0.25"]
 
 [project.scripts]

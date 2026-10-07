@@ -6,8 +6,9 @@ Python 3.10 or later, Node 20.19 or later.
 
 ```bash
 git clone https://github.com/ABnano/MEIDNet-Matter && cd MEIDNet-Matter
-pip install -e ".[dev]"                 # the engine (meidnet) comes from PyPI
-python scripts/fetch_assets.py          # the model files, with checksums, into checkpoints/
+pip install ./engine                    # the engine: the vendored MEIDNet snapshot (engine/README.md), never from PyPI
+pip install -e ".[dev,judge]"           # the application and the independent judge (matgl)
+python scripts/fetch_assets.py          # the shipped checkpoints, with checksums, into checkpoints/ (--all for the rest)
 cd frontend && npm ci && npm run build && cd ..     # writes matter/static
 python -m uvicorn matter.app:app --port 8000        # http://127.0.0.1:8000/
 ```

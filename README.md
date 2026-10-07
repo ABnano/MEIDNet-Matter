@@ -40,8 +40,9 @@ Matter is one half of the MEIDNet ecosystem: [MEIDNet Prism](https://babu09-meid
 
 ```bash
 git clone https://github.com/ABnano/MEIDNet-Matter && cd MEIDNet-Matter
-pip install -e ".[dev]"                        # the engine (meidnet) comes from PyPI; CPU torch wheels are fine
-python scripts/fetch_assets.py                 # the model file, with its checksum
+pip install ./engine                           # the engine: the vendored MEIDNet snapshot with the symmetry decoder
+pip install -e ".[dev,judge]"                  # the application and the independent judge; CPU torch wheels are fine
+python scripts/fetch_assets.py                 # the checkpoints the studies use, each verified against its checksum
 cd frontend && npm ci && npm run build && cd ..
 python -m uvicorn matter.app:app --port 8000   # http://127.0.0.1:8000/
 ```
