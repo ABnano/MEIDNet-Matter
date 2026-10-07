@@ -16,7 +16,13 @@ class Services:
     backend: object = None              # DesignBackend (MEIDNetBackend)
     jobs: object = None                 # JobManager
     runs: object = None                 # RunStore
+    catalog: object = None              # CheckpointCatalog (the checkpoints the studies refer to)
+    judge: object = None                # MegnetJudge (the independent band-gap judge)
+    studies: object = None              # Studies (static research artefacts)
+    reference: object = None            # Reference (known formulas, reference AMD set)
+    generations: object = None          # GenerationStore
     startup_error: str | None = None
+    generation_error: str | None = None
 
     @classmethod
     def build(cls, settings: Settings) -> "Services":
@@ -49,7 +55,39 @@ class Services:
                     s.startup_error = str(e)
         except Exception as e:                      # no artefacts: /health still answers, the rest is 503
             s.startup_error = str(e)
+        try:
+            from matter.services.checkpoints import CheckpointCatalog
+            from matter.services.generation import GenerationStore, Reference
+            from matter.services.judge import MegnetJudge
+            from matter.services.studies import Studies
+            s.catalog = CheckpointCatalog(settings)
+            s.judge = MegnetJudge(settings)
+            s.studies = Studies(settings.research_dir)
+            s.reference = Reference(settings.research_dir)
+            s.generations = GenerationStore(os.path.join(settings.run_root, "generate"), settings.public)
+            if settings.warm_start:
+                import threading
+                threading.Thread(target=s.warm, daemon=True, name="warm-start").start()
+        except Exception as e:                      # the research routes say why; the demo project is unaffected
+            s.generation_error = str(e)
         return s
+
+    def warm(self) -> None:
+        """Load the generation model and the judge before the first visitor asks (public hosts)."""
+        try:
+            for cid in self.catalog.ids():
+                e = self.catalog.entry(cid)
+                if e.get("role") == "generation" and self.catalog.available(cid):
+                    self.catalog.load(cid)
+            self.judge.ready()
+        except Exception as e:
+            self.generation_error = str(e)
+
+    @property
+    def generation_ready(self) -> bool:
+        if not self.catalog:
+            return False
+        return any(self.catalog.loaded(c) for c in self.catalog.ids() if self.catalog.entry(c).get("role") == "generation")
 
     @property
     def model_loaded(self) -> bool:

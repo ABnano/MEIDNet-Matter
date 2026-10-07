@@ -26,6 +26,14 @@ NOT_BUILT = """<!doctype html><meta charset="utf-8"><title>MEIDNet Matter</title
 </body>"""
 
 
+def _has_symmetry() -> bool:
+    try:
+        import meidnet.symmetry  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
 
@@ -50,8 +58,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/health", include_in_schema=False)
     def health(request: Request):
         services = getattr(request.app.state, "services", None)
+        judge = getattr(services, "judge", None)
         return {"status": "ok", "version": __version__, "meidnet_version": _meidnet_version(), "mode": settings.mode,
-                "model_loaded": bool(services and services.model_loaded)}
+                "model_loaded": bool(services and services.model_loaded),
+                "generation_model_loaded": bool(services and getattr(services, "generation_ready", False)),
+                "judge_ready": bool(judge and judge.available),
+                "research_artefacts": bool(services and getattr(services, "studies", None) and services.studies.available),
+                "engine": {"version": _meidnet_version(), "symmetry_decoder": _has_symmetry()}}
 
     static_root = os.path.abspath(settings.static_dir)
     index_path = os.path.join(static_root, "index.html")

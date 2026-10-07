@@ -12,6 +12,9 @@ container can redirect all of it. Matter never downloads a model on its own; ``s
     MATTER_CORS_ORIGINS     comma-separated origins allowed to call the API (the Vite dev server)
     MATTER_BUILD_INFO       a JSON file written at deploy time with the git commit and build date
     MATTER_TORCH_THREADS    torch.set_num_threads at start-up            (default 2 when public)
+    MATTER_RESEARCH_DIR     the research artefacts: pipeline blocks, studies, support files (default <repo>/examples/research)
+    MATTER_CHECKPOINTS_MANIFEST  the checkpoints table with checksums     (default <repo>/checkpoints/manifest.json)
+    MATTER_WARM_START       preload the generation model and the judge in a background thread (default 1 when public)
 """
 from __future__ import annotations
 
@@ -39,6 +42,9 @@ class Settings:
     cors_origins: list[str] = field(default_factory=list)
     build_info: str | None = None
     torch_threads: int | None = None
+    research_dir: str = field(default_factory=lambda: os.path.join(ROOT, "examples", "research"))
+    checkpoints_manifest: str = field(default_factory=lambda: os.path.join(ROOT, "checkpoints", "manifest.json"))
+    warm_start: bool = False
 
     @classmethod
     def from_env(cls, env: dict | None = None) -> "Settings":
@@ -56,6 +62,9 @@ class Settings:
             cors_origins=origins,
             build_info=e.get("MATTER_BUILD_INFO") or None,
             torch_threads=int(threads) if threads else (2 if public else None),
+            research_dir=os.path.abspath(e.get("MATTER_RESEARCH_DIR") or os.path.join(ROOT, "examples", "research")),
+            checkpoints_manifest=os.path.abspath(e.get("MATTER_CHECKPOINTS_MANIFEST") or os.path.join(ROOT, "checkpoints", "manifest.json")),
+            warm_start=_flag(e.get("MATTER_WARM_START"), default=public),
         )
 
     @property

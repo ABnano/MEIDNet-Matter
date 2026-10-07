@@ -20,6 +20,7 @@ class Job:
         self.started = time.time()
         self.finished: float | None = None
         self.thread: threading.Thread | None = None
+        self.max_seconds: int | None = None
 
     @property
     def running(self) -> bool:
@@ -35,7 +36,7 @@ class JobManager:
     def running(self) -> list[Job]:
         return [j for j in self.jobs.values() if j.running]
 
-    def start(self, run_id: str, session_id: str, target, *args) -> Job:
+    def start(self, run_id: str, session_id: str, target, *args, max_seconds: int | None = None) -> Job:
         """Claim a slot and start the thread; 409 when the session already runs a job or the host is full."""
         with self.lock:
             for j in self.running():
@@ -46,6 +47,7 @@ class JobManager:
                 raise ApiError("busy", f"{MAX_RUNNING} searches are running on this server right now; please try again in a minute",
                                status=409, retry_after_s=RETRY_AFTER_S)
             job = Job(run_id, session_id)
+            job.max_seconds = max_seconds
             self.jobs[run_id] = job
         job.thread = threading.Thread(target=self._guard, args=(job, target, args), daemon=True, name=f"search-{run_id}")
         job.thread.start()
@@ -60,9 +62,10 @@ class JobManager:
     def should_stop(self, job: Job, log=None) -> bool:
         if job.stop_flag:
             return True
-        if self.public and time.time() - job.started > PUBLIC_JOB_SECONDS:
+        limit = job.max_seconds or PUBLIC_JOB_SECONDS
+        if self.public and time.time() - job.started > limit:
             if log:
-                log(f"stopped: the limit of {PUBLIC_JOB_SECONDS // 60} minutes per search on this shared server was reached")
+                log(f"stopped: the limit of {limit // 60} minutes per job on this shared server was reached")
             job.stop_flag = True
             return True
         return False

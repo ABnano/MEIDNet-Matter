@@ -21,6 +21,18 @@ def _installed(dist: str) -> str | None:
         return None
 
 
+def _engine_snapshot() -> str | None:
+    """The source commit of the vendored engine, when Matter runs with the snapshot (engine/SNAPSHOT.json)."""
+    p = os.path.join(ROOT, "engine", "SNAPSHOT.json")
+    if not os.path.isfile(p):
+        return None
+    try:
+        with open(p, encoding="utf-8") as f:
+            return json.load(f).get("source_commit")
+    except (OSError, ValueError):
+        return None
+
+
 def _git_sha() -> tuple[str, bool]:
     """(commit, dirty) of the source checkout, or ("unknown", False) when not running from one."""
     if not os.path.isdir(os.path.join(ROOT, ".git")):
@@ -44,6 +56,8 @@ def build_info(build_info_path: str | None = None, public: bool = False) -> dict
         "meidnet_installed": _installed("meidnet"),
         "torch": _installed("torch"),
         "pymatgen": _installed("pymatgen"),
+        "matgl": _installed("matgl"),
+        "engine_snapshot": _engine_snapshot(),
         "python": sys.version.split()[0],
         "platform": platform.platform(),
         "git_sha": os.environ.get("MATTER_GIT_SHA") or None,
