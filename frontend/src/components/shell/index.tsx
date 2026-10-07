@@ -39,7 +39,7 @@ export function MarketingHeader() {
       <div className="wrap-narrow">
         <Link to="/" className="brand"><MatterMark /><Wordmark /></Link>
         <nav aria-label="Sections">
-          <a href="#how">How it works</a><a href="#why">Why Matter</a><a href="#applications">Applications</a><a href="#ecosystem">Ecosystem</a>
+          <NavLink to="/pipeline">Pipeline</NavLink><NavLink to="/studies">Studies</NavLink><NavLink to="/play">Generate</NavLink><NavLink to="/method">Method</NavLink>
           <ExternalLink href={GITHUB}>GitHub</ExternalLink>
         </nav>
         <Link to="/p/perov5-demo/goal" className="btn btn-primary btn-sm">Try the Perov-5 demo</Link>
@@ -54,6 +54,10 @@ export function SiteFooter() {
     <footer className="site">
       <div className="wrap-narrow">
         <span>MEIDNet Matter: from your materials data to candidate structures. MEIDNet is the engine.</span>
+        <Link to="/pipeline">Pipeline</Link>
+        <Link to="/studies">Studies</Link>
+        <Link to="/play">Generate</Link>
+        <Link to="/method">Method</Link>
         <ExternalLink href={GITHUB}>Code</ExternalLink>
         <ExternalLink href={PRISM}>MEIDNet Prism</ExternalLink>
         <ExternalLink href={ENGINE}>MEIDNet engine</ExternalLink>

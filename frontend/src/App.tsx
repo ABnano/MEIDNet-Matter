@@ -15,6 +15,14 @@ const CandidatePage = lazy(() => import('@/pages/CandidatePage'));
 const Compare = lazy(() => import('@/pages/Compare'));
 const Validate = lazy(() => import('@/pages/Validate'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+const Home = lazy(() => import('@/pages/Home'));
+const Pipeline = lazy(() => import('@/pages/Pipeline'));
+const PipelineBlock = lazy(() => import('@/pages/PipelineBlock'));
+const Studies = lazy(() => import('@/pages/Studies'));
+const Study = lazy(() => import('@/pages/Study'));
+const Play = lazy(() => import('@/pages/Play'));
+const PlayJob = lazy(() => import('@/pages/PlayJob'));
+const Method = lazy(() => import('@/pages/Method'));
 
 function ProjectRedirect() { const { projectId } = useParams(); return <Navigate to={`/p/${projectId}/goal`} replace />; }
 
@@ -22,7 +30,15 @@ export default function App() {
   return (
     <Suspense fallback={<div className="wrap page"><Spinner /></div>}>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/demo" element={<Landing />} />
+        <Route path="/pipeline" element={<Pipeline />} />
+        <Route path="/pipeline/:block" element={<PipelineBlock />} />
+        <Route path="/studies" element={<Studies />} />
+        <Route path="/studies/:id" element={<Study />} />
+        <Route path="/play" element={<Play />} />
+        <Route path="/play/:jobId" element={<PlayJob />} />
+        <Route path="/method" element={<Method />} />
         <Route path="/new" element={<CreateProject />} />
         <Route path="/start-with-my-data" element={<ComingNext />} />
         <Route path="/privacy" element={<Privacy />} />
