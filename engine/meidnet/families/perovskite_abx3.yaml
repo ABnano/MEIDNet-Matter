@@ -1,0 +1,175 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Material family: cubic ABX3 perovskite (space group Pm-3m, 5-atom cell)
+#
+# A "family" tells MEIDNet what kind of crystal to build when it generates:
+#   • prototype   – the fixed arrangement of sites (where atoms sit)
+#   • groups      – which elements may occupy each kind of site, and their charges
+#   • lattice     – how the cell size is computed from the chosen elements
+#   • variants    – named sub-families (here: which anion is used)
+#   • search_terms– soft penalties used while searching the latent space
+#   • constraints – hard rules every saved candidate must pass
+#
+# This file reproduces the published MEIDNet v1.0 perovskite set-up exactly.
+# Copy it, rename it, and edit it to describe your own family.
+# ─────────────────────────────────────────────────────────────────────────────
+name: perovskite_abx3
+title: Cubic ABX3 perovskite (Pm-3m)
+description: >
+  Ideal cubic perovskite with one large A cation at the cube corner, one small
+  B cation at the cube centre surrounded by an octahedron of six X anions, and
+  three X anions at the face centres.
+
+prototype:
+  lattice: cubic
+  reference_a: 3.87            # Å, typical cubic perovskite cell edge
+  sites:                       # order = decoder slot order
+    - {group: A, frac: [0.0, 0.0, 0.0]}
+    - {group: B, frac: [0.5, 0.5, 0.5]}
+    - {group: X, frac: [0.0, 0.5, 0.5]}
+    - {group: X, frac: [0.5, 0.0, 0.5]}
+    - {group: X, frac: [0.5, 0.5, 0.0]}
+
+groups:
+  A:
+    description: Large cation at the cube corner (12 X neighbours)
+    elements: [Ba, Sr, Ca, Na, K, Rb, Cs, La, Ce, Pr, Nd, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu]
+    oxidation_states:
+      Na: [1]
+      K: [1]
+      Rb: [1]
+      Cs: [1]
+      Ca: [2]
+      Sr: [2]
+      Ba: [2]
+      La: [3]
+      Ce: [3]
+      Pr: [3]
+      Nd: [3]
+      Sm: [3]
+      Eu: [3]
+      Gd: [3]
+      Tb: [3]
+      Dy: [3]
+      Ho: [3]
+      Er: [3]
+      Tm: [3]
+      Yb: [3]
+      Lu: [3]
+  B:
+    description: Small cation at the cube centre (octahedral, 6 X neighbours)
+    elements: [Ti, Zr, Hf, V, Nb, Ta, Cr, Mn, Fe, Co, Ni, Cu, Zn, Sc, Y, Al, Ga, In, Ge, Sn, Pb, W, Mo]
+    # Union of the charges allowed in any variant (used by the soft search terms).
+    oxidation_states:
+      Ti: [4]
+      Zr: [4]
+      Hf: [4]
+      V: [3, 4, 5]
+      Nb: [5]
+      Ta: [5]
+      Cr: [3]
+      Mn: [2, 3, 4]
+      Fe: [2, 3]
+      Co: [2, 3]
+      Ni: [2, 3]
+      Cu: [1, 2]
+      Zn: [2]
+      Sc: [3]
+      Y: [3]
+      Al: [3]
+      Ga: [3]
+      In: [3]
+      Ge: [4]
+      Sn: [2, 4]
+      Pb: [2, 4]
+      W: [4, 6]
+      Mo: [4, 6]
+  X:
+    description: Anion at the face centres; all three X sites hold the same element
+    elements: [O, F, Cl, Br, I, S, Se, Te, N]
+    oxidation_states:
+      O: [-2]
+      F: [-1]
+      Cl: [-1]
+      Br: [-1]
+      I: [-1]
+      S: [-2]
+      Se: [-2]
+      Te: [-2]
+      N: [-3]
+
+# Elements are chosen in this order; the LAST group is restricted to elements
+# whose charge makes the whole formula neutral.
+sampling_order: [B, X, A]
+
+lattice:
+  rule: bond_sum               # a = factor × (r_B + r_X), from ionic radii
+  groups: [B, X]
+  factor: 2.0
+  min: 3.0
+  max: 8.0
+
+variants:
+  oxide:
+    description: ABO3 oxides
+    groups:
+      X: {elements: [O]}
+      B:
+        sample: [Ti, Zr, Hf, V, Nb, Ta, Cr, Mn, Fe, Co, Ni, Cu, Zn, Sc, Y, Al, Ga, In, Ge, Sn, Pb, W, Mo]
+        oxidation_states: {Ti: [4], Zr: [4], Hf: [4], V: [3, 4, 5], Nb: [5], Ta: [5], Cr: [3], Mn: [3, 4], Fe: [3], Co: [3], Ni: [3], Cu: [2], Zn: [2], Sc: [3], Y: [3], Al: [3], Ga: [3], In: [3], Ge: [4], Sn: [4], Pb: [4], W: [6], Mo: [6]}
+    params:
+      tolerance_factor: {min: 0.80, max: 1.05}
+  halide:
+    description: ABX3 halides (X = F, Cl, Br, I)
+    groups:
+      X: {elements: [F, Cl, Br, I]}
+      B:
+        sample: [Mn, Fe, Co, Ni, Cu, Zn, Sn, Pb, Sc, Cr, V]
+        oxidation_states: {Mn: [2], Fe: [2], Co: [2], Ni: [2], Cu: [2], Zn: [2], Sn: [2], Pb: [2], Sc: [3], Cr: [3], V: [3]}
+    params:
+      tolerance_factor: {min: 0.75, max: 1.02}
+  chalcogenide:
+    description: ABX3 chalcogenides (X = S, Se, Te)
+    groups:
+      X: {elements: [S, Se, Te]}
+      B:
+        sample: [Ti, Zr, Hf, V, Nb, Ta, Cr, Mn, Fe, Co, Ni, Cu, Zn, Sc, Y, Ge, Sn, Pb, W, Mo]
+        oxidation_states: {Ti: [4], Zr: [4], Hf: [4], V: [3], Nb: [5], Ta: [5], Cr: [3], Mn: [2, 3], Fe: [2, 3], Co: [2, 3], Ni: [2], Cu: [1, 2], Zn: [2], Sc: [3], Y: [3], Ge: [4], Sn: [4], Pb: [2, 4], W: [4, 6], Mo: [4, 6]}
+    params:
+      tolerance_factor: {min: 0.78, max: 1.05}
+  nitride:
+    description: ABN3 nitrides
+    groups:
+      X: {elements: [N]}
+      B:
+        sample: [W, Mo, Ta, Nb, Ti, Zr, Hf, Cr, Mn, Fe, Co, Ni]
+        oxidation_states: {W: [6], Mo: [6], Ta: [5], Nb: [5], Ti: [4], Zr: [4], Hf: [4], Cr: [3], Mn: [3], Fe: [3], Co: [3], Ni: [3]}
+    params:
+      tolerance_factor: {min: 0.75, max: 1.08}
+
+# Soft penalties applied to the decoder's outputs while the latent vector is
+# optimised.  They steer the search; they do not decide acceptance.
+search_terms:
+  - {name: site_separation, weight: 200}
+  - {name: site_repulsion, weight: 8000}
+  - {name: cubic_cell, volume_weight: 1000, cubicity_weight: 10000}
+  - {name: prototype_alignment, weight: 800}
+  - {name: tolerance_penalty, weight: 1000, A: A, B: B, X: X}
+  - {name: soft_charge, weight: 3000, override_oxidation_states: {B: [2, 3, 4, 5, 6]}}
+  - {name: group_consistency, weight: 1500}
+  - {name: entropy_bonus, weight: 0.06}
+  - {name: short_distance_penalty, min: 0.8}
+
+# Edits the decoder's element scores before they are used (soft guidance).
+logit_transforms:
+  - {name: neutrality_bias, group: X, bias: 8.0, topk: 5}
+
+# Hard rules: a candidate is saved only if it passes every one.
+constraints:
+  - {name: min_distance, min: 0.8}
+  - {name: charge_neutrality}
+  - {name: bond_window, from: X, to: B, low: 0.75, high: 1.35, cutoff: 5.0}
+  - {name: tolerance_factor, A: A, B: B, X: X, min: 0.78, max: 1.05}
+  - {name: octahedral_factor, B: B, X: X, min: 0.414, max: 0.90}
+
+refine_symmetry: true
+symprec: 0.05

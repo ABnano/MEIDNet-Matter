@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MEIDNet Prism — learn, build and benchmark multimodal AI for materials discovery</title>
+<meta name="description" content="MEIDNet Prism: learn what multimodal learning is, choose an architecture, build a model on your own structures and properties, find datasets and benchmark the result. MEIDNet (npj Computational Materials, 2026) is the reference implementation.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="MEIDNet Prism">
+<meta property="og:title" content="MEIDNet Prism — learn, build and benchmark multimodal AI for materials discovery">
+<meta property="og:description" content="Learn multimodal learning, choose an architecture, build a model on your own crystal structures and properties, and design new materials. MEIDNet (npj Computational Materials, 2026) is the reference implementation.">
+<meta property="og:url" content="https://babu09-meidnet.hf.space/"><meta property="og:image" content="https://babu09-meidnet.hf.space/docs/assets/meidnet_prism_logo.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="631"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/docs/assets/favicon-64.png" type="image/png">
+<script>/* theme before first paint: the visitor's own choice, else the theme the Hugging Face page asks for (?__theme=light|dark), else the system's */
+(function(){ var d=document.documentElement, t=null; try{ t=localStorage.getItem('meidnet_theme'); }catch(e){}
+  var q=new URLSearchParams(location.search).get('__theme'); if(t) d.dataset.theme=t; else if(q==='light'||q==='dark') d.dataset.theme=q; })();</script><link rel="apple-touch-icon" href="/docs/assets/prism-mark-192.png">
+<style>
+/* STIX Two Text and IBM Plex Mono: SIL Open Font License 1.1, see /docs/assets/fonts/ */
+@font-face{font-family:'STIX Two Text';font-style:normal;font-weight:400 700;font-display:swap;src:url(/docs/assets/fonts/stixtwotext-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'STIX Two Text';font-style:normal;font-weight:400 700;font-display:swap;src:url(/docs/assets/fonts/stixtwotext-normal-greek.woff2) format('woff2');unicode-range:U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF}
+@font-face{font-family:'STIX Two Text';font-style:italic;font-weight:400 700;font-display:swap;src:url(/docs/assets/fonts/stixtwotext-italic-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'STIX Two Text';font-style:italic;font-weight:400 700;font-display:swap;src:url(/docs/assets/fonts/stixtwotext-italic-greek.woff2) format('woff2');unicode-range:U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:500 800;font-display:swap;src:url(/docs/assets/fonts/plusjakartasans-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(/docs/assets/fonts/ibmplexmono-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+:root{--c-data:#2a78d6;--c-model:#eb6834;--c-family:#1baf7a;--c-rules:#eda100;--c-targets:#e87ba4;--c-search:#008300;--c-candidates:#4a3aa7;
+  --p1:#4f46e5;--p2:#9333ea;--bg:#f6f7f5;--card:#fff;--ink:#0b0b0b;--muted:#52514e;--faint:#898781;--line:#e1e0d9;
+  --link:#4f46e5;--eyebrow-mix:#000;--h-head:#a3243b;
+  --serif:'STIX Two Text','Cambria','Sitka Text',Georgia,serif;--math:'STIX Two Text','Cambria Math','STIX Two Math','Latin Modern Math',serif;
+  --display:'Plus Jakarta Sans',system-ui,'Segoe UI',sans-serif;--mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace}
+:root[data-theme="dark"]{--h-head:#f2849a;--bg:#111417;--card:#1b1f24;--ink:#fff;--muted:#c3c2b7;--faint:#898781;--line:#2c2c2a;--link:#a5b4fc;--eyebrow-mix:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--h-head:#f2849a;--bg:#111417;--card:#1b1f24;--ink:#fff;--muted:#c3c2b7;--faint:#898781;--line:#2c2c2a;--link:#a5b4fc;--eyebrow-mix:#fff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--link)}
+.wrap{max-width:1100px;margin:auto;padding:0 16px}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:10px;min-height:56px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;text-decoration:none;color:var(--ink)}.brand img{width:28px;height:28px}
+nav{margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}nav a{text-decoration:none;color:var(--muted);padding:6px 9px;border-radius:8px;font-size:14px;font-weight:600;white-space:nowrap}
+nav a:hover,nav a[aria-current]{background:var(--bg);color:var(--ink)}nav a.cta{background:var(--p1);color:#fff}nav a.cta:hover{background:var(--p2);color:#fff}
+@media(max-width:1080px){nav{order:3;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0 0 8px}nav::-webkit-scrollbar{display:none}header .theme{margin-left:auto}}
+.hero{position:relative;min-height:540px;padding:48px 0 22px;display:flex;align-items:center}
+.hero .copy{position:relative;z-index:2;max-width:640px}
+.hero::before{content:"";position:absolute;z-index:-1;inset:-30px 0 -10px;pointer-events:none;background:radial-gradient(42% 58% at 78% 42%,rgba(99,102,241,.13),transparent 70%),radial-gradient(34% 44% at 62% 82%,rgba(20,184,166,.11),transparent 70%),radial-gradient(30% 40% at 12% 18%,rgba(59,130,246,.07),transparent 70%)}
+@media(max-width:900px){.hero{display:block;min-height:0;padding-top:28px}}
+.hero>*{min-width:0}
+h1.mh{font:800 clamp(25px,3.05vw,40px)/1.14 var(--display);letter-spacing:-.022em;margin:0 0 22px;color:var(--ink)}
+h1.mh .ln{display:block}h1.mh .for{font-weight:700;letter-spacing:-.01em}
+.mol{background:linear-gradient(90deg,#2f6fe4,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mol.mol-on{background:none;color:inherit}.mol.mol-on>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.mol svg{display:inline-block;height:auto;max-width:100%;overflow:visible}
+.mol-shadow{fill:none;stroke:rgba(30,41,90,.13);stroke-width:.13;stroke-linecap:round;stroke-linejoin:round}
+.mol-lat{fill:currentColor;opacity:.16}
+:root[data-theme="dark"] .mol-shadow{stroke:rgba(0,0,0,.45)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mol-shadow{stroke:rgba(0,0,0,.45)}}
+.tag{font-size:clamp(16.5px,1.45vw,19px);line-height:1.62;color:var(--muted);margin:0 0 24px;max-width:50ch}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:12px 18px;font-weight:700;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
+.btn.primary{background:var(--p1);border-color:var(--p1);color:#fff}.btn.primary:hover{background:var(--p2);border-color:var(--p2)}.btn:hover{box-shadow:0 4px 14px -8px rgba(0,0,0,.5)}
+.pub{font:15.5px/1.5 var(--serif);color:var(--muted);margin:0}.pub b{color:var(--ink)}
+.scene{position:absolute;z-index:1;right:-36px;top:0;bottom:0;width:56%;margin:0}
+.scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y}
+.scene canvas.grabbing{cursor:grabbing}
+.scene figcaption{position:absolute;right:4px;bottom:0;font:500 11.5px/1.3 var(--mono);color:var(--faint);letter-spacing:.02em}
+@media(max-width:900px){.scene{position:relative;right:auto;width:100%;max-width:560px;aspect-ratio:1/.86;margin:-28px auto 0}}
+.method{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.05fr) minmax(0,1.3fr) minmax(0,.8fr) minmax(0,.9fr);gap:0;margin:6px 0 30px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.method div{padding:12px 12px 13px;border-left:1px solid var(--line);position:relative}.method div:first-child{border-left:0}
+.method div:not(:first-child)::before{content:"→";position:absolute;left:-7px;top:11px;font-size:12px;color:var(--faint);background:var(--card);line-height:1}
+.method b{display:block;font:500 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-bottom:9px;color:color-mix(in oklab,var(--k) 78%,var(--eyebrow-mix))}
+.method .eq{display:block;font:italic 400 clamp(14.5px,1.15vw,16.5px)/1.35 var(--math);color:var(--ink);white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.method .eq::-webkit-scrollbar{display:none}.method .up{font-style:normal}.method sub,.method sup{font-size:.68em;line-height:0}
+@media(max-width:1000px){.method{grid-template-columns:repeat(3,minmax(0,1fr))}.method div:nth-child(4){border-left:0}.method div:nth-child(n+4){border-top:1px solid var(--line)}.method div:nth-child(4)::before{display:none}}
+@media(max-width:560px){.method{grid-template-columns:repeat(2,minmax(0,1fr))}.method div:nth-child(odd){border-left:0}.method div:nth-child(4){border-left:1px solid var(--line)}.method div:nth-child(n+3){border-top:1px solid var(--line)}.method div:nth-child(odd)::before{display:none}.method div:nth-child(4)::before{display:block}}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .15em;line-height:1.15}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .2em .05em}.frac>span:last-child{padding:.08em .2em 0}
+.tour3d{margin:4px 0 30px;border:1px solid var(--line);border-top:4px solid var(--t3c,var(--c-family));border-radius:16px;background:var(--card);padding:16px 16px 14px;transition:border-color .3s}
+.tour3d h2{margin:0 0 2px}.tour3d .sec-sub{margin:0}
+.t3-strip{list-style:none;margin:12px 0 10px;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.t3-strip button{position:relative;width:100%;border:2px solid var(--bc);background:var(--card);color:color-mix(in oklab,var(--bc) 78%,var(--ink));border-radius:999px;padding:8px 4px;font:700 14.5px/1 var(--display);cursor:pointer;overflow:hidden}
+.t3-strip button.on{background:var(--bc);color:#fff}.t3-strip button:hover{box-shadow:0 4px 14px -8px var(--bc)}
+.t3-strip button i{position:absolute;left:0;bottom:0;height:3px;width:0;background:rgba(255,255,255,.9)}
+.t3-stage{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(60% 70% at 72% 40%,rgba(99,102,241,.08),transparent 70%),radial-gradient(50% 60% at 20% 80%,rgba(20,184,166,.07),transparent 70%),var(--bg)}
+.t3-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.t3-cap{font-size:16.5px;line-height:1.5;margin:12px 2px 12px;min-height:3em}
+.t3-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.t3-b{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font:600 14px/1 system-ui,sans-serif;cursor:pointer}
+.t3-b:hover{box-shadow:0 4px 14px -8px rgba(0,0,0,.5)}.t3-b.primary{background:var(--p1);border-color:var(--p1);color:#fff;min-width:100px}
+.t3-prog{flex:1 1 160px;height:8px;border-radius:4px;background:var(--line);cursor:pointer;overflow:hidden}
+.t3-prog i{display:block;height:100%;width:0;background:var(--t3c,var(--p1))}
+.t3-time{font:500 13px/1 var(--mono);color:var(--muted)}.t3-open{font-weight:700;text-decoration:none;margin-left:auto}
+@media(max-width:700px){.tour3d{padding:12px 10px}.t3-strip{grid-template-columns:repeat(4,minmax(0,1fr))}.t3-strip button{font-size:13px;padding:7px 2px}.t3-cap{font-size:15.5px}.t3-open{margin-left:0;width:100%}}
+.layers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:8px 0 28px}@media(max-width:900px){.layers{grid-template-columns:1fr 1fr}}@media(max-width:600px){.layers{grid-template-columns:1fr}}
+.layers .card h2 small{display:block;font:700 11px/1.4 system-ui;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in oklab,var(--accent,var(--p1)) 72%,var(--eyebrow-mix))}
+h2.sec,.cite h2{color:var(--h-head);font-family:var(--display)}h2.sec{font-size:24px;margin:0 0 6px}.sec-sub{color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;border-top:4px solid var(--accent,var(--p1))}
+.card h2{margin:0 0 6px;font-size:21px}.card p{margin:0 0 10px;color:var(--muted)}.card a.more{font-weight:700;text-decoration:none}
+.card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px}
+.how{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:0 0 28px}@media(max-width:760px){.how{grid-template-columns:repeat(4,1fr)}}
+.how div{border-radius:10px;padding:10px 8px;text-align:center;font-weight:700;font-size:14px;color:#fff;background:var(--bc)}
+.how small{display:block;font-weight:500;opacity:.9;font-size:12px}
+.cite{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 28px}
+.cite pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;font-size:13px;margin:10px 0 0}
+.reading{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px}.reading li{margin:4px 0}
+.cite button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:6px 12px;cursor:pointer}
+.eqbg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;color:var(--ink);opacity:.11;display:none;
+  font:italic 400 clamp(15px,1.12vw,21px)/1.2 var(--math)}
+.eqbg .col{position:absolute;top:56px;bottom:0;width:calc((100vw - 1100px) / 2 - 28px);display:flex;flex-direction:column;justify-content:space-evenly;padding:12px 0}
+.eqbg .l{left:14px}.eqbg .r{right:14px}
+.eqbg span{white-space:nowrap}.eqbg span:nth-child(3n+1){align-self:flex-start}.eqbg span:nth-child(3n+2){align-self:flex-end}.eqbg span:nth-child(3n){align-self:center}
+.eqbg sub,.eqbg sup{font-size:.68em}
+:root[data-theme="dark"] .eqbg{opacity:.16}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .eqbg{opacity:.16}}
+@media(min-width:1400px){.eqbg{display:block}}
+header,main{position:relative;z-index:1}
+footer{color:var(--faint);font-size:13.5px;padding:10px 0 40px;display:flex;gap:16px;flex-wrap:wrap}
+.theme{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:5px 9px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="eqbg" aria-hidden="true"><div class="col l"><span>Ĥψ = Eψ</span><span>nλ = 2d sin θ</span><span>θ ← θ − η∇<sub>θ</sub>ℒ</span><span>∇·E = ρ ⁄ ε<sub>0</sub></span><span>ΔG = ΔH − TΔS</span><span>p ∝ e<sup>−E/k<sub>B</sub>T</sup></span><span>F(<b>q</b>) = Σ<sub>j</sub> f<sub>j</sub> e<sup>i<b>q</b>·<b>r</b><sub>j</sub></sup></span><span>σ(x) = 1 ⁄ (1 + e<sup>−x</sup>)</span><span>S = k<sub>B</sub> ln Ω</span><span>E<sub>g</sub> = E<sub>c</sub> − E<sub>v</sub></span></div><div class="col r"><span>⟨ψ|Ĥ|ψ⟩</span><span>softmax(QK<sup>T</sup>⁄√d)</span><span>ρ(<b>r</b>) = Σ|ψ<sub>i</sub>|²</span><span>D<sub>KL</sub>(q ‖ p)</span><span><b>F</b> = −∇U</span><span>ΔH<sub>f</sub> = E − Σ μ<sub>i</sub></span><span>k = 2π ⁄ λ</span><span>p(y | z)</span><span>∂ℒ ⁄ ∂θ</span><span>ħω = E<sub>2</sub> − E<sub>1</sub></span></div></div>
+<header><div class="wrap">
+  <a class="brand" href="/"><img src="/docs/assets/prism-mark-192.png" alt=""> MEIDNet <span style="font-weight:500;color:var(--muted)">Prism</span></a>
+  <nav aria-label="Main">
+    <a href="/" aria-current="page">Home</a><a href="/docs/learn/index.html">Learn</a><a href="/docs/learn/architectures.html">Architectures</a>
+    <a class="cta" href="/studio/" title="MEIDNet Studio: build a model and design materials">Build</a><a href="/docs/explore/datasets.html">Datasets</a>
+    <a href="/docs/benchmarks/index.html">Benchmarks</a><a href="/studio/?explore=space" title="Every composition of a family in the shared space">Explore</a>
+    <a href="/docs/">Docs</a><a href="/docs/community/contribute.html">Community</a>
+  </nav>
+  <button class="theme" id="theme" title="light / dark" aria-label="Switch light or dark mode">🌙</button>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+    <div class="copy">
+      <h1 class="mh"><span class="ln">Learn, build and benchmark </span><span class="ln"><span class="mol" data-mol="a"><span>multimodal AI</span></span> <span class="for">for</span> </span><span class="ln"><span class="mol" data-mol="b"><span>materials discovery</span></span></span></h1>
+      <p class="tag">Go from multimodal learning to working models and reproducible materials-discovery workflows. Explore architectures, train on your own data, compare results, and use the MEIDNet methodology to learn shared representations of materials and their properties.</p>
+      <div class="btns"><a class="btn primary" href="/studio/">▶ Try MEIDNet</a><a class="btn" href="/studio/?panel=data">Use your dataset</a><a class="btn" href="/docs/learn/index.html">Learn multimodality</a></div>
+      <p class="pub">A. Babu <i>et al.</i>, <i>npj Comput. Mater.</i> <b>12</b>, 287 (2026) · <a href="https://doi.org/10.1038/s41524-026-02153-3">Article</a> · <a href="https://github.com/ABnano/MEIDNet">Code</a></p>
+    </div>
+    </div>
+    <figure class="scene">
+      <canvas id="hero3d" role="img" aria-label="A cubic ABX3 perovskite: eight corner-sharing BX6 octahedra around an A-site cation, with panels for its crystal graph, a band-gap property curve and the shared latent space where structures and properties are paired."></canvas>
+      <figcaption>cubic ABX<sub>3</sub> perovskite · drag to rotate</figcaption>
+    </figure>
+  </section>
+
+  <section class="method" aria-label="The method in six steps">
+    <div style="--k:var(--c-model)"><b>Encode</b><span class="eq">h<sub>i</sub> ← φ<sub>h</sub>(h<sub>i</sub>, Σ<sub>j</sub> m<sub>ij</sub>)</span></div>
+    <div style="--k:var(--c-family)"><b>Align</b><span class="eq">ℒ = −log <span class="frac"><span>exp(s<sub>ii</sub>/τ)</span><span>Σ<sub>j</sub> exp(s<sub>ij</sub>/τ)</span></span></span></div>
+    <div style="--k:var(--p2)"><b>Fuse</b><span class="eq">z = ½ (z<sub>s</sub> + z<sub>p</sub>) <span class="up">∈ ℝ<sup>128</sup></span></span></div>
+    <div style="--k:var(--c-targets)"><b>Design</b><span class="eq">z<sup>*</sup> = argmin<sub>z</sub> ‖g(z) − y<sup>*</sup>‖²</span></div>
+    <div style="--k:var(--c-candidates)"><b>Decode</b><span class="eq">x<sup>*</sup> = D(z<sup>*</sup>)</span></div>
+    <div style="--k:var(--c-search)"><b>Validate</b><span class="eq">E<sub>hull</sub>(x<sup>*</sup>) ≤ ε</span></div>
+  </section>
+
+  <section class="tour3d" id="tour3d" aria-labelledby="t3-title">
+    <h2 class="sec" id="t3-title">MEIDNet: from concept to demonstration</h2>
+    <p class="sec-sub">From the properties you want to candidate crystals, block by block. Click a block to jump to it.</p>
+    <ol class="t3-strip" aria-label="Chapters"></ol>
+    <div class="t3-stage"><canvas tabindex="0" role="img" aria-label="Animated tour of MEIDNet in three dimensions: data, model, family, rules, targets, search and candidates. The caption below gives each step in words."></canvas></div>
+    <p class="t3-cap" aria-live="polite"></p>
+    <div class="t3-bar">
+      <button type="button" class="t3-b primary" data-t3="play" aria-label="Play the tour">▶ Play</button>
+      <button type="button" class="t3-b" data-t3="prev" aria-label="Previous chapter">◀</button>
+      <button type="button" class="t3-b" data-t3="next" aria-label="Next chapter">▶</button>
+      <div class="t3-prog" role="slider" tabindex="0" aria-label="Position in the tour, in seconds" aria-valuemin="0" aria-valuemax="63" aria-valuenow="0"><i></i></div>
+      <span class="t3-time">0:00</span>
+      <a class="t3-open" href="/studio/">Open the Studio →</a>
+    </div>
+  </section>
+
+  <h2 class="sec">Contents</h2>
+  <p class="sec-sub">Background on multimodal learning, model architectures, the MEIDNet Studio, datasets, benchmarks and contributed results.</p>
+  <section class="layers">
+    <div class="card" style="--accent:var(--c-data)"><h2><small>Learn</small>What is multimodal learning?</h2><p>Modalities, the five challenges of multimodal learning, contrastive learning with a playground, and an interactive map of materials modalities.</p>
+      <p><a class="more" href="/docs/learn/index.html">Learn multimodality →</a></p></div>
+    <div class="card" style="--accent:var(--c-model)"><h2><small>Architectures</small>Which design fits my data?</h2><p>Early and late fusion, shared latent spaces, cross-attention and contrastive learning, drawn side by side, with an advisor that recommends one.</p>
+      <p><a class="more" href="/docs/learn/architectures.html">Architecture Atlas →</a> &nbsp; <a class="more" href="/docs/learn/architectures.html#advisor">Advisor →</a></p></div>
+    <div class="card" style="--accent:var(--c-family)"><h2><small>Build</small>MEIDNet Studio</h2><p>Upload structures and properties, train in the browser, set targets and rules, run the search and inspect every candidate in 3D. Every setting is saved in one YAML file.</p>
+      <p><a class="more" href="/studio/">Try MEIDNet →</a> &nbsp; <a class="more" href="/docs/learn/recipes.html">Recipes by problem →</a></p></div>
+    <div class="card" style="--accent:var(--c-rules)"><h2><small>Datasets</small>Datasets and databases</h2><p>Perov-5, the published multimodal benchmark, other datasets used with MEIDNet, and 31 computed and experimental databases grouped by application.</p>
+      <p><a class="more" href="/docs/explore/datasets.html">Datasets →</a> &nbsp; <a class="more" href="/docs/explore/databases.html">Databases →</a></p></div>
+    <div class="card" style="--accent:var(--c-targets)"><h2><small>Benchmarks</small>Leaderboards</h2><p>Fixed protocols per dataset: inverse design scored by stable, unique and novel candidates, property prediction and representation, with baselines. Any model can be scored with the same code.</p>
+      <p><a class="more" href="/docs/benchmarks/index.html">Benchmarks →</a></p></div>
+    <div class="card" style="--accent:var(--c-candidates)"><h2><small>Community</small>Contribute results</h2><p>Results are submitted through GitHub, re-run by the maintainer and marked as verified when they reproduce. Re-runs that disagree are published as well.</p>
+      <p><a class="more" href="/docs/community/contribute.html">Contribute a result →</a></p></div>
+  </section>
+
+  <h2 class="sec">MEIDNet Studio</h2>
+  <p class="sec-sub">The workflow from a dataset of structures and properties to candidate materials.</p>
+  <div class="how" aria-label="The seven blocks of the Studio">
+    <div style="--bc:var(--c-data)">Data<small>your materials</small></div><div style="--bc:var(--c-model)">Model<small>shared space</small></div>
+    <div style="--bc:var(--c-family)">Family<small>crystal type</small></div><div style="--bc:var(--c-rules)">Rules<small>chemistry</small></div>
+    <div style="--bc:var(--c-targets)">Targets<small>what you want</small></div><div style="--bc:var(--c-search)">Search<small>inverse design</small></div>
+    <div style="--bc:var(--c-candidates)">Candidates<small>new materials</small></div>
+  </div>
+
+  <section class="cite" id="cite">
+    <h2 style="margin:0 0 4px;font-size:20px">Citation</h2>
+    <p style="margin:0;color:var(--muted)">A. Babu, R. A. Gouvêa, P. Vandergheynst and G.-M. Rignanese, <i>MEIDNet: Multimodal generative AI framework for inverse materials design</i>, npj Computational Materials (2026). <a href="https://doi.org/10.1038/s41524-026-02153-3">doi:10.1038/s41524-026-02153-3</a> · <a href="https://arxiv.org/abs/2601.22009">arXiv:2601.22009</a></p>
+    <p style="margin:10px 0 0"><button id="copybib">Copy BibTeX</button> <span id="copied" style="color:var(--c-search);font-weight:700"></span></p>
+<pre id="bib">@article{meidnet2026,
+  title   = {MEIDNet: Multimodal generative AI framework for inverse materials design},
+  author  = {Anand Babu and Rog{\'e}rio Almeida Gouv{\^e}a and Pierre Vandergheynst and Gian-Marco Rignanese},
+  journal = {npj Computational Materials},
+  year    = {2026},
+  doi     = {10.1038/s41524-026-02153-3}
+}</pre>
+  </section>
+
+  <section class="cite" id="reading">
+    <h2 style="margin:0 0 6px;font-size:20px">Further reading</h2>
+    <ol class="reading">
+      <li>Y. Bengio, A. Courville and P. Vincent, <i>Representation learning: a review and new perspectives</i>, IEEE Transactions on Pattern Analysis and Machine Intelligence <b>35</b>, 1798–1828 (2013). <a href="https://doi.org/10.1109/TPAMI.2013.50">doi:10.1109/TPAMI.2013.50</a></li>
+      <li>Y. LeCun, Y. Bengio and G. Hinton, <i>Deep learning</i>, Nature <b>521</b>, 436–444 (2015). <a href="https://doi.org/10.1038/nature14539">doi:10.1038/nature14539</a></li>
+      <li>B. Sanchez-Lengeling and A. Aspuru-Guzik, <i>Inverse molecular design using machine learning: generative models for matter engineering</i>, Science <b>361</b>, 360–365 (2018). <a href="https://doi.org/10.1126/science.aat2663">doi:10.1126/science.aat2663</a></li>
+      <li>A. Babu, R. Almeida Gouvêa and G.-M. Rignanese, <i>Toward automated discovery with generative models multimodal learning and closed loop workflows in inverse materials design</i>, Cell Reports Physical Science <b>7</b>, 103561 (2026). <a href="https://doi.org/10.1016/j.xcrp.2026.103561">doi:10.1016/j.xcrp.2026.103561</a></li>
+      <li>A. Babu and N. M. A. Krishnan, <i>Multimodal and cross-modal learning techniques</i>, APL Machine Learning <b>4</b>, 030901 (2026). <a href="https://doi.org/10.1063/5.0346744">doi:10.1063/5.0346744</a></li>
+    </ol>
+  </section>
+  <footer><span>MEIDNet Prism: learn, build and benchmark multimodal AI for materials discovery. MEIDNet is its reference implementation.</span><a href="https://github.com/ABnano/MEIDNet">Code</a><a href="/docs/">Documentation</a><a href="/docs/understand/limits.html">Scope and roadmap</a><a href="https://huggingface.co/spaces/Babu09/MEIDNet">Hugging Face Space</a><a id="direct-app" href="/" target="_blank" rel="noopener" hidden title="The same page, outside the Hugging Face frame">Open the direct app ↗</a></footer>
+</main>
+<script>
+(function(){
+  // Inside the Hugging Face page this site runs in a frame, and GitHub, doi.org or arXiv refuse to load in one:
+  // open every link that leaves this site in a new tab.
+  document.querySelectorAll('a[href^="http"]').forEach(a=>{ try{ if(new URL(a.href).origin!==location.origin){ a.target='_blank'; a.rel='noopener'; } }catch(e){} });
+  // inside the Hugging Face page: a link to the same page at its own address
+  let framed=false; try{ framed = window.self !== window.top; }catch(e){ framed = true; }
+  const da=document.getElementById('direct-app'); if(framed && da){ da.href=location.href; da.hidden=false; }
+})();
+(function(){ const d=document.documentElement; try{ const t=localStorage.getItem('meidnet_theme'); if(t) d.dataset.theme=t; }catch(e){}
+  const b=document.getElementById('theme'); const isDark=()=>d.dataset.theme==='dark'||(!d.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+  const paint=()=>{ b.textContent=isDark()?'☀️':'🌙'; }; paint();
+  b.onclick=()=>{ d.dataset.theme=isDark()?'light':'dark'; try{localStorage.setItem('meidnet_theme', d.dataset.theme);}catch(e){} paint(); };
+  document.getElementById('copybib').onclick=async()=>{ const m=document.getElementById('copied'); try{ await navigator.clipboard.writeText(document.getElementById('bib').textContent); m.textContent='copied'; setTimeout(()=>m.textContent='',1500); }catch(e){ m.textContent='select the text below and copy it'; } };
+})();
+</script>
+<script src="/docs/assets/prism3d.js" defer></script>
+<script src="/docs/assets/prism-hero.js" defer></script>
+<script src="/docs/assets/prism-tour.js" defer></script>
+<script src="/ask-prism.js" defer></script>
+</body>
+</html>

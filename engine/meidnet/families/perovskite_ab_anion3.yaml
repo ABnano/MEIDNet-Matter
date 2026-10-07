@@ -1,0 +1,103 @@
+# Novel-anion-set perovskites (2026-10-07) — the fix for the blind spot found in Entry 40.
+#
+# Perov-5 is a COMPLETE grid: 52 cations x 52 cations x 7 anion sets (O3, O2N, ON2, N3, O2F, OFN, O2S).  Any ABX3
+# composition built from its elements with one of those 7 sets is therefore already IN the training data, so the novelty
+# rule can only ever return compositions containing an element the model has never seen -> every "discovery" was an
+# extrapolation (measured: 0 of 148 novel candidates came from seen chemistry).
+#
+# This family keeps the chemistry inside what the model has seen and makes the ANION SET novel instead: the three anion
+# sites are three independent groups over {O, N, F, S} (all four appear in Perov-5), and every variant below is a set that
+# Perov-5 does NOT contain.  A and B are restricted to cations Perov-5 actually contains, so a candidate here is novel AND
+# in distribution — the two properties that were mutually exclusive before.
+name: perovskite_ab_anion3
+title: ABX3 perovskite with a novel anion set (X1, X2, X3 from O/N/F/S)
+description: >
+  Cubic ABX3 perovskite whose three face-centre anion sites are chosen independently from O, N, F and S, restricted to
+  anion sets absent from Perov-5. Slot order: A, B, then the three anions.
+prototype:
+  lattice: cubic
+  reference_a: 4.2
+  sites:
+    - {group: A, frac: [0.0, 0.0, 0.0]}
+    - {group: B, frac: [0.5, 0.5, 0.5]}
+    - {group: X1, frac: [0.0, 0.5, 0.5]}
+    - {group: X2, frac: [0.5, 0.0, 0.5]}
+    - {group: X3, frac: [0.5, 0.5, 0.0]}
+groups:
+  A:
+    description: Large cation at the cube corner; only cations present in Perov-5 (no unseen lanthanides)
+    elements: [Ba, Sr, Ca, Na, K, Rb, Cs, La]
+    oxidation_states: {Na: [1], K: [1], Rb: [1], Cs: [1], Ca: [2], Sr: [2], Ba: [2], La: [3]}
+  B:
+    description: Small cation at the cube centre (octahedral); all present in Perov-5
+    elements: [Ti, Zr, Hf, V, Nb, Ta, Cr, Mn, Fe, Co, Ni, Cu, Zn, Sc, Y, Al, Ga, In, Ge, Sn, Pb, W, Mo]
+    oxidation_states:
+      Ti: [4]
+      Zr: [4]
+      Hf: [4]
+      V: [3, 4, 5]
+      Nb: [5]
+      Ta: [5]
+      Cr: [3]
+      Mn: [2, 3, 4]
+      Fe: [2, 3]
+      Co: [2, 3]
+      Ni: [2, 3]
+      Cu: [1, 2]
+      Zn: [2]
+      Sc: [3]
+      Y: [3]
+      Al: [3]
+      Ga: [3]
+      In: [3]
+      Ge: [4]
+      Sn: [2, 4]
+      Pb: [2, 4]
+      W: [4, 6]
+      Mo: [4, 6]
+  X1:
+    description: First anion site
+    elements: [O, N, F, S]
+    oxidation_states: {O: [-2], N: [-3], F: [-1], S: [-2]}
+  X2:
+    description: Second anion site
+    elements: [O, N, F, S]
+    oxidation_states: {O: [-2], N: [-3], F: [-1], S: [-2]}
+  X3:
+    description: Third anion site
+    elements: [O, N, F, S]
+    oxidation_states: {O: [-2], N: [-3], F: [-1], S: [-2]}
+sampling_order: [X1, X2, X3, A, B]
+lattice:
+  rule: bond_sum
+  groups: [B, X1]
+  factor: 2.0
+  min: 3.0
+  max: 8.5
+# Every variant is an anion set ABSENT from Perov-5's seven sets, built only from anions Perov-5 contains.
+variants:
+  ONS:
+    description: "ABONS: one O, one N, one S"
+    groups:
+      X1: {elements: [O]}
+      X2: {elements: [N]}
+      X3: {elements: [S]}
+  OFS:
+    description: "ABOFS: one O, one F, one S"
+    groups:
+      X1: {elements: [O]}
+      X2: {elements: [F]}
+      X3: {elements: [S]}
+  NFS:
+    description: "ABNFS: one N, one F, one S"
+    groups:
+      X1: {elements: [N]}
+      X2: {elements: [F]}
+      X3: {elements: [S]}
+constraints:
+  - {name: min_distance, min: 0.8}
+  - {name: charge_neutrality}
+  - {name: bond_window, from: X1, to: B, low: 0.75, high: 1.35, cutoff: 5.0}
+  - {name: tolerance_factor, A: A, B: B, X: X1, min: 0.78, max: 1.08}
+  - {name: octahedral_factor, B: B, X: X1, min: 0.414, max: 0.90}
+refine_symmetry: true

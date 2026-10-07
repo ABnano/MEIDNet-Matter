@@ -1,0 +1,82 @@
+# Novel-anion-set perovskites (2026-10-07) — the fix for the blind spot in Entry 40.
+#
+# Perov-5 is a COMPLETE grid: 52 cations x 52 cations x 7 anion sets (O3, O2N, ON2, N3, O2F, OFN, O2S), so any ABX3
+# composition built from its elements with one of those sets is already IN the training data.  The novelty rule could
+# therefore only return compositions with an element the model had never seen (measured: 0 of 148 novel candidates came
+# from seen chemistry).  These families keep A, B and the anions inside Perov-5's elements and make the ANION SET novel,
+# so a candidate is novel AND in distribution.
+# NOTE designspace.enumerate_space skips combinations that repeat an element across groups, so a doubled anion must be ONE
+# group sitting on two sites — hence one family per anion-set shape.
+name: perovskite_ab_x3
+title: ABX3 perovskite, one anion element on all three sites (anion sets absent from Perov-5)
+description: >
+  Cubic ABX3 perovskite with a single anion element on the three face-centre sites. Slot order: A, B, then the anions.
+prototype:
+  lattice: cubic
+  reference_a: 4.4
+  sites:
+    - {group: A, frac: [0.0, 0.0, 0.0]}
+    - {group: B, frac: [0.5, 0.5, 0.5]}
+    - {group: X, frac: [0.0, 0.5, 0.5]}
+    - {group: X, frac: [0.5, 0.0, 0.5]}
+    - {group: X, frac: [0.5, 0.5, 0.0]}
+groups:
+  A:
+    description: Large cation at the cube corner; only cations present in Perov-5 (no unseen lanthanides)
+    elements: [Ba, Sr, Ca, Na, K, Rb, Cs, La]
+    oxidation_states: {Na: [1], K: [1], Rb: [1], Cs: [1], Ca: [2], Sr: [2], Ba: [2], La: [3]}
+  B:
+    description: Small cation at the cube centre (octahedral); all present in Perov-5
+    elements: [Ti, Zr, Hf, V, Nb, Ta, Cr, Mn, Fe, Co, Ni, Cu, Zn, Sc, Y, Al, Ga, In, Ge, Sn, Pb, W, Mo]
+    oxidation_states:
+      Ti: [4]
+      Zr: [4]
+      Hf: [4]
+      V: [3, 4, 5]
+      Nb: [5]
+      Ta: [5]
+      Cr: [3]
+      Mn: [2, 3, 4]
+      Fe: [2, 3]
+      Co: [2, 3]
+      Ni: [2, 3]
+      Cu: [1, 2]
+      Zn: [2]
+      Sc: [3]
+      Y: [3]
+      Al: [3]
+      Ga: [3]
+      In: [3]
+      Ge: [4]
+      Sn: [2, 4]
+      Pb: [2, 4]
+      W: [4, 6]
+      Mo: [4, 6]
+  X:
+    description: The single anion element, on all three sites
+    elements: [S, F]
+    oxidation_states: {S: [-2], F: [-1]}
+sampling_order: [X, A, B]
+lattice:
+  rule: bond_sum
+  groups: [B, X]
+  factor: 2.0
+  min: 3.0
+  max: 8.5
+variants:
+  sulfide:
+    description: "ABS3 chalcogenide perovskites (the BaZrS3 class of solar absorbers); anion set S3, absent from Perov-5"
+    groups:
+      X: {elements: [S]}
+  fluoride:
+    description: "ABF3 fluoride perovskites (KZnF3 class); anion set F3, absent from Perov-5 — many are known, so this
+      variant also tests rediscovery of real materials from chemistry the model has seen"
+    groups:
+      X: {elements: [F]}
+constraints:
+  - {name: min_distance, min: 0.8}
+  - {name: charge_neutrality}
+  - {name: bond_window, from: X, to: B, low: 0.75, high: 1.35, cutoff: 5.0}
+  - {name: tolerance_factor, A: A, B: B, X: X, min: 0.78, max: 1.08}
+  - {name: octahedral_factor, B: B, X: X, min: 0.414, max: 0.90}
+refine_symmetry: true

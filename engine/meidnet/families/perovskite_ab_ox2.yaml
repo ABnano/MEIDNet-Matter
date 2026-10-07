@@ -1,0 +1,67 @@
+# Mixed-anion cubic perovskites for discovery runs (2026-10-06). Same prototype and rules as perovskite_abx3, but the three
+# anion sites are split into two groups so that e.g. oxynitrides (ABO2N, ABON2) and oxyfluorides (ABO2F) can be generated.
+# Charge balance is enforced by the existing charge_neutrality rule and the charge-compatible last sampled group (B).
+name: perovskite_ab_ox2
+title: ABOX2 mixed-anion perovskite (one O + two X2 anions)
+description: >
+  Cubic ABX3 perovskite with two anion species on the three face-centre sites. Slot order: A, B, then the anions.
+prototype:
+  lattice: cubic
+  reference_a: 3.95
+  sites:
+    - {group: A, frac: [0.0, 0.0, 0.0]}
+    - {group: B, frac: [0.5, 0.5, 0.5]}
+    - {group: X1, frac: [0.0, 0.5, 0.5]}
+    - {group: X2, frac: [0.5, 0.0, 0.5]}
+    - {group: X2, frac: [0.5, 0.5, 0.0]}
+groups:
+  A:
+    description: Large cation at the cube corner
+    elements: [La, Ce, Pr, Nd, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Y, Ca, Sr, Ba]
+    oxidation_states: {La: [3], Ce: [3], Pr: [3], Nd: [3], Sm: [3], Eu: [3], Gd: [3], Tb: [3], Dy: [3], Ho: [3], Er: [3], Tm: [3], Yb: [3], Lu: [3], Y: [3], Ca: [2], Sr: [2], Ba: [2]}
+  B:
+    description: Small cation at the cube centre (octahedral)
+    elements: [Ti, Zr, Hf, Sn, Ge, V, Nb, Ta, W, Mo, Mn, Fe, Co, Ni, Cu, Zn, Mg, Al, Ga, Sc, In]
+    oxidation_states: {Ti: [4], Zr: [4], Hf: [4], Sn: [4], Ge: [4], V: [4, 5], Nb: [5], Ta: [5], W: [6], Mo: [6], Mn: [2, 3], Fe: [2, 3], Co: [2, 3], Ni: [2], Cu: [2], Zn: [2], Mg: [2], Al: [3], Ga: [3], Sc: [3], In: [3]}
+  X1:
+    description: Oxygen anions
+    elements: [O]
+    oxidation_states: {O: [-2]}
+  X2:
+    description: Second anion (N3- or F-)
+    elements: [N, F]
+    oxidation_states: {N: [-3], F: [-1]}
+sampling_order: [X1, X2, A, B]
+lattice:
+  rule: bond_sum
+  groups: [B, X1]
+  factor: 2.0
+  min: 3.0
+  max: 8.0
+variants:
+  oxynitride:
+    description: oxynitrides (X2 = N)
+    groups:
+      X2: {elements: [N]}
+    params:
+      tolerance_factor: {min: 0.78, max: 1.08}
+  oxyfluoride:
+    description: oxyfluorides (X2 = F)
+    groups:
+      X2: {elements: [F]}
+    params:
+      tolerance_factor: {min: 0.78, max: 1.08}
+constraints:
+  - {name: min_distance, min: 0.8}
+  - {name: charge_neutrality}
+  - {name: bond_window, from: X1, to: B, low: 0.75, high: 1.35, cutoff: 5.0}
+  - {name: tolerance_factor, A: A, B: B, X: X1, min: 0.78, max: 1.08}
+  - {name: octahedral_factor, B: B, X: X1, min: 0.414, max: 0.90}
+refine_symmetry: true
+symprec: 0.05
+search_terms:
+  - {name: site_separation, weight: 200}
+  - {name: site_repulsion, weight: 8000}
+  - {name: cubic_cell, volume_weight: 1000, cubicity_weight: 10000}
+  - {name: prototype_alignment, weight: 800}
+  - {name: short_distance_penalty, min: 0.8}

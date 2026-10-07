@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Material family: rock-salt-ordered double perovskite A2 B B' X6 (Fm-3m)
+#
+# Example of a SECOND family built with the same ingredients as perovskite_abx3:
+# a 10-atom primitive cell with two different octahedral cations that alternate
+# in three dimensions (e.g. Cs2AgBiBr6).  Use it as a template for your own
+# families; nothing in the Python code knows about this file.
+#
+# A model used with this family must have been trained on structures aligned to
+# this prototype (data.align_to_prototype: true, family: double_perovskite_a2bbx6).
+# ─────────────────────────────────────────────────────────────────────────────
+name: double_perovskite_a2bbx6
+title: Rock-salt ordered double perovskite A2BB'X6 (Fm-3m)
+description: >
+  Face-centred-cubic double perovskite: large A cations fill the cavities between
+  alternating B and B' octahedra. The primitive cell holds two formula units' worth
+  of sites (2 A, 1 B, 1 B', 6 X).
+
+prototype:
+  lattice: fcc_primitive       # rhombohedral primitive cell (a/√2, 60°) of the cubic cell of edge a
+  reference_a: 11.2            # Å, cubic cell edge (Cs2AgBiBr6 ≈ 11.27 Å)
+  sites:
+    - {group: A,  frac: [0.25, 0.25, 0.25]}
+    - {group: A,  frac: [0.75, 0.75, 0.75]}
+    - {group: B1, frac: [0.00, 0.00, 0.00]}
+    - {group: B2, frac: [0.50, 0.50, 0.50]}
+    - {group: X,  frac: [0.75, 0.25, 0.25]}
+    - {group: X,  frac: [0.25, 0.75, 0.25]}
+    - {group: X,  frac: [0.25, 0.25, 0.75]}
+    - {group: X,  frac: [0.25, 0.75, 0.75]}
+    - {group: X,  frac: [0.75, 0.25, 0.75]}
+    - {group: X,  frac: [0.75, 0.75, 0.25]}
+
+groups:
+  A:
+    description: Large cation in the cuboctahedral cavity
+    elements: [Cs, Rb, K, Na, Tl, Ba, Sr, Ca, La]
+    oxidation_states: {Cs: [1], Rb: [1], K: [1], Na: [1], Tl: [1], Ba: [2], Sr: [2], Ca: [2], La: [3]}
+  B1:
+    description: First octahedral cation (usually +1 or +2)
+    elements: [Ag, Na, K, Cu, Li, Tl, Au, In, Mg, Zn, Cd, Mn, Fe, Co, Ni]
+    oxidation_states: {Ag: [1], Na: [1], K: [1], Cu: [1, 2], Li: [1], Tl: [1], Au: [1, 3], In: [1, 3], Mg: [2],
+                       Zn: [2], Cd: [2], Mn: [2], Fe: [2, 3], Co: [2, 3], Ni: [2]}
+  B2:
+    description: Second octahedral cation (usually +3 or +4)
+    elements: [Bi, Sb, In, Tl, Sc, Y, La, Ga, Al, Fe, Cr, Ti, Zr, Hf, Sn, Nb, Ta, W, Mo, Te]
+    oxidation_states: {Bi: [3], Sb: [3], In: [3], Tl: [3], Sc: [3], Y: [3], La: [3], Ga: [3], Al: [3], Fe: [3],
+                       Cr: [3], Ti: [4], Zr: [4], Hf: [4], Sn: [4], Nb: [5], Ta: [5], W: [6], Mo: [6], Te: [4, 6]}
+  X:
+    description: Anion shared between neighbouring B and B' octahedra
+    elements: [F, Cl, Br, I, O]
+    oxidation_states: {F: [-1], Cl: [-1], Br: [-1], I: [-1], O: [-2]}
+
+sampling_order: [B1, B2, X, A]
+
+lattice:
+  rule: bond_sum               # cubic a = 2 (r_B1 + r_B2 + 2 r_X): one B–X–B' chain per half cell edge
+  groups: [B1, B2, X, X]
+  factor: 2.0
+  min: 7.0
+  max: 14.0
+
+variants:
+  halide:
+    description: Halide double perovskites (X = F, Cl, Br, I)
+    groups:
+      X: {elements: [F, Cl, Br, I]}
+    params:
+      tolerance_factor: {min: 0.80, max: 1.05}
+  oxide:
+    description: Oxide double perovskites (X = O)
+    groups:
+      X: {elements: [O]}
+      A: {elements: [Ba, Sr, Ca, La], oxidation_states: {Ba: [2], Sr: [2], Ca: [2], La: [3]}}
+    params:
+      tolerance_factor: {min: 0.85, max: 1.06}
+
+search_terms:
+  - {name: site_separation, weight: 200}
+  - {name: site_repulsion, weight: 8000}
+  - {name: cubic_cell, volume_weight: 1000, cubicity_weight: 10000}
+  - {name: prototype_alignment, weight: 800}
+  - {name: tolerance_penalty, weight: 1000, A: A, B: [B1, B2], X: X}
+  - {name: soft_charge, weight: 3000}
+  - {name: group_consistency, weight: 1500}
+  - {name: entropy_bonus, weight: 0.06}
+  - {name: short_distance_penalty, min: 0.8}
+
+logit_transforms:
+  - {name: neutrality_bias, group: X, bias: 8.0, topk: 3}
+
+constraints:
+  - {name: min_distance, min: 0.8}
+  - {name: charge_neutrality}
+  - {name: bond_window, from: X, to: B1, low: 0.75, high: 1.35, cutoff: 5.0}
+  - {name: tolerance_factor, A: A, B: [B1, B2], X: X, min: 0.80, max: 1.05}
+  - {name: octahedral_factor, B: [B1, B2], X: X, min: 0.414, max: 0.95}
+
+refine_symmetry: true
+symprec: 0.05
