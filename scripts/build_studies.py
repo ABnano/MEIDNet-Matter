@@ -142,7 +142,13 @@ def scrub_paths(obj):
 def copy_file(src: str, study_dir: str, name: str, files: dict, media: str) -> None:
     dst = os.path.join(study_dir, "files", name)
     os.makedirs(os.path.dirname(dst), exist_ok=True)
-    shutil.copyfile(src, dst)
+    if media.startswith("text/") or media.endswith("json"):      # LF only: the checksum must match the committed blob (.gitattributes eol=lf)
+        with open(src, "rb") as f:
+            data = f.read().replace(b"\r\n", b"\n")
+        with open(dst, "wb") as f:
+            f.write(data)
+    else:
+        shutil.copyfile(src, dst)
     files[name] = {"bytes": os.path.getsize(dst), "sha256": sha256_file(dst), "media": media}
 
 

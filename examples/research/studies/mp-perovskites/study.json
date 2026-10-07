@@ -97,9 +97,9 @@
  },
  "files": {
   "screen_novel_candidates.csv": {
-   "bytes": 1650,
+   "bytes": 1630,
    "media": "text/csv",
-   "sha256": "07e183f294e761e1bed8d5dee2dfc362db7a0e2ae45caaaa432fd678a7481eec"
+   "sha256": "c8f91370054e2467f27bf6cf26633276f53fbecc967dc59586e74b1d94d630f2"
   }
  },
  "headline": "The encoder and the alignment transfer; the decoder does not (64% → 1.4% composition recovery). This dataset gave the density rule that picks the mode before training.",
