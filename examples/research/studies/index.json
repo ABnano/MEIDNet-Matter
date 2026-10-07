@@ -1,0 +1,37 @@
+{
+ "schema": "meidnet-matter/studies/1",
+ "studies": [
+  {
+   "dataset": "Perov-5",
+   "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable, unique and novel candidates; known compounds returned at their measured gaps.",
+   "id": "perov5",
+   "mode": "generation (family: cubic ABX3)",
+   "order": 1,
+   "title": "Perov-5"
+  },
+  {
+   "dataset": "Materials Project perovskites",
+   "headline": "The encoder and the alignment transfer; the decoder does not (64% → 1.4% composition recovery). This dataset gave the density rule that picks the mode before training.",
+   "id": "mp-perovskites",
+   "mode": "screening",
+   "order": 2,
+   "title": "Materials Project perovskites"
+  },
+  {
+   "dataset": "User upload",
+   "headline": "The best encoder of any dataset on the smallest training set (0.19 spreads, r 0.97); the decoder cannot generate (0%), as the preview predicted; screening returned 13 metastable, formula-novel candidates in known structure types.",
+   "id": "user-246",
+   "mode": "screening",
+   "order": 3,
+   "title": "An external upload (246 structures)"
+  },
+  {
+   "dataset": "MP-20",
+   "headline": "Requested band gap in, relaxed structures out: 13 accepted from 175 generated, 6 new compositions, and known compounds returned at their recorded gaps.",
+   "id": "mp20",
+   "mode": "generation, family-free (symmetry decoder)",
+   "order": 4,
+   "title": "MP-20"
+  }
+ ]
+}

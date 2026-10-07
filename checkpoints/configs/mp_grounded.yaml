@@ -1,0 +1,28 @@
+# MEIDNet trained on the Materials Project corner-sharing perovskite set (919 structures, 5-20 atoms, many prototypes):
+# the "user uploads their own dataset" test of the general pipeline (2026-10-07).  mp_grounded: seed 0, structure-only losses 1.0.
+name: mp_grounded
+description: "mp_grounded: MP perovskites, site_order roles, cgcnn descriptors, periodic encoder, max_sites 20, structure losses 1.0"
+output_dir: /gpfs/scratch/acad/catalys/ababu/meidnet_fix/runs/mp_grounded/out
+data:
+  table: /gpfs/scratch/acad/catalys/ababu/meidnet_data/mp_perovskites/intake/train.csv
+  val_table: /gpfs/scratch/acad/catalys/ababu/meidnet_data/mp_perovskites/intake/val.csv
+  id_column: material_id
+  cif_column: cif
+  properties:
+    - {column: formation_energy_per_atom, label: Formation energy, unit: eV/atom, normalize: true}
+    - {column: band_gap,                  label: Band gap,         unit: eV,      normalize: true}
+  max_sites: 20
+  site_order: roles           # A-type cations (largest site) first, then B, then anions: from geometry, any cell size
+  align_to_prototype: false
+model:
+  decoder_coordinate_input: zeros
+  periodic_encoder: true
+  element_features: cgcnn
+training:
+  epochs: 300
+  batch_size: 64
+  learning_rate: 0.001
+  seed: 0
+  device: cpu
+  save_every: 50
+  loss_weights: {structure_reconstruction: 1.0, structure_property: 1.0}

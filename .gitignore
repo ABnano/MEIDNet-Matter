@@ -1,5 +1,7 @@
 # fetched or generated, never committed
-checkpoints/
+checkpoints/*
+!checkpoints/manifest.json
+!checkpoints/configs/
 data/
 runs/
 build/

@@ -1,0 +1,423 @@
+{
+ "checkpoints": [
+  {
+   "bytes": 2840642,
+   "config": null,
+   "dataset": "perov5",
+   "description": "The published Perov-5 model behind the demo project (Goal → Readiness → Candidates → Export).",
+   "file": "dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth",
+   "id": "perov5-2k",
+   "loadable": true,
+   "role": "demo",
+   "sha256": "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87",
+   "ship": true,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet/raw/main/checkpoints/dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth",
+    "https://huggingface.co/Babu09/MEIDNet/resolve/main/checkpoints/dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth"
+   ]
+  },
+  {
+   "bytes": 5147441,
+   "config": "configs/mp20_wyck.yaml",
+   "dataset": "mp20",
+   "description": "MP-20, symmetry decoder (space group and symmetry-distinct sites), 100 epochs: the model behind the target-following result and the live generator.",
+   "element_features": "cgcnn",
+   "epochs": 100,
+   "file": "mp20_wyck.pt",
+   "geometry": "wyckoff",
+   "id": "mp20-wyck",
+   "loadable": true,
+   "max_sites": 20,
+   "properties": [
+    "formation_energy_per_atom",
+    "band_gap"
+   ],
+   "role": "generation",
+   "seed": 0,
+   "sha256": "9b9157b45ca0d5f32cd8e8cb47dea112947a6fdf19b0aaa486391a5d64e86da1",
+   "ship": true,
+   "study": "mp20",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/mp20_wyck.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/mp20_wyck.pt"
+   ]
+  },
+  {
+   "bytes": 3340245,
+   "config": "configs/mp20_main.yaml",
+   "dataset": "mp20",
+   "description": "MP-20, free-coordinate decoder, 100 epochs: the baseline the symmetry decoder is compared with.",
+   "element_features": "cgcnn",
+   "epochs": 100,
+   "file": "mp20_main.pt",
+   "geometry": "free",
+   "id": "mp20-main",
+   "loadable": true,
+   "max_sites": 20,
+   "properties": [
+    "formation_energy_per_atom",
+    "band_gap"
+   ],
+   "role": "baseline",
+   "seed": 0,
+   "sha256": "a505f040acd15579a5a02a30f8f3155f793cab1c91ceeb275696178a157ac984",
+   "ship": true,
+   "study": "mp20",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/mp20_main.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/mp20_main.pt"
+   ]
+  },
+  {
+   "bytes": 2093205,
+   "config": "configs/desc_full.yaml",
+   "dataset": "perov5",
+   "description": "Perov-5, the final configuration of round 1 (descriptors, structure-read labels, unit-sphere search).",
+   "element_features": "cgcnn",
+   "epochs": 200,
+   "file": "desc_full.pt",
+   "geometry": "free",
+   "id": "desc-full",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "final",
+   "seed": 0,
+   "sha256": "24059804ceae1fafbf4279c527fa9974f5576f9de6d27753a975cd77a4a54b83",
+   "ship": true,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/desc_full.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/desc_full.pt"
+   ]
+  },
+  {
+   "bytes": 2013465,
+   "config": "configs/control.yaml",
+   "dataset": "perov5",
+   "description": "Perov-5 control: the same recipe without the structure losses; the configuration the bands were validated against.",
+   "element_features": null,
+   "epochs": 200,
+   "file": "control.pt",
+   "geometry": "free",
+   "id": "control",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "control",
+   "seed": 0,
+   "sha256": "4f366945fe0004e8458ee3174a6f3b32c974ee85c9c00c3643663b4d44fd34b9",
+   "ship": true,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/control.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/control.pt"
+   ]
+  },
+  {
+   "bytes": 2973973,
+   "config": "configs/mp_grounded.yaml",
+   "dataset": "mp-perovskites",
+   "description": "Materials Project perovskites, grounded recipe: the screening model of round 2.",
+   "element_features": "cgcnn",
+   "epochs": 300,
+   "file": "mp_grounded.pt",
+   "geometry": "free",
+   "id": "mp-grounded",
+   "loadable": true,
+   "max_sites": 20,
+   "properties": [
+    "formation_energy_per_atom",
+    "band_gap"
+   ],
+   "role": "screening",
+   "seed": 0,
+   "sha256": "803353b049712e7e059374fed8b9034834dc874b6c840f64a09b1650144b5f1a",
+   "ship": true,
+   "study": "mp-perovskites",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/mp_grounded.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/mp_grounded.pt"
+   ]
+  },
+  {
+   "bytes": 5196593,
+   "config": "configs/mp20_wyck_long.yaml",
+   "dataset": "mp20",
+   "description": "mp20-wyck continued to about 350 epochs: shows the alignment recovering to the baseline's value.",
+   "element_features": "cgcnn",
+   "epochs": 250,
+   "file": "mp20_wyck_long.pt",
+   "geometry": "wyckoff",
+   "id": "mp20-wyck-long",
+   "loadable": true,
+   "max_sites": 20,
+   "properties": [
+    "formation_energy_per_atom",
+    "band_gap"
+   ],
+   "role": "replicate",
+   "seed": 0,
+   "sha256": "a24f7684311992d3f179d47da7875569d02aa763d1048d74fab6e970230fab79",
+   "ship": false,
+   "study": "mp20",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/mp20_wyck_long.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/mp20_wyck_long.pt"
+   ]
+  },
+  {
+   "bytes": 5188653,
+   "config": "configs/mp20_wyck_bins.yaml",
+   "dataset": "mp20",
+   "description": "mp20-wyck with a 48-point discrete coordinate grid: kept as a negative result (structure-level accuracy unchanged).",
+   "element_features": "cgcnn",
+   "epochs": 100,
+   "file": "mp20_wyck_bins.pt",
+   "geometry": "wyckoff",
+   "id": "mp20-wyck-bins",
+   "loadable": true,
+   "max_sites": 20,
+   "properties": [
+    "formation_energy_per_atom",
+    "band_gap"
+   ],
+   "role": "negative-result",
+   "seed": 0,
+   "sha256": "8cd3e4d8a53682225c450d15f72adeb98a7512db832e39b6210127681b21c566",
+   "ship": false,
+   "study": "mp20",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/mp20_wyck_bins.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/mp20_wyck_bins.pt"
+   ]
+  },
+  {
+   "bytes": 2093269,
+   "config": "configs/desc_full_s1.yaml",
+   "dataset": "perov5",
+   "description": "Seed replicate of desc-full.",
+   "element_features": "cgcnn",
+   "epochs": 200,
+   "file": "desc_full_s1.pt",
+   "geometry": "free",
+   "id": "desc-full-s1",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "replicate",
+   "seed": 1,
+   "sha256": "52c16b1d42d371e122b12e88ee451060088343b24499c2616306201c749a1115",
+   "ship": false,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/desc_full_s1.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/desc_full_s1.pt"
+   ]
+  },
+  {
+   "bytes": 2019097,
+   "config": "configs/grounded.yaml",
+   "dataset": "perov5",
+   "description": "Perov-5 grounded recipe before descriptors.",
+   "element_features": null,
+   "epochs": 200,
+   "file": "grounded.pt",
+   "geometry": "free",
+   "id": "grounded",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "ablation",
+   "seed": 0,
+   "sha256": "4656ff14ca35ed97fa2cf9842260e8bd3fa3f8f26aae0760ae721ddaac1e50c7",
+   "ship": false,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/grounded.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/grounded.pt"
+   ]
+  },
+  {
+   "bytes": 2016281,
+   "config": "configs/prop_only.yaml",
+   "dataset": "perov5",
+   "description": "Perov-5 ablation: property losses only.",
+   "element_features": null,
+   "epochs": 200,
+   "file": "prop_only.pt",
+   "geometry": "free",
+   "id": "prop-only",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "ablation",
+   "seed": 0,
+   "sha256": "12045d99b0be30e5cb8d3f713b836c709d3e69db5b0ba988e058f536cd7ac708",
+   "ship": false,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/prop_only.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/prop_only.pt"
+   ]
+  },
+  {
+   "bytes": 2016281,
+   "config": "configs/recon_only.yaml",
+   "dataset": "perov5",
+   "description": "Perov-5 ablation: reconstruction losses only.",
+   "element_features": null,
+   "epochs": 200,
+   "file": "recon_only.pt",
+   "geometry": "free",
+   "id": "recon-only",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "ablation",
+   "seed": 0,
+   "sha256": "d5820e93c3a196b8d5de3a9e17fdd3cf860c0811c4810a755e707b98b4071306",
+   "ship": false,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/recon_only.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/recon_only.pt"
+   ]
+  },
+  {
+   "bytes": 2965525,
+   "config": "configs/mp_control.yaml",
+   "dataset": "mp-perovskites",
+   "description": "Materials Project perovskites control.",
+   "element_features": "cgcnn",
+   "epochs": 300,
+   "file": "mp_control.pt",
+   "geometry": "free",
+   "id": "mp-control",
+   "loadable": true,
+   "max_sites": 20,
+   "properties": [
+    "formation_energy_per_atom",
+    "band_gap"
+   ],
+   "role": "control",
+   "seed": 0,
+   "sha256": "595b77a5c04c48ae4d34de845641a2276c4510da2840c83e47c1ea27e17be29e",
+   "ship": false,
+   "study": "mp-perovskites",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/mp_control.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/mp_control.pt"
+   ]
+  },
+  {
+   "dataset": "perov5",
+   "description": "Three-seed CGCNN band-gap judge trained on Perov-5 (needs the CGCNN code to run).",
+   "files": [
+    {
+     "bytes": 341109,
+     "file": "judges/cgcnn_p5_seed0.pt",
+     "sha256": "cc6ed92273d181ff2cd0427c6aea1253ca4533c1a94d221338d2f63149a19255",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_p5_seed0.pt"
+     ]
+    },
+    {
+     "bytes": 341109,
+     "file": "judges/cgcnn_p5_seed1.pt",
+     "sha256": "0d6d2d3671f82d288808fad55a95b93881b605a42f5c8f37d29683c04a9e0944",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_p5_seed1.pt"
+     ]
+    },
+    {
+     "bytes": 341109,
+     "file": "judges/cgcnn_p5_seed2.pt",
+     "sha256": "ade6a4facae7690ec4b65cfb10280c6706a8f26fc94efb6241b3a26036cec9f3",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_p5_seed2.pt"
+     ]
+    },
+    {
+     "bytes": 232,
+     "file": "judges/cgcnn_p5_test_metrics.json",
+     "sha256": "9cbea6fd7bf01f30d1e752c11e41064ff080af1b99506019c21add87abd4af36",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_p5_test_metrics.json"
+     ]
+    }
+   ],
+   "id": "cgcnn-p5",
+   "loadable": false,
+   "needs": "cgcnn_repo",
+   "role": "judge",
+   "ship": false,
+   "study": "perov5"
+  },
+  {
+   "dataset": "mp-perovskites",
+   "description": "Three-seed CGCNN band-gap judge trained on the Materials Project perovskites.",
+   "files": [
+    {
+     "bytes": 341349,
+     "file": "judges/cgcnn_mpperov_seed0.pt",
+     "sha256": "751281f4ca20a87276216d3450af22ea577b9f24e92ed0b47d890c91e239266c",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_mpperov_seed0.pt"
+     ]
+    },
+    {
+     "bytes": 341349,
+     "file": "judges/cgcnn_mpperov_seed1.pt",
+     "sha256": "419126a48665bfeaac8a250befc8f699d6c2f3b2132de0eedd40c8838d076a90",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_mpperov_seed1.pt"
+     ]
+    },
+    {
+     "bytes": 341349,
+     "file": "judges/cgcnn_mpperov_seed2.pt",
+     "sha256": "4d2824e541848b424401f0888796e58b7adfdc982d331735a0bb873d2e05d3fa",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_mpperov_seed2.pt"
+     ]
+    },
+    {
+     "bytes": 228,
+     "file": "judges/cgcnn_mpperov_test_metrics.json",
+     "sha256": "7227e7da879ff15a9dd4dbdab6508af9a0bb3bb7de84d3d09c20f5ff0d7cf95c",
+     "urls": [
+      "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/cgcnn_mpperov_test_metrics.json"
+     ]
+    }
+   ],
+   "id": "cgcnn-mpperov",
+   "loadable": false,
+   "needs": "cgcnn_repo",
+   "role": "judge",
+   "ship": false,
+   "study": "mp-perovskites"
+  }
+ ],
+ "release": "v0.3.0",
+ "schema": "meidnet-matter/checkpoints/1"
+}

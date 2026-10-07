@@ -1,0 +1,1685 @@
+{
+ "blocks": [
+  {
+   "caveats": [
+    "S0 FAILs on Perov-5 for all configurations. That is a property of the dataset, not of the pipeline: it is a complete grid with 96% zero gaps. It is reported, not hidden."
+   ],
+   "components": [
+    "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on composition)",
+    "intake.py (audit, prototypes, composition-grouped split)",
+    "preview.py (the gate: runs with no model)",
+    "auto_family.py (design space learned from the data)"
+   ],
+   "id": "S0",
+   "metrics": [
+    {
+     "band": {
+      "fail": "> 0.5",
+      "pass": "≤ 0.2",
+      "warn": "≤ 0.5"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "intake.py (audit 'materials_sharing_profile_with_>=10')",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of materials whose rounded property vector is shared by at least 9 others.",
+     "id": "shared_profile",
+     "info_only": false,
+     "meaning_bad": "Many different materials have the same properties: property to structure has no unique answer, only a distribution of answers.",
+     "meaning_good": "Properties mostly identify a material, so a target has few possible answers.",
+     "name": "Materials sharing a property profile",
+     "new_dataset_note": "",
+     "pass_at": 0.2,
+     "recalibrated": "Was bundled with the zero share into one 'zero-inflation' check, which warned on the MP dataset for having 53% zero gaps even though its inverse problem is well posed (0% shared profiles). Zero share is now context; this is the graded part.",
+     "reference": {
+      "control": 0.93,
+      "final": 0.93,
+      "fixed": 0.93,
+      "mp": 0.0
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "FAIL",
+      "fixed": "FAIL",
+      "mp": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "Add another property column (more properties separate more materials), or accept a set of candidates rather than one.",
+     "superseded_by": "",
+     "unit": "share of materials",
+     "warn_at": 0.5
+    },
+    {
+     "band": {
+      "fail": "",
+      "pass": "context only",
+      "warn": ""
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "intake.py (audit 'properties.<target>.zero_share')",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of training materials whose target property is exactly zero.",
+     "id": "zero_share",
+     "info_only": true,
+     "meaning_bad": "",
+     "meaning_good": "",
+     "name": "Zero share of the target property",
+     "new_dataset_note": "",
+     "pass_at": null,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.96,
+      "final": 0.96,
+      "fixed": 0.96,
+      "mp": 0.53
+     },
+     "reference_grades": {
+      "control": "INFO",
+      "final": "INFO",
+      "fixed": "INFO",
+      "mp": "INFO"
+     },
+     "reference_note": "",
+     "remedy": "Context for the metal/non-metal metric in S1 and for how many targets are reachable.",
+     "superseded_by": "",
+     "unit": "share",
+     "warn_at": null
+    },
+    {
+     "band": {
+      "fail": "< 30",
+      "pass": "≥ 100",
+      "warn": "≥ 30"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "reliability_map.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Number of training materials within +-0.25 of the requested target value.",
+     "id": "target_support",
+     "info_only": false,
+     "meaning_bad": "Almost nothing in the data resembles the request, so labels there are extrapolation.",
+     "meaning_good": "Enough neighbours for the model to have learned this region.",
+     "name": "Training support at a target",
+     "new_dataset_note": "",
+     "pass_at": 100,
+     "recalibrated": "",
+     "reference": {},
+     "reference_grades": {},
+     "reference_note": "Perov-5: 10936 at 0 eV; 56 at 2 eV; 22 at 4 eV; 8 at 5 eV (the last two FAIL).",
+     "remedy": "Drop the target, or add data in that range.",
+     "superseded_by": "",
+     "unit": "materials",
+     "warn_at": 30
+    },
+    {
+     "band": {
+      "fail": "< 80",
+      "pass": "≥ 200",
+      "warn": "≥ 80"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "measured in the density experiment; computed by intake.py in the preview",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Mean number of distinct compositions each element appears in, across the training split.",
+     "id": "density",
+     "info_only": false,
+     "meaning_bad": "The decoder cannot learn a reliable latent to element mapping; generation will not work and the run must use screening.",
+     "meaning_good": "Each element is seen in enough different compounds for the decoder to learn it.",
+     "name": "Distinct compositions per element",
+     "new_dataset_note": "",
+     "pass_at": 200,
+     "recalibrated": "",
+     "reference": {
+      "final": 218,
+      "fixed": 218,
+      "mp": 12
+     },
+     "reference_grades": {
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "FAIL"
+     },
+     "reference_note": "Trained identically on Perov-5 subsets: 12 -> 0.1%, 30 -> 0.7%, 80 -> 5.4%, 218 -> 64% composition recovery (journal Entry 44), so this predicts S3 before training.",
+     "remedy": "Use screening mode (the pipeline switches automatically), or add data.",
+     "superseded_by": "",
+     "unit": "compositions/element",
+     "warn_at": 80
+    },
+    {
+     "band": {
+      "fail": "< 0.01",
+      "pass": "≥ 0.1",
+      "warn": "≥ 0.01"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "auto_family.py + discover.py stage 04",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Fraction of the charge-balanced design space built from the data's own chemistry that the data does not already contain.",
+     "id": "novelty_frontier",
+     "info_only": false,
+     "meaning_bad": "The dataset has already explored its own design space, so anything 'novel' requires chemistry the model has never seen.",
+     "meaning_good": "There is unexplored space to search.",
+     "name": "Share of the design space absent from the data",
+     "new_dataset_note": "",
+     "pass_at": 0.1,
+     "recalibrated": "",
+     "reference": {
+      "fixed": 0.0,
+      "mp": 0.63
+     },
+     "reference_grades": {
+      "fixed": "FAIL",
+      "mp": "PASS"
+     },
+     "reference_note": "Perov-5 is a complete 52x52x7 grid: 0 of 148 novel candidates avoided unseen elements (journal Entry 40). The MP set leaves 63% of its space unexplored.",
+     "remedy": "Enlarge the design space (more prototypes, more anion sets), not the element list.",
+     "superseded_by": "",
+     "unit": "share",
+     "warn_at": 0.01
+    }
+   ],
+   "name": "Data",
+   "purpose": "Check the uploaded data before any training: how well posed the inverse problem is, whether each target has support, and whether anything new can be reached at all.",
+   "question": "Is my data usable for property to structure design?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "preview"
+  },
+  {
+   "caveats": [],
+   "components": [
+    "pipeline_checkup.py (the graded checks)",
+    "model_metrics.py (held-out property prediction)",
+    "unseen_element_test.py (trust outside the training chemistry)"
+   ],
+   "id": "S1",
+   "metrics": [
+    {
+     "band": {
+      "fail": "> 1",
+      "pass": "≤ 0.7",
+      "warn": "≤ 1"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py / model_metrics.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Mean absolute error on materials with a non-zero target, divided by the standard deviation of that subset.",
+     "id": "gap_rel_mae",
+     "info_only": false,
+     "meaning_bad": "The label error is comparable to the whole spread of the property, so a target cannot be aimed at.",
+     "meaning_good": "Labels are accurate enough to aim with: the fixed pipeline at 0.53 supports rho 0.98 end to end.",
+     "name": "Target error relative to its spread",
+     "new_dataset_note": "",
+     "pass_at": 0.7,
+     "recalibrated": "The original band (0.25 / 0.50) graded every configuration FAIL, including the one that delivers rho 0.98, so it could not tell a working encoder from a broken one. Set from what is achievable and demonstrably sufficient, while still failing published (1.07) and control (1.99).",
+     "reference": {
+      "control": 1.989,
+      "final": 0.528,
+      "fixed": 0.527,
+      "mp": 0.643
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "More data, more epochs, or inspect label outliers.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 1.0
+    },
+    {
+     "band": {
+      "fail": "< 0.6",
+      "pass": "≥ 0.8",
+      "warn": "≥ 0.6"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Pearson r between predicted and true target on non-zero materials.",
+     "id": "gap_r",
+     "info_only": false,
+     "meaning_bad": "The model cannot rank materials by the property.",
+     "meaning_good": "The ordering of materials by the property is right, which is what a search needs.",
+     "name": "Target rank correlation",
+     "new_dataset_note": "",
+     "pass_at": 0.8,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.55,
+      "final": 0.86,
+      "fixed": 0.88,
+      "mp": 0.82
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "More data or more epochs.",
+     "superseded_by": "",
+     "unit": "r",
+     "warn_at": 0.6
+    },
+    {
+     "band": {
+      "fail": "< 0.85",
+      "pass": "≥ 0.95",
+      "warn": "≥ 0.85"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of test materials on the right side of the zero-gap boundary.",
+     "id": "metal_accuracy",
+     "info_only": false,
+     "meaning_bad": "The model cannot tell a metal from a semiconductor, so any gap target is meaningless.",
+     "meaning_good": "The model distinguishes conductors from semiconductors, the coarsest and most important call.",
+     "name": "Metal / non-metal accuracy",
+     "new_dataset_note": "",
+     "pass_at": 0.95,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.042,
+      "final": 0.975,
+      "fixed": 0.975,
+      "mp": 0.897
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "WARN"
+     },
+     "reference_note": "",
+     "remedy": "Switch the structure losses on (the control configuration shows their effect: 4% vs 98%).",
+     "superseded_by": "",
+     "unit": "share",
+     "warn_at": 0.85
+    },
+    {
+     "band": {
+      "fail": "> 0.5",
+      "pass": "≤ 0.25",
+      "warn": "≤ 0.5"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Mean absolute error of the stability or energy property, divided by its standard deviation.",
+     "id": "cost_rel_mae",
+     "info_only": false,
+     "meaning_bad": "Stability predictions are not usable.",
+     "meaning_good": "The stability estimate is usable for ranking.",
+     "name": "Second property error relative to its spread",
+     "new_dataset_note": "",
+     "pass_at": 0.25,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.802,
+      "final": 0.07,
+      "fixed": 0.07,
+      "mp": 0.11
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "More data or more epochs.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 0.5
+    },
+    {
+     "band": {
+      "fail": "> 0.5",
+      "pass": "≤ 0.25",
+      "warn": "≤ 0.5"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Error of a 5-nearest-neighbour prediction in the structure latent, divided by the property spread.",
+     "id": "knn_rel_mae",
+     "info_only": false,
+     "meaning_bad": "The latent is not organised by the property, so searching it cannot find the property.",
+     "meaning_good": "Materials with similar properties sit together in the latent, which is what makes a latent search possible.",
+     "name": "Latent organised by property",
+     "new_dataset_note": "",
+     "pass_at": 0.25,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.15,
+      "final": 0.081,
+      "fixed": 0.09,
+      "mp": 0.277
+     },
+     "reference_grades": {
+      "control": "PASS",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "WARN"
+     },
+     "reference_note": "The published app PASSES this while failing the property read-out: its latent was fine, its head was broken. That contrast is why these are separate metrics.",
+     "remedy": "More training, or check the alignment weight.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 0.5
+    },
+    {
+     "band": {
+      "fail": "> 2.5",
+      "pass": "≤ 1.5",
+      "warn": "≤ 2.5"
+     },
+     "better": "lower",
+     "cap": "WARN",
+     "computed_by": "unseen_element_test.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Target error on materials containing a held-out element, divided by the error on seen chemistry.",
+     "id": "unseen_degradation",
+     "info_only": false,
+     "meaning_bad": "Labels for materials containing new elements rest on untrained embeddings.",
+     "meaning_good": "Labels can be trusted for elements beyond the training set.",
+     "name": "Trust outside the training chemistry",
+     "new_dataset_note": "",
+     "pass_at": 1.5,
+     "recalibrated": "",
+     "reference": {},
+     "reference_grades": {},
+     "reference_note": "Measured on SEPARATE models trained with La/Y held out, not on the configurations in the table, so no per-configuration value is stored: 2.9x, 3.1x and 3.4x worse (0.85 -> 2.50 eV, 0.86 -> 2.64, 0.79 -> 2.65). On Perov-5 this makes lanthanide labels run about 0.7 eV low. Capped at WARN because it bounds the SCOPE of a working encoder rather than showing a broken one; it only bites when the design space needs unseen elements, which on Perov-5 it always does (0 of 148 novel candidates avoided them).",
+     "remedy": "Keep candidates inside the training chemistry, or state the bias explicitly.",
+     "superseded_by": "",
+     "unit": "ratio",
+     "warn_at": 2.5
+    }
+   ],
+   "name": "Encoder (structure to property)",
+   "purpose": "The label of every candidate, read from the returned structure, comes from this block, so its error is the floor on how precisely any target can be hit.",
+   "question": "Does the model read properties from structures correctly?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after training"
+  },
+  {
+   "caveats": [],
+   "components": [
+    "pipeline_checkup.py (retrieval and matched cosine)",
+    "reliability_map.py (distance of a target's latent)"
+   ],
+   "id": "S2",
+   "metrics": [
+    {
+     "band": {
+      "fail": "< 5",
+      "pass": "≥ 20",
+      "warn": "≥ 5"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Top-1 retrieval of the matching property profile from a structure latent, as a multiple of chance.",
+     "id": "retrieval_vs_chance",
+     "info_only": false,
+     "meaning_bad": "The two latents are unrelated, so a property cannot aim the search.",
+     "meaning_good": "A property latent points at the right region of structure space.",
+     "name": "Retrieval above chance",
+     "new_dataset_note": "",
+     "pass_at": 20,
+     "recalibrated": "",
+     "reference": {
+      "control": 42.1,
+      "final": 44.7,
+      "fixed": 40.1,
+      "mp": 25.0
+     },
+     "reference_grades": {
+      "control": "PASS",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "This block PASSES in the broken app too, and most strongly of all (123x). Alignment was never the fault; tuning it would have been wasted work.",
+     "remedy": "Raise the alignment weight or train longer.",
+     "superseded_by": "",
+     "unit": "x chance",
+     "warn_at": 5
+    },
+    {
+     "band": {
+      "fail": "< 0.4",
+      "pass": "≥ 0.6",
+      "warn": "≥ 0.4"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Cosine between the structure and property latents of the same material.",
+     "id": "matched_cosine",
+     "info_only": false,
+     "meaning_bad": "The two views disagree.",
+     "meaning_good": "The two views of one material agree.",
+     "name": "Matched cosine",
+     "new_dataset_note": "",
+     "pass_at": 0.6,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.53,
+      "final": 0.61,
+      "fixed": 0.62,
+      "mp": 0.79
+     },
+     "reference_grades": {
+      "control": "WARN",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "Raise the alignment weight.",
+     "superseded_by": "",
+     "unit": "cosine",
+     "warn_at": 0.4
+    },
+    {
+     "band": {
+      "fail": "",
+      "pass": "context only",
+      "warn": ""
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "reliability_map.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "One minus the largest cosine between a target's property latent and any training structure latent.",
+     "id": "target_latent_distance",
+     "info_only": true,
+     "meaning_bad": "",
+     "meaning_good": "",
+     "name": "Distance of a target's latent from the structure manifold",
+     "new_dataset_note": "",
+     "pass_at": null,
+     "recalibrated": "",
+     "reference": {
+      "final": 0.33
+     },
+     "reference_grades": {
+      "final": "INFO"
+     },
+     "reference_note": "0.31-0.35 for every target, against 0.000-0.046 between real structures: a target's latent sits about 8x further out than any structure the decoder was trained on.",
+     "remedy": "Context: explains why the property latent cannot be decoded directly.",
+     "superseded_by": "",
+     "unit": "distance",
+     "warn_at": null
+    }
+   ],
+   "name": "Alignment (structure and property latents)",
+   "purpose": "Whether a property can be used to point at a region of structure space.",
+   "question": "Do the two latents line up?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after training"
+  },
+  {
+   "caveats": [
+    "A WARN here is expected when the data is thin: 64% on Perov-5 is close to what 218 compositions per element allows. The remedy is data or screening, not tuning."
+   ],
+   "components": [
+    "pipeline_checkup.py (recovery under generation conditions)",
+    "decoder_autopsy.py (why it fails: collapse, cell size, prototype, density)",
+    "lattice_source.py (lattice from the decoder vs from a radii rule)"
+   ],
+   "id": "S3",
+   "metrics": [
+    {
+     "band": {
+      "fail": "< 50",
+      "pass": "≥ 80",
+      "warn": "≥ 50"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py / decoder_autopsy.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of test materials whose exact composition is decoded back from their structure latent, under the same conditions as generation (zero start coordinates).",
+     "id": "comp_exact_gen",
+     "info_only": false,
+     "meaning_bad": "The decoder cannot reconstruct compositions; the run must screen the design space instead of generating.",
+     "meaning_good": "The decoder can propose compositions, so the generative engine may be used.",
+     "name": "Composition recovered from the structure latent",
+     "new_dataset_note": "",
+     "pass_at": 80,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.98,
+      "final": 64.1,
+      "fixed": 51.4,
+      "mp": 1.37
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "WARN",
+      "fixed": "WARN",
+      "mp": "FAIL"
+     },
+     "reference_note": "",
+     "remedy": "Use screening mode, or add data (see the density metric in S0).",
+     "superseded_by": "",
+     "unit": "%",
+     "warn_at": 50
+    },
+    {
+     "band": {
+      "fail": "> 30",
+      "pass": "≤ 10",
+      "warn": "≤ 30"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Percentage points of composition recovery lost when the decoder is given the inputs it gets at generation time instead of the ones it was trained on.",
+     "id": "condition_drop",
+     "info_only": false,
+     "meaning_bad": "The decoder was trained on inputs it never gets at generation time, so generation silently fails.",
+     "meaning_good": "The decoder is run the way it was trained.",
+     "name": "Training to generation condition drop",
+     "new_dataset_note": "",
+     "pass_at": 10,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.05,
+      "final": -0.08,
+      "fixed": -0.98,
+      "mp": -0.69
+     },
+     "reference_grades": {
+      "control": "PASS",
+      "final": "PASS",
+      "fixed": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "This diagnoses the published app's specific bug (trained on true atom positions, run with zeros: 86 -> 0%). It measures the MISMATCH, not the capability: the control model passes it at 7% -> 8%, equally unable in both. Always read it with comp_exact_gen.",
+     "remedy": "Train the decoder with the generation-time inputs (zero coordinates).",
+     "superseded_by": "",
+     "unit": "points",
+     "warn_at": 30
+    },
+    {
+     "band": {
+      "fail": "",
+      "pass": "context only",
+      "warn": ""
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of test materials decoded correctly from their property latent only.",
+     "id": "comp_exact_from_property",
+     "info_only": true,
+     "meaning_bad": "",
+     "meaning_good": "",
+     "name": "Composition recovered from the property latent alone",
+     "new_dataset_note": "",
+     "pass_at": null,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.08,
+      "final": 0.03,
+      "fixed": 0.0,
+      "mp": 0.0
+     },
+     "reference_grades": {
+      "control": "INFO",
+      "final": "INFO",
+      "fixed": "INFO",
+      "mp": "INFO"
+     },
+     "reference_note": "",
+     "remedy": "Context: 0% is expected, because many structures share a property. The search resolves this.",
+     "superseded_by": "",
+     "unit": "%",
+     "warn_at": null
+    },
+    {
+     "band": {
+      "fail": "> 0.2",
+      "pass": "≤ 0.1",
+      "warn": "≤ 0.2"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "lattice_source.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Mean absolute error of the generated lattice constant against an ML-potential relaxation.",
+     "id": "lattice_error",
+     "info_only": false,
+     "meaning_bad": "Generated cells are the wrong size.",
+     "meaning_good": "Generated cells are the right size.",
+     "name": "Lattice constant error",
+     "new_dataset_note": "",
+     "pass_at": 0.1,
+     "recalibrated": "",
+     "reference": {
+      "final": 0.076
+     },
+     "reference_grades": {
+      "final": "PASS"
+     },
+     "reference_note": "Decoder at the structure latent 0.076 A; the radii rule it replaced 0.164 A; the decoder read at the off-manifold search latent 0.688 A (journal Entry 41).",
+     "remedy": "Read the lattice from the decoder at the structure latent rather than from a radii rule.",
+     "superseded_by": "",
+     "unit": "Angstrom",
+     "warn_at": 0.2
+    }
+   ],
+   "name": "Decoder (latent to structure)",
+   "purpose": "Whether the pipeline can propose structures itself, or must screen an enumerated design space instead.",
+   "question": "Can a latent be turned back into a material?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after training"
+  },
+  {
+   "caveats": [],
+   "components": [
+    "pipeline_checkup.py (label-source check and latent-length sensitivity)"
+   ],
+   "id": "S4",
+   "metrics": [
+    {
+     "band": {
+      "fail": "> 0.25",
+      "pass": "≤ 0.1",
+      "warn": "≤ 0.25"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Absolute difference between the label shown for a candidate and the property predicted from the structure actually returned, divided by the property spread.",
+     "id": "label_rel_mae",
+     "info_only": false,
+     "meaning_bad": "The number shown does not describe the material shown.",
+     "meaning_good": "The label belongs to the structure the user receives.",
+     "name": "Label describes the returned structure",
+     "new_dataset_note": "",
+     "pass_at": 0.1,
+     "recalibrated": "",
+     "reference": {
+      "control": 2.526,
+      "final": 0.0,
+      "fixed": 0.0
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS"
+     },
+     "reference_note": "This catches the central bug of the published app: the label came from the search latent and was attached to whatever composition was decoded, a 2.57 eV discrepancy. After the fix it is 0.00 by construction, so this metric is a regression guard.",
+     "remedy": "Read the label back from the returned structure (label_source=structure). Locked on in the app.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 0.25
+    },
+    {
+     "band": {
+      "fail": "> 6",
+      "pass": "≤ 3",
+      "warn": "≤ 6"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": [
+      "search_length_ratio",
+      "gt",
+      1.25
+     ],
+     "dataset_agnostic": true,
+     "definition": "Change in predictions, in property spreads, when the latent is stretched from length 1 to 4.",
+     "id": "head_length_sensitivity",
+     "info_only": false,
+     "meaning_bad": "Predictions change wildly with latent length, so a search that drifts away from length 1 produces meaningless labels.",
+     "meaning_good": "Predictions do not depend on how long the latent is.",
+     "name": "Sensitivity to latent length",
+     "new_dataset_note": "",
+     "pass_at": 3.0,
+     "recalibrated": "The original band (0.25 / 0.50 spreads) graded every configuration FAIL, including the fixed one, for a hazard that cannot arise there: the fixed search holds the latent at length 1.00. The metric is now conditional on the search actually drifting (S5 length ratio > 1.25), which is the accurate statement of what the unit sphere does: it removes a hazard rather than improving results.",
+     "reference": {
+      "control": 21.81,
+      "final": 2.26,
+      "fixed": 2.15,
+      "mp": 1.62
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "INFO",
+      "fixed": "INFO",
+      "mp": "INFO"
+     },
+     "reference_note": "",
+     "remedy": "Constrain the search to the unit sphere. Locked on in the app.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 6.0
+    }
+   ],
+   "name": "Property head (labels)",
+   "purpose": "Whether the number displayed for a candidate is really that candidate's predicted property.",
+   "question": "Does the label shown describe the returned structure?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after a run"
+  },
+  {
+   "caveats": [
+    "On-manifold sampling and the novelty rule conflict: it samples between known structures, so with novelty required it returned 0 candidates in 3 of 4 arms. The search mode is therefore a choice by goal, not a quality setting."
+   ],
+   "components": [
+    "eval_generate.py (engine and screen modes)",
+    "screen_polymorphs.py (polymorph-aware screening)",
+    "steer_test.py (raw steering before any filter)",
+    "conditional_generate.py --geometry wyckoff (family-free generation: symmetry decoder, label read from the returned structure, anion required, cell capped, no latent refinement)"
+   ],
+   "id": "S5",
+   "metrics": [
+    {
+     "band": {
+      "fail": "> 2",
+      "pass": "≤ 1.25",
+      "warn": "≤ 2"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Median length of the final search latents divided by the median length of training structure latents.",
+     "id": "search_length_ratio",
+     "info_only": false,
+     "meaning_bad": "The search left the scale of the training latents, so the property head is being read far outside its domain.",
+     "meaning_good": "The search stays at the scale the model was trained on.",
+     "name": "Latent length ratio",
+     "new_dataset_note": "",
+     "pass_at": 1.25,
+     "recalibrated": "",
+     "reference": {
+      "control": 4.517,
+      "final": 1.0,
+      "fixed": 1.0
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "Constrain the search to the unit sphere.",
+     "superseded_by": "",
+     "unit": "ratio",
+     "warn_at": 2.0
+    },
+    {
+     "band": {
+      "fail": "< 0.85",
+      "pass": "≥ 0.95",
+      "warn": "≥ 0.85"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "pipeline_checkup.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Median largest cosine between a final search latent and any training structure latent.",
+     "id": "search_manifold_cos",
+     "info_only": false,
+     "meaning_bad": "Proposals come from empty latent space, where nothing was ever trained.",
+     "meaning_good": "Proposals come from the populated part of the latent space.",
+     "name": "Distance to the data manifold",
+     "new_dataset_note": "",
+     "pass_at": 0.95,
+     "recalibrated": "",
+     "reference": {
+      "control": 0.199,
+      "final": 0.992,
+      "fixed": 0.342
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "FAIL"
+     },
+     "reference_note": "",
+     "remedy": "Sample between nearest real structure latents instead of following a gradient.",
+     "superseded_by": "",
+     "unit": "cosine",
+     "warn_at": 0.85
+    },
+    {
+     "band": {
+      "fail": "< 0.3",
+      "pass": "≥ 0.6",
+      "warn": "≥ 0.3"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "steer_test.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Spearman correlation between the requested target and the true property of the raw proposals, with no filtering applied.",
+     "id": "raw_steering_rho",
+     "info_only": false,
+     "meaning_bad": "The search is not conditioned on the target: any apparent success comes from the filter alone.",
+     "meaning_good": "The proposals themselves are conditioned on the target; the result is not an artefact of filtering.",
+     "name": "Raw steering, before any filter",
+     "new_dataset_note": "",
+     "pass_at": 0.6,
+     "recalibrated": "",
+     "reference": {
+      "final": 0.85
+     },
+     "reference_grades": {
+      "final": "PASS"
+     },
+     "reference_note": "Final configuration +0.85 (replicate +0.84) against about 0 for random proposals. This is the only clean evidence of real conditioning, because it is measured before filtering.",
+     "remedy": "Aim the search with the property latent; check the alignment block.",
+     "superseded_by": "",
+     "unit": "rho",
+     "warn_at": 0.3
+    },
+    {
+     "band": {
+      "fail": "> 25",
+      "pass": "≤ 10",
+      "warn": "≤ 25"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "ablation_summary.json",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Difference in hit rate, in percentage points, between two training seeds of the same configuration.",
+     "id": "seed_spread",
+     "info_only": false,
+     "meaning_bad": "The result depends on the seed, so a single run must not be reported as an improvement.",
+     "meaning_good": "The result is reproducible across seeds.",
+     "name": "Seed reproducibility",
+     "new_dataset_note": "",
+     "pass_at": 10,
+     "recalibrated": "",
+     "reference": {
+      "final": 26.5,
+      "fixed": 1.8
+     },
+     "reference_grades": {
+      "final": "FAIL",
+      "fixed": "PASS"
+     },
+     "reference_note": "Full fix 67.3 vs 65.5 (1.8 points). On-manifold search 83.3 vs 56.8 (26.5 points), which is why its advantage over the plain baseline is reported as unproven.",
+     "remedy": "Always run at least two seeds and report the range.",
+     "superseded_by": "",
+     "unit": "points",
+     "warn_at": 25
+    }
+   ],
+   "name": "Search (proposal engine)",
+   "purpose": "Whether proposals come from a region the model has seen, and whether they are conditioned on the target at all.",
+   "question": "Is the search aimed at my target, and does it stay where the model is trusted?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after a run"
+  },
+  {
+   "caveats": [
+    "Random proposals plus the structure-read label filter already reach 64.1%, so most of the end-to-end gain comes from the filter rather than from the search. Reported, not hidden.",
+    "Family-free generation on MP-20: the latent refinement steps made the property decoder say the target while pushing the structure decoder into metals (semiconductor share 20% with them, 42-62% without), so the symmetry path uses the target anchor alone."
+   ],
+   "components": [
+    "eval_analyse.py (ablation summary)",
+    "exhaustive_truth.py + generator_vs_truth.py (precision and recall against exact truth)",
+    "screen_polymorphs.py --truth test (hold-out rediscovery, the generic replacement on a user dataset)",
+    "target_calibration.py (qualified independent judge, fidelity chosen by measurement; --select = two-judge consensus with a charge-balance flag)",
+    "instrument_sheet.py (response curve, bias, precision, accuracy with CI, linearity, resolution, range, yield)",
+    "generate_to_target.py (the one command: generate -> judge -> relax -> re-judge -> report)"
+   ],
+   "id": "S6",
+   "metrics": [
+    {
+     "band": {
+      "fail": "< 0.4",
+      "pass": "≥ 0.7",
+      "warn": "≥ 0.4"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "eval_analyse.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Spearman correlation between the requested target and the reference property of what was returned.",
+     "id": "rho_target",
+     "info_only": false,
+     "meaning_bad": "What is returned is unrelated to what was asked for.",
+     "meaning_good": "Asking for more gap returns more gap: the pipeline follows the target.",
+     "name": "Target vs true property of the returned structures",
+     "new_dataset_note": "On Perov-5 the whole grid has DFT, so this is measured directly. On a user's dataset the equivalent is the hold-out rediscovery test: hide the test split, screen, and compare with its DFT.",
+     "pass_at": 0.7,
+     "recalibrated": "",
+     "reference": {
+      "control": -0.09,
+      "final": 0.98,
+      "fixed": 0.98
+     },
+     "reference_grades": {
+      "control": "FAIL",
+      "final": "PASS",
+      "fixed": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "Check S4 (labels read from the returned structure) first: that is what fixed it here.",
+     "superseded_by": "",
+     "unit": "rho",
+     "warn_at": 0.4
+    },
+    {
+     "band": {
+      "fail": "< 1.5",
+      "pass": "≥ 3",
+      "warn": "≥ 1.5"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "eval_analyse.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of returned candidates within the target window, divided by the same share for random valid compositions.",
+     "id": "hit_vs_random",
+     "info_only": false,
+     "meaning_bad": "The pipeline is no better than guessing.",
+     "meaning_good": "The pipeline is far better than guessing.",
+     "name": "Hit rate against a blind draw",
+     "new_dataset_note": "",
+     "pass_at": 3.0,
+     "recalibrated": "",
+     "reference": {
+      "final": 10.8,
+      "fixed": 8.7
+     },
+     "reference_grades": {
+      "final": "PASS",
+      "fixed": "PASS"
+     },
+     "reference_note": "Published 9.5% against a 7.7% random baseline (1.2x). Fixed 67.3% (8.7x). Best 83.3% (10.8x), replicate 56.8% (7.4x). A DFT oracle on the same space reaches 21.4%.",
+     "remedy": "Check S4 and S1.",
+     "superseded_by": "",
+     "unit": "x random",
+     "warn_at": 1.5
+    },
+    {
+     "band": {
+      "fail": "> 1",
+      "pass": "≤ 0.5",
+      "warn": "≤ 1"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "eval_analyse.py",
+     "conditional_on": null,
+     "dataset_agnostic": false,
+     "definition": "Mean absolute difference between the label shown and the reference property of the returned material.",
+     "id": "label_mae_dft",
+     "info_only": false,
+     "meaning_bad": "The promised property is far from the real one.",
+     "meaning_good": "The promised property is close to the real one.",
+     "name": "Label error against the reference",
+     "new_dataset_note": "Express in spreads of the target property to transfer between datasets.",
+     "pass_at": 0.5,
+     "recalibrated": "",
+     "reference": {
+      "final": 0.18,
+      "fixed": 0.33
+     },
+     "reference_grades": {
+      "final": "PASS",
+      "fixed": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "Check S4 and S1.",
+     "superseded_by": "",
+     "unit": "eV",
+     "warn_at": 1.0
+    },
+    {
+     "band": {
+      "fail": "> 1.5",
+      "pass": "≤ 1",
+      "warn": "≤ 1.5"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "conditional_generate.py --geometry wyckoff + target_calibration.py --judge megnet",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Mean absolute difference between the requested property and a QUALIFIED independent judge's value for the generated structures, over the whole pool before any consensus selection.  Measures the generator, not the filter.",
+     "id": "judge_mae_request",
+     "info_only": false,
+     "meaning_bad": "The generator returns the training set's dominant answer (for MP-20: zero-gap intermetallics) whatever was asked for; the model's own search-latent label hides this by reading the request back.",
+     "meaning_good": "Asking for a gap returns structures whose independently judged gap is near it.",
+     "name": "Independent judge against the request (family-free generation)",
+     "new_dataset_note": "",
+     "pass_at": 1.0,
+     "recalibrated": "",
+     "reference": {
+      "mp20": 1.1,
+      "mp20_before": 2.0
+     },
+     "reference_grades": {
+      "mp20": "WARN",
+      "mp20_before": "FAIL"
+     },
+     "reference_note": "MP-20, 7 targets 0.5-4 eV: search-latent labels + free chemistry 2.00 eV (77 of 84 metals); label read from the returned structure, no refinement, anion required, cell capped: 1.10 eV (24 of 175 metals). Saturates above 3 eV.",
+     "remedy": "Read the label from the returned structure, not the search latent (S4); use the target anchor with no latent refinement; require an anion; cap the cell at the encoder's max_sites so every candidate can be re-encoded.  Each of these was measured separately on MP-20.",
+     "superseded_by": "",
+     "unit": "eV",
+     "warn_at": 1.5
+    },
+    {
+     "band": {
+      "fail": "< 0.05",
+      "pass": "≥ 0.15",
+      "warn": "≥ 0.05"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "target_calibration.py --select 0.5",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of the generated pool that BOTH the model's own label, read from the returned structure, and the qualified independent judge place within 0.5 eV of the request.  This is the set a user may be shown.",
+     "id": "consensus_yield",
+     "info_only": false,
+     "meaning_bad": "Almost nothing survives both judges: the target is outside what this model and data can serve.",
+     "meaning_good": "Enough candidates survive two independent judges to serve the target.",
+     "name": "Two-judge consensus yield",
+     "new_dataset_note": "",
+     "pass_at": 0.15,
+     "recalibrated": "",
+     "reference": {
+      "mp20": 0.21
+     },
+     "reference_grades": {
+      "mp20": "PASS"
+     },
+     "reference_note": "MP-20: 37 of 175; 14 at 0.5 eV, 8 at 1.5, 5 at 2.0, 5 at 2.5, 2 at 3.0, 1 at 4.0.",
+     "remedy": "Widen the window only with the error band shown; otherwise report the target as not servable (S9).",
+     "superseded_by": "",
+     "unit": "share of pool",
+     "warn_at": 0.05
+    }
+   ],
+   "name": "End-to-end target following",
+   "purpose": "The question the whole pipeline exists to answer.",
+   "question": "Do the proposed materials actually hit my target?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after a run"
+  },
+  {
+   "caveats": [
+    "No DFT is run anywhere in this pipeline. Stability rests on two ML potentials agreeing, and is labelled as such."
+   ],
+   "components": [
+    "candidate_cells.py (two independent ML potentials)",
+    "sun_validate.py (hull, formability, novelty)",
+    "perovskite_geometry.py (corner-sharing test)",
+    "prefetch_mp.py (Materials Project data, login node)",
+    "relax_cache.py, stability_distorted.py (relaxation helpers)",
+    "d1_mlip_check.py (two potentials on generated cells: drop on relaxation, displacement, space group kept)"
+   ],
+   "id": "S7",
+   "metrics": [
+    {
+     "band": {
+      "fail": "< 0.7",
+      "pass": "≥ 0.9",
+      "warn": "≥ 0.7"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "candidate_cells.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of candidates for which two independent ML potentials relax to the same space group.",
+     "id": "mlip_agreement",
+     "info_only": false,
+     "meaning_bad": "The two potentials disagree, so the structure and its stability are not trustworthy.",
+     "meaning_good": "The relaxed structure does not depend on which potential was used.",
+     "name": "Two potentials agree",
+     "new_dataset_note": "",
+     "pass_at": 0.9,
+     "recalibrated": "",
+     "reference": {
+      "final": 1.0,
+      "mp": 1.0
+     },
+     "reference_grades": {
+      "final": "PASS",
+      "mp": "PASS"
+     },
+     "reference_note": "70/70 on the discovery set (median lattice difference 0.024 A) and 16/16 on the MP set.",
+     "remedy": "Report the disagreement; do not claim stability.",
+     "superseded_by": "",
+     "unit": "share",
+     "warn_at": 0.7
+    },
+    {
+     "band": {
+      "fail": "< 0",
+      "pass": "≥ 1",
+      "warn": "≥ 0"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "discovery_report.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Number of returned candidates that are experimentally known compounds, at their measured property.",
+     "id": "rediscoveries",
+     "info_only": false,
+     "meaning_bad": "No known material was recovered; say so rather than implying validation.",
+     "meaning_good": "The pipeline recovers real materials it was never shown, the most persuasive single check.",
+     "name": "Known materials rediscovered",
+     "new_dataset_note": "",
+     "pass_at": 1,
+     "recalibrated": "",
+     "reference": {
+      "final": 7
+     },
+     "reference_grades": {
+      "final": "PASS"
+     },
+     "reference_note": "",
+     "remedy": "Relax the novelty filter for one run to see whether known compounds are reachable.",
+     "superseded_by": "",
+     "unit": "compounds",
+     "warn_at": 0
+    },
+    {
+     "band": {
+      "fail": "",
+      "pass": "context only",
+      "warn": ""
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "sun_validate.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Share of validated candidates within the hull-distance threshold.",
+     "id": "stable_share",
+     "info_only": true,
+     "meaning_bad": "",
+     "meaning_good": "",
+     "name": "Stable share of the proposals",
+     "new_dataset_note": "",
+     "pass_at": null,
+     "recalibrated": "",
+     "reference": {
+      "final": 0.4
+     },
+     "reference_grades": {
+      "final": "INFO"
+     },
+     "reference_note": "Funnel on the discovery set: 70 validated -> 68 absent from Materials Project -> 61 not in the literature -> 51 formable -> 17 stable -> 8 after the judges.",
+     "remedy": "Context: report the funnel, not a single number. Stability is the dominant filter.",
+     "superseded_by": "",
+     "unit": "share",
+     "warn_at": null
+    }
+   ],
+   "name": "Validation funnel",
+   "purpose": "Independent evidence for every surviving candidate, and a full account of how many were rejected.",
+   "question": "Stable, unique, novel, and really a perovskite?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after a run"
+  },
+  {
+   "caveats": [
+    "A judge trained on the user's data shares that data's blind spots, so model-judge agreement is weaker evidence than agreement with DFT."
+   ],
+   "components": [
+    "cgcnn_judge.py (train and apply a judge on the user's own data)",
+    "judge_consensus.py (agreement of qualified judges)"
+   ],
+   "id": "S8",
+   "metrics": [
+    {
+     "band": {
+      "fail": "> 0.8",
+      "pass": "≤ 0.5",
+      "warn": "≤ 0.8"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "cgcnn_judge.py (train, metrics on the test split)",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "The judge's error on the held-out split, divided by the spread of the property, measured before it judges anything.",
+     "id": "judge_qualification",
+     "info_only": false,
+     "meaning_bad": "The judge is not accurate enough to verify anything; its agreement or disagreement is noise.",
+     "meaning_good": "The judge is accurate enough for its verdict to mean something.",
+     "name": "The judge's own error relative to the property spread",
+     "new_dataset_note": "",
+     "pass_at": 0.5,
+     "recalibrated": "",
+     "reference": {
+      "final": 0.38,
+      "mp20_megnet": 0.07
+     },
+     "reference_grades": {
+      "final": "PASS",
+      "mp20_megnet": "PASS"
+     },
+     "reference_note": "Perov-5 test split: CGCNN trained on the data 0.59 eV / r +0.92 / metal 98% (qualified); MEGNet multi-fidelity 1.71 eV / r +0.51 / metal 17% (not usable here); CGCNN pretrained elsewhere 1.23 eV / r +0.32 / metal 30%. On the MP dataset its own judge reaches 0.74 eV / r +0.85 / metal 89%.",
+     "remedy": "Train a judge on the user's own data; if it still fails, report that no independent check is available.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 0.8
+    },
+    {
+     "band": {
+      "fail": "< 1",
+      "pass": "≥ 2",
+      "warn": "≥ 1"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "judge_consensus.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Number of qualified judges that place a candidate within the agreed tolerance of its target.",
+     "id": "judge_consensus",
+     "info_only": false,
+     "meaning_bad": "Nothing independent supports the claim.",
+     "meaning_good": "At least two independent checks agree with the claim.",
+     "name": "Qualified judges agreeing with the target",
+     "new_dataset_note": "",
+     "pass_at": 2,
+     "recalibrated": "",
+     "reference": {
+      "final": 2
+     },
+     "reference_grades": {
+      "final": "PASS"
+     },
+     "reference_note": "On 70 candidates: a qualified judge gives rho +0.87 with the target and DFT analogues +0.86, while the unqualified MEGNet gives +0.44. The first discovery report used MEGNet and so understated the pipeline: the judge was the problem, not the candidates.",
+     "remedy": "Qualify more judges, or report the candidate as unverified.",
+     "superseded_by": "",
+     "unit": "judges",
+     "warn_at": 1
+    }
+   ],
+   "name": "Independent judges",
+   "purpose": "A verifier has to prove itself before its verdict counts.",
+   "question": "Can I trust the independent evidence?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after training"
+  },
+  {
+   "caveats": [
+    "Training support at a target is only a PROXY for label error, and it did not transfer. It was calibrated on Perov-5, where 96% of gaps are exactly zero so the non-zero region really is sparse. On the user's 246-structure upload, whose gaps are continuous over 0.6-14 eV, every target fails the support count while the measured held-out error is 0.179 spreads, and support barely correlates with error (Spearman -0.11). So when a model exists, `holdout_label_error` supersedes the count; the count is kept for the preview, where no model has been trained yet."
+   ],
+   "components": [
+    "reliability_map.py (support and calibration)",
+    "scorecard.py (the measured held-out label error)"
+   ],
+   "id": "S9",
+   "metrics": [
+    {
+     "band": {
+      "fail": "< 0",
+      "pass": "≥ 1",
+      "warn": "≥ 0"
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "reliability_map.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Number of requested targets whose training support passes the S0 support band.",
+     "id": "servable_targets",
+     "info_only": false,
+     "meaning_bad": "No requested target is supported.",
+     "meaning_good": "At least one requested target is supported by the data.",
+     "name": "Targets with enough support",
+     "new_dataset_note": "",
+     "pass_at": 1,
+     "recalibrated": "",
+     "reference": {
+      "final": 8
+     },
+     "reference_grades": {
+      "final": "PASS"
+     },
+     "reference_note": "Perov-5: 0 to 3.5 eV servable; 4 eV and above unreliable (22, 14, 8 and 7 materials). Validated against the outcome: targets called servable gave a mean label error of 0.59 eV, those called unreliable 0.95 eV.",
+     "remedy": "Choose targets inside the supported range.",
+     "superseded_by": "holdout_label_error",
+     "unit": "targets",
+     "warn_at": 0
+    },
+    {
+     "band": {
+      "fail": "> 0.5",
+      "pass": "≤ 0.25",
+      "warn": "≤ 0.5"
+     },
+     "better": "lower",
+     "cap": "",
+     "computed_by": "scorecard.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Mean absolute error of the target on the held-out test split, divided by the spread of that split.",
+     "id": "holdout_label_error",
+     "info_only": false,
+     "meaning_bad": "Labels on unseen materials are not accurate enough to aim a target at.",
+     "meaning_good": "Labels on unseen materials are accurate, measured rather than predicted.",
+     "name": "Measured label error on the held-out split",
+     "new_dataset_note": "",
+     "pass_at": 0.25,
+     "recalibrated": "",
+     "reference": {},
+     "reference_grades": {},
+     "reference_note": "On the user's 246-structure upload this is 0.179 spreads (0.647 eV on a 3.62 eV spread) even though every target fails the support count, which is why the count is only a proxy.",
+     "remedy": "More data, or restrict targets to the range the model demonstrably handles.",
+     "superseded_by": "",
+     "unit": "spreads",
+     "warn_at": 0.5
+    },
+    {
+     "band": {
+      "fail": "",
+      "pass": "context only",
+      "warn": ""
+     },
+     "better": "higher",
+     "cap": "",
+     "computed_by": "reliability_map.py",
+     "conditional_on": null,
+     "dataset_agnostic": true,
+     "definition": "Correlation between a material's latent distance to the training set and its prediction error.",
+     "id": "latent_distance_usable",
+     "info_only": true,
+     "meaning_bad": "Latent distance carries no information on this dataset and must not be quoted as uncertainty.",
+     "meaning_good": "Latent distance can be used to flag untrustworthy candidates.",
+     "name": "Is latent distance usable as an uncertainty signal",
+     "new_dataset_note": "",
+     "pass_at": 0.4,
+     "recalibrated": "",
+     "reference": {
+      "final": -0.12
+     },
+     "reference_grades": {
+      "final": "INFO"
+     },
+     "reference_note": "-0.12 on Perov-5: a complete grid leaves the axis no range, since every test material almost touches a training one. The block reports the axis as unusable instead of quoting a meaningless number. It is re-tested per dataset, never assumed.",
+     "remedy": "Fall back to training support at the target, which does work.",
+     "superseded_by": "",
+     "unit": "correlation",
+     "warn_at": 0.2
+    }
+   ],
+   "name": "Readiness",
+   "purpose": "Turn the known limits into a prediction made in advance rather than an excuse afterwards.",
+   "question": "Which targets can this dataset serve, decided before generating?",
+   "verdict_rule": "the worst grade of its graded metrics",
+   "when": "after training"
+  }
+ ],
+ "configs": {
+  "control": {
+   "checkup": "control_v1search",
+   "known": "ablation, broken in a different way: the property head was never trained on structure latents",
+   "label": "control: structure losses off"
+  },
+  "final": {
+   "checkup": "desc_full_optA",
+   "known": "known good, best configuration",
+   "label": "final (descriptors + on-manifold search)"
+  },
+  "fixed": {
+   "checkup": "grounded_grounded",
+   "known": "known good",
+   "label": "fixed model + fixed search"
+  },
+  "mp": {
+   "checkup": "MP_checkup",
+   "known": "transfer test; its decoder is data-starved (12 compositions per element)",
+   "label": "second dataset (919 MP perovskites)"
+  }
+ },
+ "dataset_history": [
+  {
+   "dataset": "Perov-5",
+   "description": "11,356 structures, one cubic prototype, a complete 52x52x7 grid, 96% zero gaps",
+   "items": [
+    {
+     "blocks": "S1/S4",
+     "text": "The published app read the label from the SEARCH latent and attached it to whatever composition was decoded (2.57 eV discrepancy). Fixed by reading the label back from the returned structure; S4 now measures 0.00 by construction and acts as a regression guard."
+    },
+    {
+     "blocks": "S1",
+     "text": "A `structure_property` loss was added so the property head is trained on structure latents: metal accuracy 4% -> 98%, and it is the single decisive switch (+62 points of hit rate)."
+    },
+    {
+     "blocks": "S5",
+     "text": "Search latents grew to |z| 4.18 in random directions. Constrained to the unit sphere; the latent-length sensitivity check became conditional, because at |z| = 1 the hazard cannot arise."
+    },
+    {
+     "blocks": "S3",
+     "text": "The decoder was trained with true atom positions but run with zeros (86 -> 0% recovery). Retrained under generation conditions."
+    },
+    {
+     "blocks": "S0",
+     "text": "A complete grid makes novelty and trustworthiness mutually exclusive: 0 of 148 novel candidates avoided unseen elements. The novelty frontier became an S0 metric."
+    },
+    {
+     "blocks": "all",
+     "text": "The ten blocks, their bands, and the executable validation against known-broken and known-good configurations were established here."
+    }
+   ]
+  },
+  {
+   "dataset": "Materials Project perovskites",
+   "description": "634 structures, 73 prototypes, realistic sparse coverage",
+   "items": [
+    {
+     "blocks": "S3",
+     "text": "Composition recovery collapsed 64% -> 1.4%. The decoder autopsy ruled out collapse, cell size and prototype count, and isolated DENSITY: 12 compositions per element against Perov-5's 218. The density curve (12 -> 0.1%, 30 -> 0.7%, 80 -> 5.4%, 218 -> 64%) became the S0 rule that chooses generation or screening before training."
+    },
+    {
+     "blocks": "all",
+     "text": "Every component was made dataset-driven (EVAL_DATA / EVAL_GAP / EVAL_COST) instead of reading Perov-5's column names; `auto_family.py` learns a design space from any intake."
+    },
+    {
+     "blocks": "S0",
+     "text": "Oxidation states are now learned from the dataset's own charge balance rather than from pymatgen's coarse defaults, which had rejected real perovskites such as LaVO3 and LaMnO3."
+    }
+   ]
+  },
+  {
+   "dataset": "User upload",
+   "description": "246 structures, 21 prototypes, hybrid gaps and dielectric constants, no energy column",
+   "items": [
+    {
+     "blocks": "S0",
+     "text": "Uploads arrive as a structure folder plus a spreadsheet, not a table: `ingest_upload.py` added. Names cannot join them (`Ba2YBiO6` vs `POSCAR_alpha-Ba2BiYO6`), so the join is on COMPOSITION: 142 -> 236 of 246 rows matched, and the 10 that remain are reported rather than guessed."
+    },
+    {
+     "blocks": "S0",
+     "text": "`preview.py` added: block S0 as a gate that runs with no model in seconds. It predicted 'screening, not generation' and the trained decoder then measured 0.00%."
+    },
+    {
+     "blocks": "S9",
+     "text": "The support count, validated on Perov-5 (0.59 vs 0.95 eV), did NOT transfer: here support correlates -0.11 with error because the property is continuous rather than 96% zero. Added `superseded_by`: a metric that only PREDICTS a quantity becomes context once that quantity is measured, so the new `holdout_label_error` now decides S9."
+    },
+    {
+     "blocks": "S5",
+     "text": "The novelty rule compared site keys, which encode a family's group layout, so on a four-group A2BB'X6 family it matched nothing and excluded 0 while reporting success — 5 of 60 'novel' candidates were already in the user's data. Novelty is now judged on the reduced COMPOSITION, which is layout independent. Added additively: the site-key path Perov-5 uses is untouched and still removes 39 of 105."
+    },
+    {
+     "blocks": "S7",
+     "text": "A function-local import shadowed the module-level `Composition` and killed the hull step in every shard. Removed."
+    },
+    {
+     "blocks": "all",
+     "text": "Both bugs had one shape — a step reporting success while doing nothing. `announce_dataset()` and `warn_if_noop()` were added so that shape is visible rather than silent."
+    }
+   ]
+  },
+  {
+   "dataset": "MP-20",
+   "description": "45,229 structures, 89 elements, 6,282 prototypes, 68% zero gaps; the first dataset above the decoder's density threshold",
+   "items": [
+    {
+     "blocks": "S5/S6",
+     "text": "Family-free generation: the search-latent label read the request back (windows always pass, the defect fixed in generate.py but never ported here); the latent refinement pushed structures into zero-gap metals; the species head returned MP-20's dominant intermetallic; 74% of cells exceeded the encoder's max_sites and could not be checked.  Fixed at search time: label read from the returned structure, anchor only, one anion required, cell capped.  Independent-judge MAE 2.00 -> 1.10 eV; two-judge consensus 37 of 175."
+    },
+    {
+     "blocks": "S3",
+     "text": "A symmetry (space group + representative sites) geometry path makes template-free cells buildable (0% -> 100%, all 230 space groups) once the lattice is projected onto the crystal system and symmetry images are merged by distance (0.8 A).  Refined cells, not conventional-standard ones, for the targets: the latter discarded 48% of orthorhombic structures including 96% of Pnma."
+    },
+    {
+     "blocks": "S3",
+     "text": "Coordinate accuracy is the open item: regression RMSE 0.24 and a 48-point discrete grid both leave structure-level accuracy unchanged, because a structure needs all ~13 components right.  The Wyckoff letter, which couples them, is the remaining route."
+    }
+   ]
+  }
+ ],
+ "dataset_verdicts": {
+  "mp-perovskites": {
+   "S0": "FAIL",
+   "S1": "WARN",
+   "S2": "PASS",
+   "S3": "FAIL",
+   "S4": "INFO",
+   "S7": "PASS"
+  },
+  "mp20": {
+   "S0": "PASS",
+   "S1": "PASS",
+   "S2": "PASS",
+   "S3": "WARN",
+   "S4": "PASS",
+   "S5": "PASS",
+   "S6": "PASS",
+   "S7": "PARTIAL",
+   "S8": "PASS",
+   "S9": "WARN"
+  },
+  "perov5": {
+   "S0": "FAIL",
+   "S1": "PASS",
+   "S2": "PASS",
+   "S3": "WARN",
+   "S4": "PASS",
+   "S5": "FAIL",
+   "S6": "PASS",
+   "S7": "PASS",
+   "S8": "PASS",
+   "S9": "PASS"
+  },
+  "user-246": {
+   "S0": "FAIL",
+   "S1": "PASS",
+   "S2": "WARN",
+   "S3": "FAIL",
+   "S4": "INFO",
+   "S7": "PASS",
+   "S8": "PASS",
+   "S9": "PASS"
+  }
+ },
+ "generated_from": {
+  "module": "meidnet_eval.stages",
+  "sha256": "0ee541e7ea0bade31b6a120bb24ae7964c7fb5c81e84491d4b36e0a54d9d1e08"
+ },
+ "grades": [
+  "PASS",
+  "WARN",
+  "FAIL",
+  "INFO"
+ ],
+ "schema": "meidnet-matter/pipeline-blocks/1",
+ "validation_table": {
+  "control": {
+   "S0": "FAIL",
+   "S1": "FAIL",
+   "S2": "WARN",
+   "S3": "FAIL",
+   "S4": "FAIL",
+   "S5": "FAIL",
+   "S6": "FAIL"
+  },
+  "final": {
+   "S0": "FAIL",
+   "S1": "PASS",
+   "S2": "PASS",
+   "S3": "WARN",
+   "S4": "PASS",
+   "S5": "FAIL",
+   "S6": "PASS",
+   "S7": "PASS",
+   "S8": "PASS",
+   "S9": "PASS"
+  },
+  "fixed": {
+   "S0": "FAIL",
+   "S1": "PASS",
+   "S2": "PASS",
+   "S3": "WARN",
+   "S4": "PASS",
+   "S5": "FAIL",
+   "S6": "PASS"
+  },
+  "mp": {
+   "S0": "FAIL",
+   "S1": "WARN",
+   "S2": "PASS",
+   "S3": "FAIL",
+   "S4": "INFO",
+   "S7": "PASS"
+  }
+ }
+}

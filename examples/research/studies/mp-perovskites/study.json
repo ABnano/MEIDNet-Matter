@@ -1,0 +1,248 @@
+{
+ "checkpoints": [
+  "mp-grounded",
+  "mp-control",
+  "cgcnn-mpperov"
+ ],
+ "checks": [
+  {
+   "check": "zero-inflation",
+   "detail": "53% of training band gaps are exactly 0; 0% of materials share their property profile with >= 9 others (property -> structure is one-to-many)",
+   "stage": "0 data",
+   "status": "WARN"
+  },
+  {
+   "check": "design-space coverage",
+   "detail": "105 of 462 compositions pass the rules; 100 are in Perov-5 (72 in training); 0 of the 5 new ones contain elements never seen in training (none) whose encoder embeddings are untrained",
+   "stage": "0 data",
+   "status": "PASS"
+  },
+  {
+   "check": "target feasibility (known valid compositions in window)",
+   "detail": "0 eV: 38; 3 eV: 7; 5 eV: 0 — a target with 0 can only be met by new (unverified) compositions",
+   "stage": "0 data",
+   "status": "INFO"
+  },
+  {
+   "check": "structure -> band gap",
+   "detail": "MAE on gap>0 0.94 eV = 0.64 spreads; r +0.82",
+   "stage": "1 encoder",
+   "status": "FAIL"
+  },
+  {
+   "check": "structure -> metal or not",
+   "detail": "90% correct metal/non-metal calls (gap < 0.5 eV = metal)",
+   "stage": "1 encoder",
+   "status": "WARN"
+  },
+  {
+   "check": "structure -> formation_energy_per_atom",
+   "detail": "MAE 0.088 = 0.11 spreads",
+   "stage": "1 encoder",
+   "status": "PASS"
+  },
+  {
+   "check": "latent organised by property (5-NN)",
+   "detail": "5-NN in z_c predicts gap with MAE 0.439 eV (0.28 spreads), dHf 0.078 (0.10)",
+   "stage": "1 encoder",
+   "status": "WARN"
+  },
+  {
+   "check": "structure <-> property retrieval",
+   "detail": "top-1 17% (top-5 54%) among 146 profiles = 25x chance; matched cosine 0.79",
+   "stage": "2 alignment",
+   "status": "PASS"
+  },
+  {
+   "check": "structure latent -> structure (generation condition)",
+   "detail": "1% exact compositions, 68% sites (start coordinates: zeros)",
+   "stage": "3 decoder",
+   "status": "FAIL"
+  },
+  {
+   "check": "train/generation mismatch",
+   "detail": "joint latent: 0% with the training inputs vs 1% with the generation inputs (decoder trained with 'zeros' coordinates)",
+   "stage": "3 decoder",
+   "status": "PASS"
+  },
+  {
+   "check": "property latent -> structure (inverse path)",
+   "detail": "0% exact compositions, 61% sites from z_p alone (one-to-many: low values are expected, the search must do the work)",
+   "stage": "3 decoder",
+   "status": "INFO"
+  },
+  {
+   "check": "sensitivity to latent length",
+   "detail": "stretching z_c from |z|=1 to 4 moves predictions by 1.62 spreads (gap 2.48 eV, dHf 1.30 eV/atom)",
+   "stage": "4 prop. head",
+   "status": "FAIL"
+  }
+ ],
+ "dataset": {
+  "compositions_per_element": 12,
+  "elements": 74,
+  "name": "Materials Project perovskites",
+  "properties": [
+   "band_gap",
+   "formation_energy_per_atom",
+   "e_hull"
+  ],
+  "prototypes": 73,
+  "rows": 919,
+  "shared_profile_share": 0.0,
+  "source": "Materials Project, corner-sharing perovskites",
+  "test": 151,
+  "train": 634,
+  "val": 134
+ },
+ "files": {
+  "screen_novel_candidates.csv": {
+   "bytes": 1650,
+   "media": "text/csv",
+   "sha256": "07e183f294e761e1bed8d5dee2dfc362db7a0e2ae45caaaa432fd678a7481eec"
+  }
+ },
+ "headline": "The encoder and the alignment transfer; the decoder does not (64% → 1.4% composition recovery). This dataset gave the density rule that picks the mode before training.",
+ "id": "mp-perovskites",
+ "judges": {
+  "cgcnn_mpperov": {
+   "mae_all": 0.5082643520790361,
+   "mae_nonzero": 0.7393359518828122,
+   "metal_vs_gap_accuracy": 0.8940397350993378,
+   "model": "CGCNN-P5 ensemble (test split)",
+   "n": 151,
+   "n_nonzero": 77,
+   "pearson_nonzero": 0.852922205283455
+  }
+ },
+ "limits": [
+  "634 training structures, 73 prototypes: too sparse for the decoder; screening is the measured mode."
+ ],
+ "mode": "screening",
+ "model_metrics": {
+  "checkpoint": "../runs/mp_grounded/out/model.pt",
+  "data": "mp_perovskites/intake",
+  "property_prediction": {
+   "mae_band_gap": 0.5350235010826723,
+   "mae_band_gap_nonzero": 0.9412699905487554,
+   "mae_formation_energy_per_atom": 0.0883118155062646,
+   "metal_vs_gap_accuracy": 0.8972602739726028,
+   "n_evaluated": 146.0,
+   "pearson_band_gap_nonzero": 0.8157589024690217,
+   "pearson_formation_energy_per_atom_nonzero": 0.9893923035656925,
+   "r2_band_gap": 0.7147383942196055,
+   "r2_formation_energy_per_atom": 0.9768981070304146,
+   "rmse_band_gap": 0.8459173868480012,
+   "rmse_formation_energy_per_atom": 0.12162780366454018
+  },
+  "recoverability": {
+   "from_joint": {
+    "composition_exact_pct": 0.684931506849315,
+    "n": 146,
+    "site_accuracy_pct": 67.03812316715542
+   },
+   "from_property": {
+    "composition_exact_pct": 0.0,
+    "n": 146,
+    "site_accuracy_pct": 61.29032258064516
+   },
+   "from_structure": {
+    "composition_exact_pct": 1.36986301369863,
+    "n": 146,
+    "site_accuracy_pct": 67.97653958944281
+   }
+  },
+  "representation": {
+   "cosine_encoder": -0.0025323384907096624,
+   "cosine_matched": 0.7903748750686646,
+   "cosine_projection": 0.7903748750686646,
+   "knn_mae_band_gap": 0.4388120033978002,
+   "knn_mae_formation_energy_per_atom": 0.07840415541842086,
+   "l2_matched": 0.6367366313934326,
+   "n_evaluated": 146.0,
+   "n_profiles": 146.0,
+   "retrieval_top1": 0.17123287671232876,
+   "retrieval_top5": 0.541095890410959
+  },
+  "tag": "mp_grounded"
+ },
+ "order": 2,
+ "reproduce": [
+  {
+   "command": "python -m meidnet_eval.pipeline_checkup --ckpt mp_grounded.pt (EVAL_DATA=<intake>)",
+   "step": "checkup"
+  },
+  {
+   "command": "python -m meidnet_eval.screen_polymorphs ...",
+   "step": "screening"
+  }
+ ],
+ "schema": "meidnet-matter/study/1",
+ "sources": [
+  "eval/results/checkups/MP_checkup.json",
+  "eval/results/MP_screen_novel/",
+  "journal entries 36–44"
+ ],
+ "target_following": {
+  "method": "screening of an enumerated design space; two potentials agree on 16 of 16 relaxed space groups",
+  "screen_funnel": [
+   {
+    "in_window": 132,
+    "returned": 12,
+    "seed": 0,
+    "target": 0.0
+   },
+   {
+    "in_window": 3,
+    "returned": 3,
+    "seed": 0,
+    "target": 1.0
+   },
+   {
+    "in_window": 4,
+    "returned": 4,
+    "seed": 0,
+    "target": 2.0
+   },
+   {
+    "in_window": 0,
+    "returned": 0,
+    "seed": 0,
+    "target": 3.0
+   }
+  ],
+  "targets": [
+   0.0,
+   1.0,
+   2.0,
+   3.0
+  ]
+ },
+ "title": "Materials Project perovskites",
+ "verdicts": {
+  "S0": {
+   "grade": "FAIL",
+   "note": "12 compositions per element: below the density rule, so screening"
+  },
+  "S1": {
+   "grade": "WARN",
+   "note": ""
+  },
+  "S2": {
+   "grade": "PASS",
+   "note": ""
+  },
+  "S3": {
+   "grade": "FAIL",
+   "note": "composition recovery 1.4%"
+  },
+  "S4": {
+   "grade": "INFO",
+   "note": ""
+  },
+  "S7": {
+   "grade": "PASS",
+   "note": ""
+  }
+ }
+}

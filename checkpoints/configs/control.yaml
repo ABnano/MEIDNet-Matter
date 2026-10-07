@@ -1,0 +1,26 @@
+# Retrained Perov-5 model for the grounded-generation study (2026-10-06).
+# control  = same settings as grounded but WITHOUT the structure-only losses (isolates their effect)
+# grounded = adds structure_reconstruction + structure_property (property and structure from z_c alone)
+name: perov5_control
+description: Perov-5, normalised properties, decoder starts from zero coordinates (control)
+output_dir: /gpfs/scratch/acad/catalys/ababu/meidnet_fix/runs/control/out
+data:
+  table: /gpfs/scratch/acad/catalys/ababu/meidnet_matter_fidelity_check/data/train.csv
+  val_table: /gpfs/scratch/acad/catalys/ababu/meidnet_matter_fidelity_check/data/val.csv
+  id_column: material_id
+  cif_column: cif
+  properties:
+    - {column: heat_all, label: Formation enthalpy, unit: eV/atom, normalize: true}
+    - {column: dir_gap,  label: Direct band gap,    unit: eV,      normalize: true}
+  max_sites: 5          # Perov-5 cells all have 5 atoms: no padding (7x faster on CPU)
+  align_to_prototype: false
+model:
+  decoder_coordinate_input: zeros
+training:
+  epochs: 200           # same number of epochs as the published model
+  batch_size: 64
+  learning_rate: 0.001
+  seed: 0
+  device: cpu
+  save_every: 50
+  loss_weights: {}

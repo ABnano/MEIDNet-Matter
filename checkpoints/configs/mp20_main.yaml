@@ -1,0 +1,30 @@
+# MEIDNet on MP-20 (45,229 Materials Project structures <= 20 atoms, 89 elements, 6,282 prototypes, general inorganic
+# chemistry rather than perovskites).  The first dataset above the decoder's density threshold: 817 distinct compositions
+# per element against the 200 the density rule requires, so block S0 predicts GENERATION for the first time.
+# mp20_main: seed 0, structure-only losses 1.0.  Benchmark splits kept as published.
+name: mp20_main
+description: "mp20_main: MP-20, site_order roles, cgcnn descriptors, periodic encoder, max_sites 20"
+output_dir: /gpfs/scratch/acad/catalys/ababu/meidnet_fix/runs/mp20_main/out
+data:
+  table: /gpfs/scratch/acad/catalys/ababu/meidnet_data/mp20/intake/train.csv
+  val_table: /gpfs/scratch/acad/catalys/ababu/meidnet_data/mp20/intake/val.csv
+  id_column: material_id
+  cif_column: cif
+  properties:
+    - {column: formation_energy_per_atom, label: Formation energy, unit: eV/atom, normalize: true}
+    - {column: band_gap, label: Band gap, unit: eV, normalize: true}
+  max_sites: 20
+  site_order: roles
+  align_to_prototype: false
+model:
+  decoder_coordinate_input: zeros
+  periodic_encoder: true
+  element_features: cgcnn
+training:
+  epochs: 100
+  batch_size: 128
+  learning_rate: 0.001
+  seed: 0
+  device: cuda
+  save_every: 20
+  loss_weights: {structure_reconstruction: 1.0, structure_property: 1.0}

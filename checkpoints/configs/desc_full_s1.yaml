@@ -1,0 +1,29 @@
+# Retrained Perov-5 model for the grounded-generation study (2026-10-06).
+# control  = same settings as grounded but WITHOUT the structure-only losses (isolates their effect)
+# grounded = adds structure_reconstruction + structure_property (property and structure from z_c alone)
+name: perov5_desc_full_s1
+description: "desc_full_s1: descriptor-based elements (cgcnn), site-ordered, periodic encoder"
+output_dir: /gpfs/scratch/acad/catalys/ababu/meidnet_fix/runs/desc_full_s1/out
+data:
+  table: /gpfs/scratch/acad/catalys/ababu/meidnet_matter_fidelity_check/data/train.csv
+  val_table: /gpfs/scratch/acad/catalys/ababu/meidnet_matter_fidelity_check/data/val.csv
+  id_column: material_id
+  cif_column: cif
+  properties:
+    - {column: heat_all, label: Formation enthalpy, unit: eV/atom, normalize: true}
+    - {column: dir_gap,  label: Direct band gap,    unit: eV,      normalize: true}
+  max_sites: 5
+  site_order: perovskite      # A site, B site, anions (from the Perov-5 formula string)
+  align_to_prototype: false
+model:
+  decoder_coordinate_input: zeros
+  periodic_encoder: true
+  element_features: cgcnn
+training:
+  epochs: 200           # same number of epochs as the published model
+  batch_size: 64
+  learning_rate: 0.001
+  seed: 1
+  device: cpu
+  save_every: 50
+  loss_weights: {structure_reconstruction: 1.0, structure_property: 1.0}

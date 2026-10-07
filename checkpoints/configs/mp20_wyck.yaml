@@ -1,0 +1,29 @@
+# D1, the symmetry geometry decoder, on MP-20.  Identical to mp20_main except for the two switches at the bottom, so a
+# D0-vs-D1 difference can only come from the geometry path.  100 epochs.
+name: mp20_wyck
+description: "D1 symmetry decoder on MP-20 (100 epochs); differs from mp20_main only in decoder_geometry + symmetry loss"
+output_dir: /gpfs/scratch/acad/catalys/ababu/meidnet_fix/runs/mp20_wyck/out
+data:
+  table: /gpfs/scratch/acad/catalys/ababu/meidnet_data/mp20/intake/train.csv
+  val_table: /gpfs/scratch/acad/catalys/ababu/meidnet_data/mp20/intake/val.csv
+  id_column: material_id
+  cif_column: cif
+  properties:
+    - {column: formation_energy_per_atom, label: Formation energy, unit: eV/atom, normalize: true}
+    - {column: band_gap, label: Band gap, unit: eV, normalize: true}
+  max_sites: 20
+  site_order: roles
+  align_to_prototype: false
+model:
+  decoder_coordinate_input: zeros
+  periodic_encoder: true
+  element_features: cgcnn
+  decoder_geometry: wyckoff          # <- switch 1
+training:
+  epochs: 100
+  batch_size: 128
+  learning_rate: 0.001
+  seed: 0
+  device: cuda
+  save_every: 50
+  loss_weights: {structure_reconstruction: 1.0, structure_property: 1.0, symmetry: 1.0}   # <- switch 2

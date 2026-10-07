@@ -1,0 +1,40 @@
+# generated using pymatgen
+data_Ca3H3Cl
+_symmetry_space_group_name_H-M   'P 1'
+_cell_length_a   4.17939651
+_cell_length_b   4.17939651
+_cell_length_c   7.13321686
+_cell_angle_alpha   90.00000000
+_cell_angle_beta   90.00000000
+_cell_angle_gamma   120.00000000
+_symmetry_Int_Tables_number   1
+_chemical_formula_structural   Ca3H3Cl
+_chemical_formula_sum   'Ca6 H6 Cl2'
+_cell_volume   107.90540781
+_cell_formula_units_Z   2
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+  1  'x, y, z'
+loop_
+ _atom_site_type_symbol
+ _atom_site_label
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+  Ca  Ca0  1  0.91461853  0.82923706  0.61725467  1
+  Ca  Ca1  1  0.17076294  0.08538147  0.61725467  1
+  Ca  Ca2  1  0.91461853  0.08538147  0.61725467  1
+  Ca  Ca3  1  0.82923706  0.91461853  0.38274533  1
+  Ca  Ca4  1  0.08538147  0.17076294  0.38274533  1
+  Ca  Ca5  1  0.08538147  0.91461853  0.38274533  1
+  H  H6  1  0.48131268  0.96262535  0.29512745  1
+  H  H7  1  0.03737465  0.51868732  0.29512745  1
+  H  H8  1  0.48131268  0.51868732  0.29512745  1
+  H  H9  1  0.96262535  0.48131268  0.70487255  1
+  H  H10  1  0.51868732  0.03737465  0.70487255  1
+  H  H11  1  0.51868732  0.48131268  0.70487255  1
+  Cl  Cl12  1  0.66666667  0.33333333  0.14909294  1
+  Cl  Cl13  1  0.33333333  0.66666667  0.85090706  1
