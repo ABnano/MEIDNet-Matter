@@ -108,13 +108,13 @@ jobs:
         with:
           name: pypi
           path: dist/
-      - name: The engine (project meidnet)
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/engine/
-          skip-existing: true      # the engine wheel is shared by app releases until the engine's version moves
       - name: The application (project meidnet-matter)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/app/
           skip-existing: true
+      - name: The engine (project meidnet)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/engine/
+          skip-existing: true      # the engine wheel is shared by app releases until the engine's version moves
