@@ -468,7 +468,7 @@ S7 = Stage(
         Metric("stable_share", "Stable share of the proposals",
                "Share of validated candidates within the hull-distance threshold.", "share", "higher", None, None,
                "", "", "Context: report the funnel, not a single number. Stability is the dominant filter.",
-               "sun_validate.py", info_only=True, reference=dict(final=0.40),
+               "hull_mlip.py (laptop) or sun_validate.py (cluster)", info_only=True, reference=dict(final=0.40),
                reference_note="Funnel on the discovery set: 70 validated -> 68 absent from Materials Project -> 61 not in "
                               "the literature -> 51 formable -> 17 stable -> 8 after the judges."),
     ],
@@ -487,7 +487,7 @@ S8 = Stage(
                "The judge is accurate enough for its verdict to mean something.",
                "The judge is not accurate enough to verify anything; its agreement or disagreement is noise.",
                "Train a judge on the user's own data; if it still fails, report that no independent check is available.",
-               "cgcnn_judge.py (train, metrics on the test split)",
+               "scorecard.py --judge megnet (MEGNet qualified on the test split) or cgcnn_judge.py",
                reference=dict(final=0.38, mp20_megnet=0.07),
                reference_note="Perov-5 test split: CGCNN trained on the data 0.59 eV / r +0.92 / metal 98% (qualified); "
                               "MEGNet multi-fidelity 1.71 eV / r +0.51 / metal 17% (not usable here); CGCNN pretrained "
@@ -554,7 +554,7 @@ ALL_METRICS = {m.id: (s, m) for s in STAGES for m in s.metrics}
 # which component implements which block (one answer to 'where does block Sx live?')
 STAGE_SCRIPTS = {
     "S0": [
-        "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on composition)",
+        "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on the file name, every unmatched row reported)",
         "intake.py (audit, prototypes, composition-grouped split)",
         "preview.py (the gate: runs with no model)",
         "screen_local.py (screening mode on a laptop: enumerate the family, label every composition from its template cell, judge independently)",
@@ -585,6 +585,7 @@ STAGE_SCRIPTS = {
         "required, cell capped, no latent refinement)",
     ],
     "S6": [
+        "check_candidates.py (any candidate table: label from the structure, qualified judge, consensus, two potentials, re-judge, report)",
         "eval_analyse.py (ablation summary)",
         "exhaustive_truth.py + generator_vs_truth.py (precision and recall against exact truth)",
         "screen_polymorphs.py --truth test (hold-out rediscovery, the generic replacement on a user dataset)",
@@ -594,6 +595,7 @@ STAGE_SCRIPTS = {
         "generate_to_target.py (the one command: generate -> judge -> relax -> re-judge -> report)",
     ],
     "S7": [
+        "hull_mlip.py (energy above the hull, one potential for every phase; calibrated on known materials of the data)",
         "candidate_cells.py (two independent ML potentials)",
         "sun_validate.py (hull, formability, novelty)",
         "perovskite_geometry.py (corner-sharing test)",
@@ -602,6 +604,7 @@ STAGE_SCRIPTS = {
         "d1_mlip_check.py (two potentials on generated cells: drop on relaxation, displacement, space group kept)",
     ],
     "S8": [
+        "scorecard.py --judge megnet (qualifies the MEGNet band-gap judge on the user's test split, every fidelity head measured)",
         "cgcnn_judge.py (train and apply a judge on the user's own data)",
         "judge_consensus.py (agreement of qualified judges)",
     ],

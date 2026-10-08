@@ -2,9 +2,12 @@
 
 Stated the way a measuring device is specified: response curve, bias, precision, accuracy with a confidence interval,
 linearity, resolution between adjacent requests, serviceable range, yield per stage, plus the stability proxy and the
-novelty of the delivered cells.  Everything is read from the result folders a run leaves behind.
+novelty of the delivered cells.  Everything is read from the result folders a run leaves behind.  A relaxed cell that
+collapsed (closest atoms nearer than 0.6 of their radii) describes no material: it is counted in the funnel and listed,
+and its gap is left out of every number.
 
 Usage: python instrument_sheet.py --pool DIR --relaxed DIR --consensus DIR --out DIR [--window 0.5] [--min-gap 0.1]
+       [--sun FILE] [--sun-per-candidate FILE] [--known-formulas FILE]
 """
 import argparse, glob, json, os
 
@@ -23,21 +26,51 @@ def load(a):
         rcal = json.load(open(f"{a.relaxed}/calibration.json"))["per_candidate"]
         rel["label_structure"] = rel["file"].map(lambda f: rcal.get(f, {}).get("reencoded_gap"))
         rel["judge"] = rel["file"].map(lambda f: rcal.get(f, {}).get("independent_gap"))
+        # a relaxed cell that collapsed (closest atoms nearer than 0.6 of their radii) describes no material: left out
+        rel["contact_ratio"] = rel["file"].map(lambda f: _contact(a, f))
+        collapsed = rel[rel["contact_ratio"] < _collapsed_line()]
+        rel = rel.drop(collapsed.index)
     else:                                   # no relaxed folder: the sheet describes the generated (unrelaxed) cells and says so
         rel = cons.copy()
         rel["label_structure"] = rel.get("label_gap", rel.get("label_structure_gap"))
         rel["judge"] = rel["file"].map(lambda f: pcal["per_candidate"].get(f, {}).get("independent_gap"))
+        collapsed = rel.iloc[0:0]
     mlip = [r for f in glob.glob(f"{a.consensus}/mlip_shard*.json") for r in json.load(open(f))] if a.consensus else []
     drop = {os.path.basename(r["file"]): r.get("tensornet_drop_per_atom") for r in mlip}
     kept = {os.path.basename(r["file"]): r.get("tensornet_spacegroup_relaxed") == r.get("spacegroup_designed") for r in mlip}
     rel["drop"] = rel["file"].map(lambda f: drop.get(os.path.basename(f)))
     rel["sg_kept"] = rel["file"].map(lambda f: kept.get(os.path.basename(f)))
     sun = None
-    for cand in ("sun_relaxed_strict.json", "sun.json"):
-        if os.path.exists(f"{a.relaxed}/{cand}"):
-            sun = json.load(open(f"{a.relaxed}/{cand}"))
+    for cand in ([a.sun] if a.sun else []) + [f"{a.relaxed}/sun_relaxed_strict.json", f"{a.relaxed}/sun.json"]:
+        if os.path.exists(cand):
+            sun = json.load(open(cand))
             break
-    return pool, pcal, cons, rel, sun
+    return pool, pcal, cons, rel, sun, collapsed
+
+
+def _collapsed_line():
+    try:
+        from meidnet_eval.d1_mlip_check import COLLAPSED
+    except ImportError:
+        from d1_mlip_check import COLLAPSED
+    return COLLAPSED
+
+
+def _contact(a, f):
+    """Contact ratio of the relaxed cell behind a candidates-table row (the relaxed folder's copy, else the relaxer's own)."""
+    try:
+        from meidnet_eval.d1_mlip_check import contact_ratio
+    except ImportError:
+        from d1_mlip_check import contact_ratio
+    from pymatgen.core import Structure
+    for p in ([os.path.join(a.relaxed, f)] if a.relaxed else []) + \
+             ([os.path.join(a.consensus, "relaxed_tensornet", os.path.basename(f))] if a.consensus else []):
+        if os.path.exists(p):
+            try:
+                return contact_ratio(Structure.from_file(p))
+            except Exception:
+                return np.nan
+    return np.nan
 
 
 def per_target(pool, cons, ok, final):
@@ -120,11 +153,12 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--window", type=float, default=0.5)
     ap.add_argument("--min-gap", type=float, default=0.1)
+    ap.add_argument("--sun", default=None, help="metrics_sun JSON for the novelty line (default: the relaxed folder's sun_relaxed_strict.json or sun.json)")
     ap.add_argument("--sun-per-candidate", default=None, help="metrics_sun per-candidate CSV (adds the AMD distance per material)")
     ap.add_argument("--known-formulas", default=None, help="JSON {reduced formula: [gaps]} of the training data (adds known/new and the recorded gaps)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    pool, pcal, cons, rel, sun = load(a)
+    pool, pcal, cons, rel, sun, collapsed = load(a)
 
     ok = rel.dropna(subset=["label_structure", "judge"]).copy()
     in_window = (abs(ok["label_structure"] - ok["target"]) <= a.window) & (abs(ok["judge"] - ok["target"]) <= a.window)
@@ -149,7 +183,10 @@ def main():
 
     sheet = dict(
         window_eV=a.window, metal_floor_eV=a.min_gap,
-        funnel=dict(generated=int(len(pool)), both_judges=int(len(cons)), relaxed=int(len(ok)), final=int(len(final))),
+        funnel=dict(generated=int(len(pool)), both_judges=int(len(cons)), collapsed_on_relaxation=int(len(collapsed)),
+                    relaxed=int(len(ok)), final=int(len(final))),
+        collapsed_on_relaxation=[dict(formula=r["formula"], target=float(r["target"]), contact_ratio=round(float(r["contact_ratio"]), 2))
+                                 for _, r in collapsed.iterrows()],
         judge=pcal.get("judge_qualification"),
         per_target=rows,
         accuracy=dict(mae_generated_cells=float(np.abs(pool["judge_generated"] - pool["target"]).mean()),

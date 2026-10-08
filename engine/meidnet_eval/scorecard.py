@@ -95,7 +95,10 @@ def main():
     ap.add_argument("intake"); ap.add_argument("--models", nargs="+", required=True, help="name=checkpoint")
     ap.add_argument("--gap", required=True); ap.add_argument("--cost", default=None)
     ap.add_argument("--targets", type=float, nargs="+", default=None)
-    ap.add_argument("--judge-tag", default=None)
+    ap.add_argument("--judge-tag", default=None, help="a CGCNN judge in MEIDNET_FIDELITY_DIR (research setup)")
+    ap.add_argument("--judge", choices=["megnet", "none"], default="none",
+                    help="block S8: qualify the MEGNet band-gap judge on INTAKE/test.csv (needs matgl)")
+    ap.add_argument("--judge-n", type=int, default=80)
     ap.add_argument("--out", required=True); ap.add_argument("--skip-run", action="store_true")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
@@ -152,6 +155,22 @@ def main():
 
     # block S8: the judge must qualify on its own held-out split before its verdict counts
     judge = {}
+    if a.judge == "megnet":
+        try:
+            try:
+                from meidnet_eval.target_calibration import qualify
+            except ImportError:
+                from target_calibration import qualify
+            q = qualify(os.path.join(a.intake, "test.csv"), a.judge_n, {}, a.gap, "cif")
+            te = pd.read_csv(os.path.join(a.intake, "test.csv"), usecols=[a.gap])
+            sd = float(te[a.gap].std())
+            judge = dict(name=f"MEGNet band gap, fidelity {q['fidelity']}", mae_all=q["mae"], mae_nonzero=q.get("mae_on_nonzero"),
+                         corr=q.get("spearman"), corr_name="Spearman", n=q["n"], by_fidelity=q.get("by_fidelity"))
+            if sd > 0 and q.get("mae_on_nonzero") is not None:
+                measured.setdefault("main", {})["judge_qualification"] = q["mae_on_nonzero"] / sd
+            print(f"judge (S8): MEGNet fidelity {q['fidelity']} on the test split: MAE {q['mae']:.3f} eV, Spearman {q['spearman']:.2f} (n = {q['n']})", flush=True)
+        except Exception as e:
+            print(f"  (judge not qualified: {e})")
     if a.judge_tag:
         jp = os.path.join(FID, "models", f"{a.judge_tag}_test_metrics.json")
         if os.path.exists(jp):
@@ -247,9 +266,11 @@ def main():
             L += [f"| {k} | {v} |" for k, v in d.items()]
             L.append("")
     if judge:
+        name = judge.get("name") or a.judge_tag
+        corr = judge.get("corr", judge.get("pearson_nonzero", float("nan")))
         L += ["## Judge qualification (block S8)", "",
-              f"`{a.judge_tag}` on its own held-out split: MAE {judge.get('mae_all', float('nan')):.3f}, "
-              f"MAE on non-zero {judge.get('mae_nonzero', float('nan')):.3f}, r {judge.get('pearson_nonzero', float('nan')):+.3f}, "
+              f"`{name}` on the held-out split: MAE {judge.get('mae_all', float('nan')):.3f}, "
+              f"MAE on non-zero {judge.get('mae_nonzero', float('nan')):.3f}, {judge.get('corr_name', 'r')} {corr:+.3f}, "
               f"n = {judge.get('n')}. A judge is believed only if it qualifies here first.", ""]
     open(os.path.join(a.out, "scorecard.md"), "w").write("\n".join(L))
     print("\n".join(L))

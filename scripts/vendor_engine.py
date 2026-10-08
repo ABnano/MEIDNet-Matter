@@ -83,6 +83,7 @@ RUNNABLE = {
     "d1_mlip_check.py": ("local", ["matgl", "ase"]), "candidate_cells.py": ("local", ["matgl", "ase"]),
     "relax_cache.py": ("local", ["matgl"]), "stability_distorted.py": ("local", ["matgl"]),
     "generate_to_target.py": ("local", ["matgl"]), "screen_local.py": ("local", ["matgl (judge)"]),
+    "check_candidates.py": ("local", ["matgl", "ase"]), "hull_mlip.py": ("local", ["matgl", "ase", "a reference set: the JARVIS-DFT dump or an MP key"]),
     "discover.py": ("hpc", ["slurm", "mp_api"]), "sun_validate.py": ("hpc", ["matgl", "mp_api"]),
     "fetch_oqmd_structures.py": ("hpc", ["network"]), "prefetch_mp.py": ("hpc", ["mp_api"]),
     "mp_perovskite_dataset.py": ("hpc", ["mp_api"]), "mixed_anion_coverage.py": ("hpc", ["mp_api"]),

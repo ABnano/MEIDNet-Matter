@@ -8,6 +8,7 @@ database access ("hpc").
 COMPONENTS = {
     "auto_family.py": {"runnable": "local", "needs": []},
     "candidate_cells.py": {"runnable": "local", "needs": ["matgl", "ase"]},
+    "check_candidates.py": {"runnable": "local", "needs": ["matgl", "ase"]},
     "component_report.py": {"runnable": "local", "needs": []},
     "conditional_generate.py": {"runnable": "web", "needs": []},
     "d1_demo.py": {"runnable": "local", "needs": []},
@@ -25,6 +26,7 @@ COMPONENTS = {
     "final_report.py": {"runnable": "local", "needs": []},
     "generate_to_target.py": {"runnable": "local", "needs": ["matgl"]},
     "generator_vs_truth.py": {"runnable": "local", "needs": []},
+    "hull_mlip.py": {"runnable": "local", "needs": ["matgl", "ase", "a reference set: the JARVIS-DFT dump or an MP key"]},
     "ingest_upload.py": {"runnable": "web", "needs": []},
     "instrument_sheet.py": {"runnable": "web", "needs": []},
     "intake.py": {"runnable": "web", "needs": []},

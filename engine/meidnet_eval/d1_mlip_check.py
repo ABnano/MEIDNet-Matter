@@ -3,7 +3,8 @@
 Two potentials of different architecture (TensorNet and CHGNet, both trained on MatPES-PBE), because one potential
 agreeing with itself is not evidence.  Per candidate: whether each relaxed at all, the energy per atom, how far the
 energy fell on relaxation (a sound structure falls by less than 0.1 eV/atom), how far atoms moved, whether the designed
-space group survived, and the shortest interatomic distance afterwards.  The relaxed cells are kept, because a band gap
+space group survived, the shortest interatomic distance afterwards, that distance as a share of the two atoms' radii (below
+0.6 the cell collapsed: COLLAPSED, contact_ratio) and whether the optimiser converged before the step limit.  The relaxed cells are kept, because a band gap
 judged on a cell that then moves by an angstrom describes no material: the judges must be re-run on the relaxed cell.
 
 Usage: python d1_mlip_check.py RESULTS_DIR [--cifs-dir DIR] [--steps 300] [--shard 0 --nshards 1] [--subset N]
@@ -30,8 +31,16 @@ def load_potential(name, log=print):
     import time
     os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
     import matgl
-    cache = os.path.join(os.path.expanduser("~"), ".cache", "matgl")
-    cached = os.path.isdir(os.path.join(cache, POTENTIALS[name]))
+    # matgl 4 downloads into its cache folder (MATGL_CACHE, ~/.cache/matgl) in the Hub's layout, models--materialyze--<name>;
+    # older versions kept <name> there directly
+    try:
+        from matgl.config import MATGL_CACHE as root
+    except ImportError:
+        root = os.path.join(os.path.expanduser("~"), ".cache", "matgl")
+    cache = os.path.join(str(root), f"models--materialyze--{POTENTIALS[name]}")
+    if not os.path.isdir(cache) and os.path.isdir(os.path.join(str(root), POTENTIALS[name])):
+        cache = os.path.join(str(root), POTENTIALS[name])
+    cached = os.path.isdir(cache)
     log(f"potential {POTENTIALS[name]}: {'in the cache' if cached else 'downloading from the Hugging Face Hub (once)'} -> {cache}", flush=True)
     t0 = time.time()
     pot = matgl.load_model(POTENTIALS[name])
@@ -39,10 +48,10 @@ def load_potential(name, log=print):
     return pot
 
 
-def relaxer(name):
+def relaxer(name, quiet=False):
     if name not in _CACHE:
         from matgl.ext.ase import Relaxer
-        _CACHE[name] = Relaxer(potential=load_potential(name), relax_cell=True)
+        _CACHE[name] = Relaxer(potential=load_potential(name, log=(lambda *a, **k: None) if quiet else print), relax_cell=True)
     return _CACHE[name]
 
 
@@ -51,6 +60,35 @@ def spacegroup(s):
         return int(SpacegroupAnalyzer(s, symprec=0.1).get_space_group_number())
     except Exception:
         return 0
+
+
+# A relaxed cell whose closest atoms sit nearer than this share of their two radii is collapsed, not a crystal: a potential
+# can lower the energy of such a cell without limit, so its energy, band gap and hull distance mean nothing.  Every one of the
+# 1,282 known JARVIS double perovskites lies above 0.73 (1st percentile 0.85); sound bonds stay above about 0.75.
+COLLAPSED = 0.6
+
+
+def contact_ratio(s):
+    """The shortest interatomic distance divided by the sum of the two atoms' radii (pymatgen's atomic radii), images of an
+    atom included: about 1 in a sound crystal, below COLLAPSED when atoms were pushed into each other."""
+    from pymatgen.core import Element
+    rad = []
+    for site in s:
+        try:
+            sym = site.specie.symbol
+        except AttributeError:                       # a disordered site: its first species
+            sym = list(site.species)[0].symbol
+        try:
+            r = Element(sym).atomic_radius
+        except Exception:
+            r = None
+        rad.append(float(r) if r else 1.5)
+    rad = np.array(rad)
+    ratio = float(min(s.lattice.get_lll_reduced_lattice().abc) / (2 * rad.max()))
+    if len(s) > 1:
+        d = s.distance_matrix + np.eye(len(s)) * 99
+        ratio = min(ratio, float((d / (rad[:, None] + rad[None, :])).min()))
+    return ratio
 
 
 def relax_one(s0, name, steps, fmax=0.05):
@@ -62,6 +100,9 @@ def relax_one(s0, name, steps, fmax=0.05):
     rec = {f"{name}_energy_per_atom": round(e1, 4), f"{name}_drop_per_atom": round(e0 - e1, 4),
            f"{name}_max_displacement": round(float(np.nanmax(disp)), 3), f"{name}_spacegroup_relaxed": spacegroup(s1),
            f"{name}_min_distance": round(float((s1.distance_matrix + np.eye(len(s1)) * 99).min()), 3) if len(s1) > 1 else None,
+           # matgl records the start, every step and the end: a run stopped by the step limit holds steps + 2 frames
+           f"{name}_converged": bool(len(traj.energies) < steps + 1),
+           f"{name}_contact_ratio": round(contact_ratio(s1), 3),
            f"{name}_ok": True}
     return s1, rec
 

@@ -270,8 +270,13 @@ def _annotate_generation(cfg):
         val = (lm.meta.get("history") or {}).get("val") or []
         if val and val[-1].get("mae"):
             print("validation error of this model (held-out, from training): " + ", ".join(f"{k} {v:.3g}" for k, v in val[-1]["mae"].items())
-                  + ".  A candidate's predicted value is an estimate with that error; the independent check is "
-                  "python -m meidnet_eval.target_calibration <generation folder> --judge megnet --test-csv <intake>/test.csv")
+                  + ".  A candidate's predicted value is an estimate with that error.")
+        gap = next((p.column for p in cfg.data.properties if "gap" in p.column.lower()), cfg.data.properties[0].column)
+        intake = os.path.dirname(os.path.abspath(cfg.resolve(cfg.data.table)))
+        model = cfg.model_path if getattr(cfg, "model_path", None) else cfg.checkpoint_path
+        print("the independent check (label read from each cell, qualified judge, two potentials, re-judge, novelty):\n"
+              f"  python -m meidnet_eval.check_candidates {out} --ckpt {model} --intake {intake} --gap {gap} "
+              f"--out {os.path.join(cfg.out_dir, 'check')}")
     except Exception as e:
         print(f"(validation error not read: {e})")
 
