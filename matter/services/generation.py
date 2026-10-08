@@ -177,8 +177,9 @@ def execute_generation(job_obj, job: dict, services) -> None:
                                        min_orbits=2, max_atoms=lm.model.max_sites, label_source="structure", target_window=req["window_eV"],
                                        cifs_dir=os.path.join(job_dir, "cifs"), tag=job["job_id"], on_progress=on_progress,
                                        should_stop=lambda: services.jobs.should_stop(job_obj, log), log=log)
-        with lock:
-            job["progress"]["phase"] = "judging"
+        with lock:                                   # the engine reports every ten draws; the final counts are set here
+            job["progress"].update({"phase": "judging", "attempts": sum(rejected.values()) + len(rows), "kept": len(rows),
+                                    "target_index": max(0, len(req["targets"]) - 1), "seconds": round(time.time() - t0, 1)})
         store.save(job)
         structs = [Structure.from_file(os.path.join(job_dir, r["file"])) for r in rows]
         judged = services.judge.gaps(structs) if rows else []

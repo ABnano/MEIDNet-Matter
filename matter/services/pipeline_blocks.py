@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.resources as ir
+import json
 import re
 from functools import lru_cache
 
@@ -16,10 +17,26 @@ from matter.api.errors import ApiError
 SAFE_NAME = re.compile(r"^[a-z0-9_]+\.py$")
 
 
-@lru_cache(maxsize=1)
-def blocks_payload() -> dict:
+@lru_cache(maxsize=2)
+def blocks_payload(research_file: str | None = None) -> dict:
+    """The blocks from the installed engine, plus the per-dataset verdicts the research build graded (when shipped).
+
+    The bands, metrics and components always come from the engine, so they match the grading code.  The verdict of each
+    block on each executed study is a measurement, not a definition; it is read from the research artefacts' blocks.json,
+    which `scripts/build_studies.py` wrote from the same engine, and is absent when no research directory is served.
+    """
     from meidnet_eval import COMPONENTS, stages
     payload = stages.export_blocks()
+    payload["dataset_verdicts"] = {}
+    if research_file:
+        try:
+            with open(research_file, encoding="utf-8") as f:
+                built = json.load(f)
+            verdicts = built.get("dataset_verdicts") or {}
+            payload["dataset_verdicts"] = {k: v for k, v in verdicts.items() if isinstance(v, dict)}
+            payload["generated_from"] = built.get("generated_from")
+        except (OSError, ValueError):
+            pass
     for block in payload["blocks"]:
         comps = []
         for note in block["components"]:
@@ -46,7 +63,7 @@ def component_files() -> dict:
 def component_list() -> list[dict]:
     from meidnet_eval import COMPONENTS
     blocks = {}
-    for block in blocks_payload()["blocks"]:
+    for block in blocks_payload()["blocks"]:                     # the engine's block list; verdicts are not needed here
         for c in block["components"]:
             blocks.setdefault(c["file"], []).append(block["id"])
     rows = []

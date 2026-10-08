@@ -30,6 +30,9 @@ def test_blocks_payload_has_ten_blocks_and_no_published_column(client):
     d = r.json()
     assert [b["id"] for b in d["blocks"]] == [f"S{i}" for i in range(10)]
     assert sum(len(b["metrics"]) for b in d["blocks"]) >= 37
+    # the home page's block x dataset matrix: every executed study has a verdict for every block it ran
+    assert set(d["dataset_verdicts"]) == {"perov5", "mp-perovskites", "user-246", "mp20"}
+    assert all(d["dataset_verdicts"][k].get("S1") for k in d["dataset_verdicts"]), d["dataset_verdicts"]
     assert "published" not in d["configs"]
     assert not FORBIDDEN.search(json.dumps(d))
     r = client.get("/api/pipeline/blocks/s6")

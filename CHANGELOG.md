@@ -22,6 +22,10 @@ The staged pipeline, four executed studies, the checkpoints behind them, and tar
 - `deploy/deploy_space.py` stages every checkpoint the manifest marks for shipping and verifies each checksum.
 
 ### Fixed
+- The home page's block × dataset verdict matrix is filled from the research build; it was empty on the first deploy because the server served the engine's blocks without the per-dataset verdicts.
+- Header wraps on phones, footer links are spaced, and the model selector no longer widens the Generate page beyond the viewport.
+- A generation job's final progress counters show the real number of draws and kept cells.
+- Method page: a step-by-step "Run it on your data" guide with the exact commands of the shipped components; the Pipeline page points to it.
 - The `size` npm script now has its `scripts/size-budget.mjs`.
 
 ## [0.2.0] - 2026-10-06

@@ -14,7 +14,7 @@ export default function Pipeline() {
     <>
       <MarketingHeader />
       <main className="wrap-narrow page" id="main">
-        <div className="page-head"><h1>{P.h1}</h1><p>{P.lead}</p></div>
+        <div className="page-head"><h1>{P.h1}</h1><p>{P.lead}</p><p className="small muted">Each block page shows its metrics, bands, meaning and the code that computes it. To run the blocks on your own data, follow <Link to="/method#run">the steps on the Method page</Link>.</p></div>
         {error && <ErrorNote error={error} retry={reload} />}
         {loading && <Spinner label="Loading the blocks" />}
         {data && (
