@@ -6,7 +6,7 @@ Wi-Fi often does).  Its pages read every GET from files written here, next to in
 the Space.  The responses come from the application itself (FastAPI's test client), so the mirror shows what the Space
 serves, from the same engine and the same research artefacts.
 
-Written under OUT/static-api/: the version, the pipeline blocks and every block, the component list and every
+Written under OUT/static-api/: the pipeline blocks and every block, the component list and every
 component's source, the studies index, every study and every file a study lists, the checkpoints table and every
 checkpoint (their files are not copied: the links point to the GitHub release), the demo project's summary.  Also
 OUT/404.html (a path inside the mirror becomes its '#' route), OUT/.nojekyll and OUT/mirror.json (what was built).
@@ -16,6 +16,7 @@ Usage: python scripts/build_mirror.py [--out build/mirror]
 from __future__ import annotations
 
 import argparse
+import asyncio
 import datetime
 import json
 import os
@@ -64,9 +65,48 @@ def target(out: str, route: str, kind: str) -> str:
     return os.path.join(out, "static-api", rel + (".json" if kind == "json" else ""))
 
 
+class InProcess:
+    """The application called in-process through ASGI, the interface every Python web server speaks: no HTTP client
+    library is involved, so the build cannot break when one changes (Starlette's test client did: it needs httpx, which
+    the application itself does not install)."""
+
+    def __init__(self, app):
+        self.app, self.loop, self.lifespan = app, asyncio.new_event_loop(), None
+
+    def __enter__(self):
+        self.lifespan = self.app.router.lifespan_context(self.app)          # the start-up the server would run
+        self.loop.run_until_complete(self.lifespan.__aenter__())
+        return self
+
+    def __exit__(self, *exc):
+        try:
+            self.loop.run_until_complete(self.lifespan.__aexit__(None, None, None))
+        finally:
+            self.loop.close()
+
+    def get(self, route: str) -> tuple[int, bytes]:
+        path, _, query = route.partition("?")
+        scope = {"type": "http", "asgi": {"version": "3.0", "spec_version": "2.3"}, "http_version": "1.1", "method": "GET",
+                 "scheme": "http", "path": path, "raw_path": path.encode(), "root_path": "", "query_string": query.encode(),
+                 "headers": [(b"host", b"mirror.local"), (b"accept", b"*/*")], "client": ("127.0.0.1", 0),
+                 "server": ("mirror.local", 80)}
+        reply = {"status": None, "body": []}
+
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        async def send(message):
+            if message["type"] == "http.response.start":
+                reply["status"] = message["status"]
+            elif message["type"] == "http.response.body":
+                reply["body"].append(message.get("body", b""))
+
+        self.loop.run_until_complete(self.app(scope, receive, send))
+        return reply["status"], b"".join(reply["body"])
+
+
 def prerender(out: str, log=print) -> dict:
     """Every read-only GET the site's pages make, written as files under OUT/static-api; returns a summary."""
-    from fastapi.testclient import TestClient
     from matter.app import create_app
     from matter.settings import Settings
 
@@ -82,24 +122,22 @@ def prerender(out: str, log=print) -> dict:
             f.write(body)
         written.append(os.path.relpath(path, out)); total += len(body)
 
-    with TestClient(create_app(settings)) as client:
+    with InProcess(create_app(settings)) as client:
         def get(route: str, kind: str = "json", required: bool = True):
-            r = client.get(route)
-            if r.status_code != 200:
+            status, body = client.get(route)
+            if status != 200:
                 if required:
-                    raise SystemExit(f"{route}: HTTP {r.status_code} {r.text[:200]}")
-                log(f"  skipped {route}: HTTP {r.status_code}")
+                    raise SystemExit(f"{route}: HTTP {status} {body[:200]!r}")
+                log(f"  skipped {route}: HTTP {status}")
                 return None
             if kind == "json":
-                data = r.json()
-                return data
-            save(route, r.content, kind)
-            return r.content
+                return json.loads(body)
+            save(route, body, kind)
+            return body
 
         def put(route: str, data) -> None:
             save(route, json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), "json")
 
-        put("/api/version", get("/api/version"))
         blocks = get("/api/pipeline/blocks"); put("/api/pipeline/blocks", blocks)
         for b in blocks["blocks"]:
             put(f"/api/pipeline/blocks/{b['id']}", get(f"/api/pipeline/blocks/{b['id']}"))
