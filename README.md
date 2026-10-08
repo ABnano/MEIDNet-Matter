@@ -20,11 +20,20 @@ Matter currently searches property-conditioned candidates within supported struc
 
 ## What it does, in this version
 
+The home page opens on a worked result: a real accepted structure with both of its readings, a small requested-versus-delivered
+plot, an animated six-step walkthrough, and a rolling strip of the structures the generator delivered. From there: **Pipeline**
+(the ten blocks with their bands and code), **Studies** (Perov-5, Materials Project perovskites, an external upload, MP-20, with
+checkpoints), **Generate** (live band-gap generation on MP-20 with two independent readings per cell, 3D cards and an evidence
+map) and **Method** (mechanism, strengths, limits, and the commands that run the same stages on your own data). The Perov-5
+demo project below is the original flow and is kept as it was, with one change: every candidate now shows the
+**structure-based prediction** first and the **search value** beside it, and says which of the two supports the target.
+
+
 | Step | What you get |
 |---|---|
 | **Goal** | Target value, range or bound per property; family and variant; excluded elements and presets; the chemistry rules with their limits; the search budget. |
-| **Readiness** | Six indicators before any search: held-out prediction error of each targeted property, cross-modal retrieval in both directions, what the decoder recovers, where the target sits in the training distribution and how much data lies around it, how many structures share the target window, and whether the family's elements occur in the data. One verdict; a "not recommended" target can still be searched in exploratory mode. |
-| **Candidates** | A search with the engine; every candidate carries its predicted values with their domain status, the rules with values and windows, the encoder's own prediction of the composition and whether it agrees with the search's, the nearest training materials with their DFT values, the training data around the prediction, whether the dataset already holds it, the stability stage, and a "why" sentence that repeats these facts. Table, cards and map; filters; comparison side by side. |
+| **Readiness** | Six indicators before any search: prediction error of each targeted property on the evaluation split (a published-model diagnostic when the checkpoint saw that split in training), cross-modal retrieval in both directions, what the decoder recovers, where the target sits in the training distribution and how much data lies around it, how many structures share the target window, and whether the family's elements occur in the data. One verdict; a "not recommended" target can still be searched in exploratory mode. |
+| **Candidates** | A search with the engine; every candidate carries the structure-based prediction and the search value of each property, each with its domain status, and what the evidence supports, the rules with values and windows, the encoder's own prediction of the composition and whether it agrees with the search's, the nearest training materials with their DFT values, the training data around the prediction, whether the dataset already holds it, the stability stage, and a "why" sentence that repeats these facts. Table, cards and map; filters; comparison side by side. |
 | **One target, many structures** | When the search has finished, candidates are grouped into clusters of similar encoder latents (cosine ≥ 0.9). The cards view shows the clusters; the "Prioritise" control orders candidates by target accuracy, diversity (one per cluster first), stability, novelty, search score, encoder agreement or order found. |
 | **Validation ladder** | Six stages: Generated · Chemistry checked · MLIP screened · DFT relaxed · DFT property confirmed · Experimentally tested. Every candidate records the highest stage it reached and the result of each stage; this version records stages 0 and 1, the later ones are your own steps and keep their place in the record. |
 | **Export** | CIF per candidate, the candidate table, the candidate record (versioned: `meidnet-matter/candidate-record/1`, JSON Schema at `/api/schema/candidate-record`), and the run bundle: goal, engine configuration, metrics, readiness, candidates, CIFs, `targets.csv`, the record schema, a manifest with file hashes. |

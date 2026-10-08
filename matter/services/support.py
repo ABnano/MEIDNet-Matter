@@ -48,9 +48,16 @@ def domain_status(value: float, p: dict) -> tuple[str, str]:
         return "near_boundary", (f"{fmt(v, unit)} lies near the edge of the training distribution: outside the 5th–95th percentile band "
                                  f"({fmt(pc['p5'])}–{fmt(pc['p95'], unit)}) but inside the 1st–99th ({fmt(pc['p1'])}–{fmt(pc['p99'], unit)}) "
                                  f"of {basis_phrase(p, basis)}.")
+    side = "low" if v < pc["p1"] else "high"
+    if lo <= v <= hi:
+        return "extrapolating", (f"{EXTRAPOLATION_SENTENCE}: {fmt(v, unit)} lies inside the training range ({fmt(lo)}–{fmt(hi, unit)}) but "
+                                 f"outside the 1st–99th percentile band ({fmt(pc['p1'])}–{fmt(pc['p99'], unit)}) of {basis_phrase(p, basis)}: "
+                                 f"fewer than 1 % of them have a value this {side} (percentile test on the training distribution).")
     if lo - ENGINE_MARGIN * span <= v <= hi + ENGINE_MARGIN * span:
-        return "extrapolating", f"{EXTRAPOLATION_SENTENCE} (training range {fmt(lo)}–{fmt(hi, unit)})."
-    return "far_outside", f"{EXTRAPOLATION_SENTENCE}: {fmt(v, unit)} is far outside the training range ({fmt(lo)}–{fmt(hi, unit)})."
+        return "extrapolating", (f"{EXTRAPOLATION_SENTENCE}: {fmt(v, unit)} is outside the training range ({fmt(lo)}–{fmt(hi, unit)}) by less than "
+                                 f"5 % of its span (range test).")
+    return "far_outside", (f"{EXTRAPOLATION_SENTENCE}: {fmt(v, unit)} is outside the training range ({fmt(lo)}–{fmt(hi, unit)}) by more than "
+                           f"5 % of its span (range test).")
 
 
 def worse(a: str, b: str) -> str:

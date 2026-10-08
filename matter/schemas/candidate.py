@@ -46,6 +46,24 @@ class PropertyEvidence(Loose):
     evidence_label: str
     dft_value: float | None = None
     dft_label: str | None = None
+    # added in Matter 0.4.0: the structure-based prediction, kept apart from the search value in `predicted`
+    structure_predicted: float | None = None
+    structure_difference: float | None = None
+    structure_in_window: bool | None = None
+    structure_domain: DomainBlock | None = None
+    structure_label: str | None = None
+    search_label: str | None = None
+
+
+class Support(Loose):
+    """What the evidence supports (added in 0.4.0): the candidate passed the search filters by construction; whether the
+    structure-based prediction, and the dataset's DFT value when known, place it inside the requested window."""
+    search_filters_passed: bool = True
+    rules_passed: bool | None = None
+    structure_supported: bool | None = None
+    dft_supported: bool | None = None
+    n_targeted: int = 0
+    label: str
 
 
 class RuleResult(Loose):
@@ -164,6 +182,7 @@ class CandidateRecord(BaseModel):
     structure: StructureBlock
     properties: dict[str, PropertyEvidence]
     domain: DomainBlock
+    support: Support | None = None
     constraints: list[RuleResult]
     rules_passed: int
     rules_total: int
@@ -192,8 +211,9 @@ TARGETS_CSV_COLUMNS = {
     "<property>_target": "the point target the search was given (a value objective; empty for a range, a bound or an untargeted property)",
     "<property>_min": "the lower edge of the requested window (value - tolerance, the range's low end, or an 'at least' bound)",
     "<property>_max": "the upper edge of the requested window (value + tolerance, the range's high end, or an 'at most' bound)",
-    "<property>_value": "the value Matter reports for the structure: the search's prediction in this version",
-    "source": "how the value was obtained: 'predicted (<model_id>)' in this version; 'dft' or 'experiment' once validated",
+    "<property>_value": "the structure-based prediction: the decoded structure encoded again and read by the model (the search value is in <property>_search_value)",
+    "<property>_search_value": "the search value: the property head read at the search point; it kept the candidate and tends to repeat the request",
+    "source": "how <property>_value was obtained: 'structure-based prediction (<model_id>)'; 'dft' or 'experiment' once validated",
     "validation_stage": "the highest validation stage reached (0 Generated … 5 Experimentally tested)",
     "cluster": "the cluster id of the candidate (empty when no latent was recorded)",
 }

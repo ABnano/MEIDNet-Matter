@@ -25,13 +25,19 @@ def candidate_rows(run: dict) -> tuple[list[str], list[dict]]:
         row["lattice_a"] = c["structure"].get("lattice_a")
         for p, v in c["properties"].items():
             row[f"target_{p}"] = v["target"]
-            row[f"predicted_{p}"] = v["predicted"]
+            row[f"structure_{p}"] = v.get("structure_predicted")                 # the structure-based prediction (shown first)
+            row[f"structure_difference_{p}"] = v.get("structure_difference")
+            row[f"structure_in_window_{p}"] = v.get("structure_in_window")
+            row[f"search_{p}"] = v["predicted"]                                  # the search value that kept the candidate
+            row[f"search_difference_{p}"] = v["difference"]
+            row[f"predicted_{p}"] = v["predicted"]                               # kept for readers of the 0.2 columns
             row[f"difference_{p}"] = v["difference"]
             row[f"encoder_{p}"] = c["model_evidence"]["encoder_prediction"].get(p)
             row[f"agreement_{p}"] = c["model_evidence"]["agreement"][p]["label"]
-            row[f"domain_{p}"] = v["domain"]["status"]
+            row[f"domain_{p}"] = (v.get("structure_domain") or v["domain"])["status"]
             if "dft_value" in v:
                 row[f"dataset_dft_{p}"] = v["dft_value"]
+        row["support"] = (c.get("support") or {}).get("label", "")
         for r in c["constraints"]:
             row[f"rule_{r['id']}"] = r["value"] if r["value"] is not None else ("passed" if r["passed"] else "failed")
         row["rules_passed"] = f"{c['rules_passed']}/{c['rules_total']}"
@@ -100,19 +106,22 @@ def targets_csv(run: dict) -> str:
     cands = [c for c in run.get("candidates", []) if "properties" in c]
     props = list(cands[0]["properties"].keys()) if cands else []
     objectives = {o["property"]: o for o in (run.get("goal") or {}).get("objectives", [])}
-    columns = (["file", "candidate_id", "formula"] + [f"{p}_{k}" for p in props for k in ("target", "min", "max", "value")]
+    columns = (["file", "candidate_id", "formula"] + [f"{p}_{k}" for p in props for k in ("target", "min", "max", "value", "search_value")]
                + ["source", "validation_stage", "cluster"])
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=columns, lineterminator="\n")
     w.writeheader()
     for c in cands:
+        has_structure = all(c["properties"][p].get("structure_predicted") is not None for p in props)
         row = {"file": f"{c['candidate_id']}.cif", "candidate_id": c["candidate_id"], "formula": c["identity"]["formula"],
-               "source": f"predicted ({c['identity']['model_id']})", "validation_stage": c["stability"].get("stage"),
-               "cluster": (c.get("cluster") or {}).get("id")}
+               "source": f"{'structure-based prediction' if has_structure else 'search value'} ({c['identity']['model_id']})",
+               "validation_stage": c["stability"].get("stage"), "cluster": (c.get("cluster") or {}).get("id")}
         for p in props:
             t, lo, hi = request_of(objectives.get(p), c["properties"][p])
             row[f"{p}_target"], row[f"{p}_min"], row[f"{p}_max"] = t, lo, hi
-            row[f"{p}_value"] = c["properties"][p]["predicted"]
+            v = c["properties"][p]
+            row[f"{p}_value"] = v["structure_predicted"] if v.get("structure_predicted") is not None else v["predicted"]
+            row[f"{p}_search_value"] = v["predicted"]
         w.writerow({k: ("" if v is None else v) for k, v in row.items()})
     return buf.getvalue()
 

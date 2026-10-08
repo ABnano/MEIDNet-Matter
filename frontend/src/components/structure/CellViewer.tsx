@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { bondsFor, expandCell, fracToCart, project3d, type CellStructure, type Vec3 } from '@/lib/lattice';
 import { CPK, RADII } from '@/lib/periodic';
 
-interface Props { structure: CellStructure; size?: number; title: string; labels?: boolean; interactive?: boolean; supercell?: number; className?: string }
+interface Props { structure: CellStructure; size?: number; title: string; labels?: boolean; interactive?: boolean; supercell?: number; className?: string; autoSpin?: boolean }
 
-/** Ball-and-stick SVG of a unit cell: drag or arrow keys rotate, 0 resets, double-click spins. */
-export function CellViewer({ structure, size = 150, title, labels = false, interactive = true, supercell = 1, className }: Props) {
+/** Ball-and-stick SVG of a unit cell: drag or arrow keys rotate, 0 resets, double-click spins; `autoSpin` starts it spinning. */
+export function CellViewer({ structure, size = 150, title, labels = false, interactive = true, supercell = 1, className, autoSpin = false }: Props) {
   const [view, setView] = useState({ yaw: -0.55, pitch: 0.35 });
-  const [spin, setSpin] = useState(false);
+  const [spin, setSpin] = useState(autoSpin);
   const drag = useRef<{ x: number; y: number; yaw: number; pitch: number } | null>(null);
   const raf = useRef<number | null>(null);
 

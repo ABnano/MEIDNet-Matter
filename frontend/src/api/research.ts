@@ -28,6 +28,8 @@ export interface Accepted {
   requested: number; formula: string; label_structure_gap: number; judge_gap: number; amd_nearest: number | null; known_formula: boolean;
   recorded_gaps: number[]; class: string; charge_balanced: boolean | null; relaxation_drop_eV_atom: number | null;
   spacegroup_designed: number | null; spacegroup_relaxed: number | null; natoms: number; file: string; flag: string;
+  /** The relaxed cell as sites and lattice (0.4.0), for the 3D cards. */
+  structure?: { sites: Array<{ element: string; frac: [number, number, number] }>; lattice: number[][] } | null;
 }
 export interface Calibration {
   window_eV: number; metal_floor_eV: number; funnel: { generated: number; both_judges: number; relaxed: number; final: number };
@@ -76,7 +78,11 @@ export interface GenCandidate {
   known_formula: boolean | null; recorded_gaps_eV: number[]; amd_nearest_reference: number | null; novel_by_amd: boolean | null;
   lattice: { a: number; b: number; c: number; alpha: number; beta: number; gamma: number }; volume_per_atom: number; file: string; sha256: string;
   evidence: Record<string, string>; stability: { status: string; note: string };
+  /** 0.4.0: the cell for the 3D card and the three statuses, kept apart. */
+  lattice_matrix?: number[][]; sites?: Array<{ element: string; frac: [number, number, number] }>;
+  statuses?: { gap_window: 'both models' | 'label only' | 'judge only' | 'neither'; charge_balance: 'yes' | 'no' | 'unknown'; relaxed: string };
 }
+export interface CellSites { sites: Array<{ element: string; frac: [number, number, number] }>; lattice: number[][] }
 export interface GenJob {
   job_id: string; status: 'queued' | 'running' | 'done' | 'stopped' | 'error' | 'interrupted'; created: string; started: string | null;
   finished: string | null; error: string | null; request: GenerateRequest; notes: string[]; limits: Record<string, number> | null;

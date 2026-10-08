@@ -74,7 +74,8 @@ export default function Explorer() {
       {status.status === 'stopped' && <div className="banner banner-info small" style={{ marginBottom: 12 }}>Stopped early; what was found is kept.</div>}
 
       <div className="results-head">
-        <h2 data-testid="results-count">{shown.length === all.length ? `${all.length} candidate${all.length === 1 ? '' : 's'}` : `${shown.length} of ${all.length} candidates`} {running ? 'so far' : 'match your design request'}</h2>
+        <h2 data-testid="results-count">{shown.length === all.length ? `${all.length} candidate${all.length === 1 ? '' : 's'}` : `${shown.length} of ${all.length} candidates`} {running ? 'so far' : 'passed the search filters'}
+          {!running && all.some((c) => c.support) && <span className="muted" style={{ fontWeight: 400 }}> · {all.filter((c) => c.support?.structure_supported).length} supported by the structure-based prediction</span>}</h2>
         {activeChips.map((ch) => <span key={ch.key} className="chip">{ch.text}<button type="button" aria-label={`Remove filter: ${ch.text}`} onClick={() => setQ(ch.remove)}>✕</button></span>)}
         {activeChips.length > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setQ((x) => ({ ...DEFAULTS, view: x.view, sort: x.sort, c: x.c, cmp: x.cmp, cols: x.cols }))}>Reset filters</button>}
         <span style={{ marginLeft: 'auto' }} className="row">

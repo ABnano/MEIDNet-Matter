@@ -113,25 +113,40 @@ def enrich(raw: dict, ctx: EvidenceContext, index: int) -> dict:
         except Exception:
             structure = raw_structure
 
-    # properties
+    # properties: two values per property, kept apart.  `predicted` is the search value: the property head read at the
+    # search point, which is what kept the candidate (it tends to repeat the request).  `structure_predicted` is the
+    # structure-based prediction: the decoded structure encoded again and read there.  Only the second one can support
+    # a target; the domain status shown first belongs to it.
+    def in_win(v, window):
+        return bool((window[0] is None or v >= window[0]) and (window[1] is None or v <= window[1])) if window else None
+
     props = {}
     worst = "in_distribution"
     for c in columns:
         p = art.property(c)
         pred = float(raw["predictions"][c])
+        struct = float(enc_pred[c]) if enc_pred.get(c) is not None else None
         status, reason = domain_status(pred, p)
-        worst = status if ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(status) > \
+        s_status, s_reason = domain_status(struct, p) if struct is not None else (None, None)
+        shown = s_status or status
+        worst = shown if ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(shown) > \
             ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(worst) else worst
         target = targets.get(c)
         o = objectives.get(c)
         window = ctx.windows.get(c)
         props[c] = {"label": p["label"], "unit": p["unit"], "objective": (o.kind if o else None), "target": target,
                     "predicted": pred, "difference": (pred - float(target)) if target is not None else None,
+                    "structure_predicted": struct,
+                    "structure_difference": (struct - float(target)) if (target is not None and struct is not None) else None,
                     "uncertainty": None, "uncertainty_note": "not available for this model",
                     "training_range": list(ctx.ranges.get(c, (p["min"], p["max"]))),
                     "domain": {"status": status, "word": DOMAIN_WORDS[status], "reason": reason},
-                    "in_window": (bool((window[0] is None or pred >= window[0]) and (window[1] is None or pred <= window[1])) if window else None),
-                    "window": list(window) if window else None, "evidence_label": "Predicted"}
+                    "structure_domain": ({"status": s_status, "word": DOMAIN_WORDS[s_status], "reason": s_reason} if s_status else None),
+                    "in_window": in_win(pred, window),
+                    "structure_in_window": (in_win(struct, window) if struct is not None else None),
+                    "window": list(window) if window else None,
+                    "evidence_label": "Search value", "search_label": "Search value (the filter that kept this candidate)",
+                    "structure_label": "Structure-based prediction (the decoded structure, encoded again)"}
 
     # rules
     constraints = []
@@ -173,6 +188,7 @@ def enrich(raw: dict, ctx: EvidenceContext, index: int) -> dict:
         for c in columns:
             props[c]["dft_value"] = match["properties"].get(c)
             props[c]["dft_label"] = f"DFT-computed ({art.dataset.get('title', 'dataset')})"
+    support = support_block(props, n_pass, len(constraints))
 
     candidate = {
         "candidate_id": cid, "run_id": ctx.run_id, "index": index, "target_index": raw.get("target_index"), "round": raw.get("round"),
@@ -182,7 +198,7 @@ def enrich(raw: dict, ctx: EvidenceContext, index: int) -> dict:
                       "chemiscope": structure_to_chemiscope(structure),
                       "sites": [{"element": str(s.specie.symbol), "frac": [round(float(x), 5) for x in s.frac_coords]} for s in structure],
                       "lattice": [[round(float(x), 5) for x in row] for row in structure.lattice.matrix]},
-        "properties": props, "domain": {"status": worst, "word": DOMAIN_WORDS[worst]},
+        "properties": props, "domain": {"status": worst, "word": DOMAIN_WORDS[worst]}, "support": support,
         "constraints": constraints, "rules_passed": n_pass, "rules_total": len(constraints),
         "model_evidence": model_evidence, "novelty": novelty,
         "stability": validation_block(n_pass, len(constraints)),
@@ -197,25 +213,59 @@ def enrich(raw: dict, ctx: EvidenceContext, index: int) -> dict:
     return candidate
 
 
+def support_block(props: dict, n_pass: int, n_total: int) -> dict:
+    """What the candidate's evidence supports, kept apart: it passed the search filters (that is why it exists); the
+    structure-based prediction supports the target or not; the dataset's DFT value supports it or not (when known)."""
+    targeted = {k: p for k, p in props.items() if p.get("target") is not None and p.get("window")}
+    def all_in(key):
+        vals = [p.get(key) for p in targeted.values()]
+        if not targeted or any(v is None for v in vals):
+            return None
+        return all(vals)
+    structure = all_in("structure_in_window")
+    dft = None
+    if targeted and all(p.get("dft_value") is not None for p in targeted.values()):
+        dft = all(p["window"][0] is None or p["dft_value"] >= p["window"][0] for p in targeted.values()) and \
+            all(p["window"][1] is None or p["dft_value"] <= p["window"][1] for p in targeted.values())
+    rules = bool(n_total) and n_pass == n_total
+    if structure is None:
+        label = "Passed the search filters"
+    elif structure:
+        label = "Passed the search filters · supported by the structure-based prediction"
+    else:
+        label = "Passed the search filters · not supported by the structure-based prediction"
+    if dft is True:
+        label += " · the dataset's DFT value is inside the window"
+    elif dft is False:
+        label += " · the dataset's DFT value is outside the window"
+    return {"search_filters_passed": True, "rules_passed": rules, "structure_supported": structure, "dft_supported": dft,
+            "n_targeted": len(targeted), "label": label}
+
+
 def why_sentence(c: dict, ctx: EvidenceContext) -> str:
     parts = []
     props = c["properties"]
     targeted = [p for p in props.values() if p["target"] is not None]
     desc = []
     for p in targeted:
-        d = f" ({p['difference']:+.3g} from the target {fmt(p['target'], p['unit'])})" if p["difference"] is not None else ""
-        desc.append(f"predicted {p['label'].lower()} {fmt(p['predicted'], p['unit'])}{d}")
+        unit, target = p["unit"], p["target"]
+        sv = f"the search valued its {p['label'].lower()} at {fmt(p['predicted'], unit)}"
+        if p.get("structure_predicted") is not None:
+            d = f" ({p['structure_difference']:+.3g} from the target {fmt(target, unit)})" if p.get("structure_difference") is not None else ""
+            verdict = "inside" if p.get("structure_in_window") else "outside"
+            sv += f"; read from the decoded structure it is {fmt(p['structure_predicted'], unit)}{d}, {verdict} the window"
+        desc.append(sv)
     head = f"{c['identity']['formula']} was kept in round {c['round']}"
-    parts.append(head + (": " + ", ".join(desc) if desc else "") + ".")
+    parts.append(head + (": " + "; ".join(desc) if desc else "") + ".")
+    sup = c.get("support") or {}
+    if sup.get("structure_supported") is False:
+        parts.append("The search value is not confirmed by the structure-based prediction: treat the target as unsupported for this candidate.")
+    elif sup.get("structure_supported"):
+        parts.append("The structure-based prediction confirms the search value.")
     titles = [k["title"] for k in c["constraints"] if k["passed"]]
     parts.append(f"{c['rules_passed']} of {c['rules_total']} chemistry rules passed" + (f" ({', '.join(titles[:4])}{', …' if len(titles) > 4 else ''})." if titles else "."))
-    ag = c["model_evidence"]["agreement"]
-    for prop, a in ag.items():
-        if props[prop]["target"] is not None:
-            parts.append(f"The encoder's own prediction for this composition ({fmt(a['encoder'], props[prop]['unit'])}) and the search's "
-                         f"({fmt(a['decoder'], props[prop]['unit'])}) {a['label']} for {props[prop]['label'].lower()}.")
-    worst = max(props.values(), key=lambda p: ("in_distribution", "near_boundary", "extrapolating", "far_outside").index(p["domain"]["status"]))
-    parts.append(f"{worst['label']}: {worst['domain']['reason']}")
+    worst = max(props.values(), key=lambda p: ("in_distribution", "near_boundary", "extrapolating", "far_outside").index((p.get("structure_domain") or p["domain"])["status"]))
+    parts.append(f"{worst['label']}: {(worst.get('structure_domain') or worst['domain'])['reason']}")
     nn = c["model_evidence"]["nearest_training"]
     if nn:
         n0 = nn[0]

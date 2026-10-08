@@ -383,8 +383,15 @@ def build_mp20(a, out: str) -> dict:
         except Exception:
             balanced = None
         name = f"{r['formula']}_{base}"
-        copy_file(os.path.join(R, "d1_consensus", "relaxed_tensornet", base), sd, f"accepted/{name}", files, "chemical/x-cif")
-        accepted.append({"requested": float(r["target"]), "formula": r["formula"], "label_structure_gap": round(float(lab), 3),
+        relaxed_cif = os.path.join(R, "d1_consensus", "relaxed_tensornet", base)
+        copy_file(relaxed_cif, sd, f"accepted/{name}", files, "chemical/x-cif")
+        try:                                                  # the relaxed cell as sites + lattice, for the 3D cards
+            st = Structure.from_file(relaxed_cif)
+            structure = {"lattice": [[round(float(x), 4) for x in row] for row in st.lattice.matrix],
+                         "sites": [{"element": str(site.specie.symbol), "frac": [round(float(x), 4) for x in site.frac_coords]} for site in st]}
+        except Exception:
+            structure = None
+        accepted.append({"requested": float(r["target"]), "formula": r["formula"], "label_structure_gap": round(float(lab), 3), "structure": structure,
                          "judge_gap": round(float(jud), 3), "amd_nearest": None if d is None else round(d, 3), "known_formula": is_known,
                          "recorded_gaps": known.get(r["formula"], []), "class": classify(is_known, d), "charge_balanced": balanced,
                          "relaxation_drop_eV_atom": m.get("tensornet_drop_per_atom"), "spacegroup_designed": m.get("spacegroup_designed"),

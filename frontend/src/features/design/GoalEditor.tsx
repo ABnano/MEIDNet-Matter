@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '@/api/endpoints';
 import type { Family, Goal, GoalValidation, Kind, Objective, Project } from '@/api/types';
+import { Histogram } from '@/components/charts/Histogram';
 import { ErrorNote, Segmented, Site, Spinner } from '@/components/ui';
 import { useFamily } from '@/features/project/useProject';
 import { fmt, seconds, shortLabel } from '@/lib/format';
@@ -105,6 +106,19 @@ export function GoalEditor({ project, initial }: { project: Project; initial: Go
                     </div>
                   </div>
                 )}
+                {o && o.kind === 'value' && o.value != null && p.histogram && (() => {
+                  // the training distribution with the requested window, before anything runs: is there support where you are asking?
+                  const zero = p.zero_share > 0.5 ? Math.round(p.zero_share * p.n) : null;
+                  const hist = zero && p.nonzero ? p.nonzero.histogram : p.histogram;
+                  const tol = o.tolerance ?? 0;
+                  const inWindow = hist.counts.reduce((s, cnt, i) => (hist.edges[i + 1] >= o.value! - tol && hist.edges[i] <= o.value! + tol ? s + cnt : s), 0);
+                  return (
+                    <div style={{ marginTop: 8 }}>
+                      <Histogram edges={hist.edges} counts={hist.counts} unit={p.unit} label={p.label} target={o.value} window={[o.value - tol, o.value + tol]} zeroCount={zero} zeroShare={zero ? p.zero_share : null} height={110} />
+                      <div className="small muted">About {inWindow.toLocaleString()} training materials{zero ? ` with a non-zero ${p.label.toLowerCase()}` : ''} fall inside the requested window{zero ? `; ${Math.round(p.zero_share * 100)} % of all training values are exactly zero and are drawn apart` : ''}.</div>
+                    </div>
+                  );
+                })()}
                 {o && o.kind === 'range' && (
                   <div className="row" style={{ marginTop: 8 }}>
                     <label className="field"><span className="small muted">from</span><input className="input input-num" type="number" step="any" value={o.low ?? ''} onChange={(e) => setObjective(pid, { ...o, low: Number(e.target.value) })} /></label>

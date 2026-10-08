@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams } from 'react-router';
 import { api } from '@/api/endpoints';
 import { useResource } from '@/api/hooks';
-import type { Candidate } from '@/api/types';
+import { shownDifference, shownDomain, shownValue, type Candidate } from '@/api/types';
 import { CellViewer } from '@/components/structure/CellViewer';
 import { DomainBadge, ErrorNote, Spinner } from '@/components/ui';
 import { candidateStructure } from '@/features/candidates/components';
@@ -25,9 +25,11 @@ export default function Compare() {
     { label: 'Lattice a (Å)', get: (c) => fmt(c.structure.lattice_a) },
     ...Object.entries(data.properties).flatMap(([k, p]) => [
       { label: `${p.label}: target (${p.unit})`, get: (c: Candidate) => fmt(c.properties[k].target) },
-      { label: `${p.label}: predicted`, get: (c: Candidate) => fmt(c.properties[k].predicted) },
-      { label: `${p.label}: difference`, get: (c: Candidate) => signed(c.properties[k].difference) },
-      { label: `${p.label}: status`, get: (c: Candidate) => <DomainBadge status={c.properties[k].domain.status} word={c.properties[k].domain.word} /> },
+      { label: `${p.label}: structure-based prediction`, get: (c: Candidate) => fmt(shownValue(c.properties[k])) },
+      { label: `${p.label}: difference`, get: (c: Candidate) => signed(shownDifference(c.properties[k])) },
+      { label: `${p.label}: search value`, get: (c: Candidate) => fmt(c.properties[k].predicted) },
+      { label: `${p.label}: DFT value (dataset)`, get: (c: Candidate) => (c.properties[k].dft_value != null ? fmt(c.properties[k].dft_value) : '—') },
+      { label: `${p.label}: status`, get: (c: Candidate) => <DomainBadge status={shownDomain(c.properties[k]).status} word={shownDomain(c.properties[k]).word} /> },
       { label: `${p.label}: encoder vs search`, get: (c: Candidate) => c.model_evidence.agreement[k].label },
     ]),
     { label: 'Rules passed', get: (c) => `${c.rules_passed}/${c.rules_total}` },

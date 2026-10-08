@@ -4,6 +4,35 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-08
+
+What a first external tester saw, taken up: what "matches" means, a result at the visual centre of the first visit, and the
+same evidence view for both generators.
+
+### Changed
+- Perov-5 candidates distinguish the **search value** (the property head read at the search point, which kept the candidate
+  and tends to repeat the request) from the **structure-based prediction** (the decoded structure encoded again). The second is
+  shown first everywhere (cards, table, detail, compare, map, export); the results headline says how many candidates passed the
+  search filters and how many are supported by a structure-based prediction. The candidate record gains
+  `structure_predicted`, `structure_difference`, `structure_in_window`, `structure_domain` and a `support` block; `targets.csv`
+  gains `<property>_search_value` and reports the structure-based value as `<property>_value`.
+- The candidate map auto-scales to include every candidate, draws the training range as a dashed box, and lets the viewer place
+  candidates by the search value, the structure-based prediction or the dataset's DFT value; clicking a point opens the card.
+- Readiness: a published checkpoint that saw the test split in training is labelled a **published-model diagnostic**; "held-out"
+  is reserved for genuinely untouched evaluation. The domain explanation names its test (percentile band or range) and says
+  when a value lies inside the training range but outside the 1st–99th percentile band.
+- The goal editor shows the training distribution of each targeted property with the requested window before anything runs,
+  with the zero spike drawn apart (96 % of Perov-5 gaps are zero).
+- Live generation results: 3D cards and a requested-versus-delivered evidence map, a detail panel with the cell, and three
+  statuses kept apart — gap window (both models / label only / judge only / neither), charge balance, relaxed and re-judged
+  (not in the live run). The generation record gains `sites`, `lattice_matrix` and `statuses`.
+- Home page rebuilt around a worked result: a two-column hero with a real, clickable accepted structure and a compact
+  requested-versus-delivered plot; an animated six-step walkthrough with plain and precise captions; a rolling strip of the
+  accepted structures (paused on hover, static under reduced motion); three ways in (explore a result, set my target, use my
+  data locally); the featured MP-20 study with its funnel, per-request table and limits; then the block × dataset matrix and
+  the studies.
+- The MP-20 study's accepted materials carry their relaxed cells as sites and lattice.
+
 ## [0.3.0] - 2026-10-07
 
 The staged pipeline, four executed studies, the checkpoints behind them, and target-following generation with two judgements.

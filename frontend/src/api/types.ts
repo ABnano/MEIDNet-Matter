@@ -112,12 +112,24 @@ export interface Run extends RunStatus {
   funnel: Funnel[] | null; clusters: RunCluster[] | null; timings: Record<string, number>; manifest: Manifest | null;
 }
 
+export interface DomainBlock { status: DomainStatus; word: string; reason: string }
 export interface CandidateProperty {
-  label: string; unit: string; objective: Kind | null; target: number | null; predicted: number; difference: number | null;
+  label: string; unit: string; objective: Kind | null; target: number | null;
+  /** The search value: the property head read at the search point. It kept the candidate and tends to repeat the request. */
+  predicted: number; difference: number | null;
+  /** The structure-based prediction: the decoded structure encoded again and read there (0.4.0). Only this one can support a target. */
+  structure_predicted?: number | null; structure_difference?: number | null; structure_in_window?: boolean | null; structure_domain?: DomainBlock | null;
+  structure_label?: string | null; search_label?: string | null;
   uncertainty: number | null; uncertainty_note: string; training_range: [number, number];
-  domain: { status: DomainStatus; word: string; reason: string }; in_window: boolean | null; window: [number | null, number | null] | null;
+  domain: DomainBlock; in_window: boolean | null; window: [number | null, number | null] | null;
   evidence_label: string; dft_value?: number | null; dft_label?: string;
 }
+/** What the evidence supports, kept apart (0.4.0). */
+export interface CandidateSupport { search_filters_passed: boolean; rules_passed: boolean | null; structure_supported: boolean | null; dft_supported: boolean | null; n_targeted: number; label: string }
+/** The value shown first for a property: the structure-based prediction when the backend provides it, else the search value. */
+export const shownValue = (p: CandidateProperty): number => p.structure_predicted ?? p.predicted;
+export const shownDifference = (p: CandidateProperty): number | null => (p.structure_predicted != null ? p.structure_difference ?? null : p.difference);
+export const shownDomain = (p: CandidateProperty): DomainBlock => p.structure_domain ?? p.domain;
 export interface CandidateRule { id: string; rule: string; title: string; text: string; passed: boolean; value: number | null; window: [number | null, number | null] | null; detail: string; evidence_label: string }
 export interface NearestMaterial extends MaterialRow { cosine: number; encoder_prediction: Record<string, number>; evidence_label: string }
 export interface NoveltyCheck { checked_against: string; found: boolean; match: (MaterialRow & { matched_by: string; n_matches: number }) | null; label: string }
@@ -127,6 +139,7 @@ export interface Candidate {
   structure: { file: string; lattice_a: number; n_sites: number; chemiscope: { size: number; names: string[]; x: number[]; y: number[]; z: number[]; cell: number[] };
     sites: Array<{ element: string; frac: [number, number, number] }>; lattice: number[][] };
   properties: Record<string, CandidateProperty>; domain: { status: DomainStatus; word: string };
+  support?: CandidateSupport | null;
   constraints: CandidateRule[]; rules_passed: number; rules_total: number;
   model_evidence: {
     encoder_prediction: Record<string, number>;

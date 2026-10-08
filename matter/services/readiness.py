@@ -61,30 +61,38 @@ def indicator_fidelity(targeted: list[str], record: dict, artefacts) -> dict:
         status = {"good": "ok", "fair": "caution", "weak": "not_ok"}.get(word, "not_computed")
         statuses.append(status)
         basis_text = f" (on the {s['n']:,} materials with a non-zero {label.lower()})" if basis == "nonzero" else ""
+        # a published checkpoint that saw the test split in training gets a diagnostic, not a held-out error
+        where = "on the test split, which this model also saw in training" if record.get("caveats") else "on held-out data"
         if word == "weak":
-            sentences.append(f"The model does not reliably predict {label.lower()} on held-out data (MAE {fmt(mae, unit)} against a spread of "
+            sentences.append(f"The model does not reliably predict {label.lower()} {where} (MAE {fmt(mae, unit)} against a spread of "
                              f"{fmt(std, unit)}{basis_text}); target-conditioned design is not recommended.")
         elif word == "fair":
-            sentences.append(f"The model predicts {label.lower()} on held-out data with an error of {fmt(mae, unit)} against a spread of "
+            sentences.append(f"The model predicts {label.lower()} {where} with an error of {fmt(mae, unit)} against a spread of "
                              f"{fmt(std, unit)}{basis_text}: fair, about a third of the spread.")
         elif word == "good":
-            sentences.append(f"The model predicts {label.lower()} on held-out data with an error of {fmt(mae, unit)} against a spread of "
+            sentences.append(f"The model predicts {label.lower()} {where} with an error of {fmt(mae, unit)} against a spread of "
                              f"{fmt(std, unit)}{basis_text}: good.")
         else:
-            sentences.append(f"The error of {label.lower()} cannot be judged: the held-out values have no spread.")
+            sentences.append(f"The error of {label.lower()} cannot be judged: the evaluation values have no spread.")
         if knn is not None:
             sentences.append(f"The latent neighbourhood (mean of the 5 nearest training structures) predicts {label.lower()} with an error of "
                              f"{fmt(knn, unit)} ({knn_word}): the shared space places similar materials together even where the decoder is off.")
         per[c] = {"label": label, "unit": unit, "mae": mae, "std": std, "ratio": ratio, "word": word, "status": status,
                   "rmse": pp.get(f"rmse_{c}"), "r2": pp.get(f"r2_{c}"), "basis": basis, "knn_mae": knn, "knn_word": knn_word,
-                  "knn_ratio": knn_ratio, "zero_share": p.get("zero_share", 0.0)}
+                  "knn_ratio": knn_ratio, "zero_share": p.get("zero_share", 0.0), "where": where,
+                  "evaluation": "published-model diagnostic" if record.get("caveats") else "held-out performance"}
     caveat = None
-    if record.get("caveats"):
-        caveat = "The held-out test split was part of this model's training data, so these errors are optimistic estimates."
+    diagnostic = bool(record.get("caveats"))
+    if diagnostic:
+        caveat = ("Published-model diagnostic: the test split was part of this model's training data, so these figures are "
+                  "optimistic estimates and are not held-out performance.")
         sentences.append(caveat)
-    return {"id": "fidelity", "title": "Property prediction", "status": _worst(*statuses), "per_property": per, "sentences": sentences,
-            "measured": f"Mean absolute error on the {record.get('n', 0):,}-material test split; good < 0.25, fair < 0.5 of the spread "
-                        f"(the engine's own thresholds).", "caveat": caveat,
+    return {"id": "fidelity", "title": "Property prediction" + (" (published-model diagnostic)" if diagnostic else ""), "status": _worst(*statuses),
+            "per_property": per, "sentences": sentences,
+            "measured": f"Mean absolute error on the {record.get('n', 0):,}-material test split"
+                        + (", which this model also saw in training" if diagnostic else " (held out from training)")
+                        + "; good < 0.25, fair < 0.5 of the spread (the engine's own thresholds).", "caveat": caveat,
+            "evaluation": "published-model diagnostic" if diagnostic else "held-out performance",
             "numbers": {c: {"mae": per[c]["mae"], "knn_mae": per[c]["knn_mae"]} for c in per}}
 
 
@@ -318,7 +326,7 @@ def verdict_of(ind: dict) -> tuple[str, list[str], bool]:
     fid, tgt, fam = ind["fidelity"], ind["target_support"], ind["family_support"]
     for c, e in (fid.get("per_property") or {}).items():
         if e["word"] == "weak":
-            reasons.append(f"held-out prediction of {e['label'].lower()} is weak (MAE {fmt(e['mae'], e['unit'])} against a spread of {fmt(e['std'], e['unit'])})")
+            reasons.append(f"prediction of {e['label'].lower()} {e.get('where', 'on held-out data')} is weak (MAE {fmt(e['mae'], e['unit'])} against a spread of {fmt(e['std'], e['unit'])})")
     for c, e in (tgt.get("per_property") or {}).items():
         if e["status"] == "far_outside":
             reasons.append(f"the target for {e['label'].lower()} is far outside the training range")
@@ -330,7 +338,7 @@ def verdict_of(ind: dict) -> tuple[str, list[str], bool]:
         return "NOT_RECOMMENDED", reasons, True
     for c, e in (fid.get("per_property") or {}).items():
         if e["word"] == "fair":
-            reasons.append(f"held-out prediction of {e['label'].lower()} is fair (MAE {fmt(e['mae'], e['unit'])})")
+            reasons.append(f"prediction of {e['label'].lower()} {e.get('where', 'on held-out data')} is fair (MAE {fmt(e['mae'], e['unit'])})")
         if e["word"] == "not judged":
             reasons.append(f"the error of {e['label'].lower()} could not be judged")
     for c, e in (tgt.get("per_property") or {}).items():
@@ -354,7 +362,9 @@ def summary_of(verdict: str, ind: dict, goal, artefacts) -> list[str]:
     fid = ind["fidelity"]["per_property"] or {}
     if fid:
         parts = [f"of the {e['label'].lower()} is {e['word']} (MAE {fmt(e['mae'], e['unit'])})" for e in fid.values() if e["word"] != "not judged"]
-        out.append("On held-out data the model's prediction " + " and its prediction ".join(parts) + ".")
+        where = next(iter(fid.values())).get("where", "on held-out data")
+        lead = "On the test split, which this model also saw in training (a published-model diagnostic)," if "saw in training" in where else "On held-out data"
+        out.append(f"{lead} the model's prediction " + " and its prediction ".join(parts) + ".")
     tgt = ind["target_support"]
     out.append(" ".join(f"{e['label']}: {e['word'].lower()} — {e['reason']}" for e in (tgt["per_property"] or {}).values()))
     if ind["ambiguity"]["one_to_many"]:

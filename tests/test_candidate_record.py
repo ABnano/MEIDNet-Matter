@@ -50,9 +50,11 @@ def test_targets_csv_matches_the_bundle_layout():
     assert [r["file"] for r in rows] == ["r-001.cif", "r-002.cif"]
     assert rows[0]["dir_gap_target"] == "2.0" and rows[0]["dir_gap_min"] == "1.7" and rows[0]["dir_gap_max"] == "2.3" and rows[0]["dir_gap_value"] == "2.1"
     assert rows[0]["heat_all_target"] == "" and rows[0]["heat_all_min"] == "" and rows[0]["heat_all_max"] == "1.0" and rows[0]["heat_all_value"] == "-0.5"
-    assert rows[0]["source"] == "predicted (meidnet-2k)" and rows[0]["validation_stage"] == "1" and rows[1]["validation_stage"] == "0"
+    assert rows[0]["source"] == "search value (meidnet-2k)" and rows[0]["validation_stage"] == "1" and rows[1]["validation_stage"] == "0"
+    assert rows[0]["dir_gap_search_value"] == "2.1"                       # without a structure-based value the search value is reported, and said so
     assert rows[0]["cluster"] == "1" and rows[1]["cluster"] == "2"
     assert targets_csv({"candidates": []}).splitlines() == ["file,candidate_id,formula,source,validation_stage,cluster"]
+    assert set(TARGETS_CSV_COLUMNS) >= {"<property>_search_value"}
     assert set(TARGETS_CSV_COLUMNS) >= {"file", "<property>_target", "<property>_min", "<property>_max", "<property>_value", "source"}
 
 

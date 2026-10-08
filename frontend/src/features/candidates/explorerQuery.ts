@@ -1,4 +1,4 @@
-import type { Candidate, DomainStatus } from '@/api/types';
+import { shownDifference, shownValue, type Candidate, type DomainStatus } from '@/api/types';
 
 export type View = 'table' | 'cards' | 'map';
 export type Sort = 'closest' | 'diverse' | 'stable' | 'novel' | 'best' | 'agreement' | 'round';
@@ -48,8 +48,8 @@ export function serializeQuery(q: ExplorerQuery): URLSearchParams {
 export function filterCandidates(cands: Candidate[], q: ExplorerQuery): Candidate[] {
   return cands.filter((c) => {
     if (!c.properties) return true;
-    for (const [p, max] of Object.entries(q.dev)) {
-      const d = c.properties[p]?.difference;
+    for (const [p, max] of Object.entries(q.dev)) {                 // deviation of the value shown first (structure-based when present)
+      const d = c.properties[p] ? shownDifference(c.properties[p]) : null;
       if (d != null && Math.abs(d) > max) return false;
     }
     if (q.domain.length && !q.domain.includes(c.domain.status)) return false;
@@ -66,7 +66,7 @@ export function filterCandidates(cands: Candidate[], q: ExplorerQuery): Candidat
 }
 
 export function sortCandidates(cands: Candidate[], sort: Sort): Candidate[] {
-  const closeness = (c: Candidate) => Object.values(c.properties).reduce((s, p) => s + (p.difference != null ? Math.abs(p.difference) / Math.max(1e-9, (p.training_range[1] - p.training_range[0]) * 0.05) : 0), 0);
+  const closeness = (c: Candidate) => Object.values(c.properties).reduce((s, p) => { const d = shownDifference(p); return s + (d != null ? Math.abs(d) / Math.max(1e-9, (p.training_range[1] - p.training_range[0]) * 0.05) : 0); }, 0);
   const agreementRank = { agree: 0, 'partly agree': 1, disagree: 2, 'not judged': 3 } as Record<string, number>;
   const by: Record<Sort, (a: Candidate, b: Candidate) => number> = {
     best: (a, b) => (a.model_evidence.score ?? 0) - (b.model_evidence.score ?? 0),
@@ -93,7 +93,7 @@ export function sortCandidates(cands: Candidate[], sort: Sort): Candidate[] {
 
 function formation(c: Candidate): number | null {
   const p = Object.entries(c.properties).find(([k, v]) => /heat|form|enthalp/i.test(k) || /formation|enthalp/i.test(v.label));
-  return p ? p[1].predicted : null;
+  return p ? shownValue(p[1]) : null;
 }
 
 export function chips(q: ExplorerQuery, labels: Record<string, string>): Array<{ key: string; text: string; remove: (q: ExplorerQuery) => ExplorerQuery }> {

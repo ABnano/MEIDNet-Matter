@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { api } from '@/api/endpoints';
-import type { Candidate, DatasetSummary, Funnel, Project } from '@/api/types';
+import { shownDifference, shownValue, type Candidate, type DatasetSummary, type Funnel, type Project } from '@/api/types';
+import { useState } from 'react';
 import { CellViewer } from '@/components/structure/CellViewer';
 import { DomainBadge, Site } from '@/components/ui';
 import { fmt, int, shortLabel, signed } from '@/lib/format';
@@ -24,7 +25,8 @@ export function CandidateCard({ c, selected, compared, onOpen, onCompare, projec
         </div>
         <div className="row" style={{ gap: 6 }}>{Object.entries(c.identity.elements).map(([g, e]) => <Site key={g} group={g} element={e} />)} <span className="small faint num">a = {fmt(c.structure.lattice_a)} Å</span></div>
         <div className="lines" style={{ marginTop: 6 }}>
-          {props.map(([k, p]) => <div key={k}>{shortLabel(p.label)} <b className="num">{fmt(p.predicted, p.unit)}</b>{p.target != null && <span className="muted"> · target {fmt(p.target)} ({signed(p.difference)})</span>} <span className="faint">{p.evidence_label}</span></div>)}
+          {props.map(([k, p]) => <div key={k}>{shortLabel(p.label)} <b className="num">{fmt(shownValue(p), p.unit)}</b>{p.target != null && <span className="muted"> · target {fmt(p.target)} ({signed(shownDifference(p))})</span>} <span className="faint">{p.structure_predicted != null ? 'structure-based' : p.evidence_label.toLowerCase()}</span>{p.structure_predicted != null && <span className="faint small"> · search value {fmt(p.predicted)}</span>}{p.dft_value != null && <span className="faint small"> · DFT {fmt(p.dft_value)}</span>}</div>)}
+          {c.support && <div className="small" style={{ color: c.support.structure_supported === false ? 'var(--warn)' : 'var(--muted)' }}>{c.support.label}</div>}
           <div>Rule passed {c.rules_passed}/{c.rules_total} · {c.novelty.dataset.found ? 'Found in the dataset' : 'Not found in the dataset'} · {c.stability.label ?? c.stability.status}{c.cluster && <span className="faint"> · cluster {c.cluster.id}</span>}</div>
           {c.flags.map((f) => <div key={f} className="small" style={{ color: 'var(--warn)' }}>{f}</div>)}
         </div>
@@ -40,12 +42,13 @@ export function CandidateCard({ c, selected, compared, onOpen, onCompare, projec
 }
 
 export const COLUMNS: Array<{ id: string; label: string; always?: boolean }> = [
-  { id: 'formula', label: 'Formula', always: true }, { id: 'predicted', label: 'Predicted', always: true }, { id: 'domain', label: 'Domain' }, { id: 'rules', label: 'Rules' },
+  { id: 'formula', label: 'Formula', always: true }, { id: 'predicted', label: 'Structure-based prediction', always: true }, { id: 'search', label: 'Search value' },
+  { id: 'support', label: 'Supported' }, { id: 'dft', label: 'DFT value (dataset)' }, { id: 'domain', label: 'Domain' }, { id: 'rules', label: 'Rules' },
   { id: 'novelty', label: 'Novelty' }, { id: 'agreement', label: 'Encoder vs search' }, { id: 'nearest', label: 'Nearest training material' }, { id: 'a', label: 'a (Å)' },
   { id: 'sites', label: 'Sites' }, { id: 'score', label: 'Score' }, { id: 'latent', label: 'Latent norm' }, { id: 'round', label: 'Round' }, { id: 'stability', label: 'Validation stage' },
   { id: 'cluster', label: 'Cluster' },
 ];
-export const DEFAULT_COLS = ['formula', 'predicted', 'domain', 'rules', 'novelty', 'agreement', 'score'];
+export const DEFAULT_COLS = ['formula', 'predicted', 'search', 'support', 'dft', 'domain', 'rules', 'novelty'];
 
 /** Candidates grouped by their cluster, in the order the clusters first appear in the (sorted) list. */
 export function groupByCluster(cands: Candidate[]): Array<{ id: number; size: number; leaderFormula: string; cands: Candidate[] }> {
@@ -70,7 +73,10 @@ export function CandidateTable({ cands, q, setQ, onOpen }: { cands: Candidate[];
         <thead><tr>
           <th><span className="sr-only">Compare</span></th>
           {show('formula') && <th scope="col">Formula</th>}
-          {show('predicted') && props.map(([k, p]) => <th key={k} scope="col" className="num">{shortLabel(p.label)} ({p.unit})</th>)}
+          {show('predicted') && props.map(([k, p]) => <th key={k} scope="col" className="num" title="The decoded structure, encoded again and read by the model">{shortLabel(p.label)} ({p.unit}), structure-based</th>)}
+          {show('search') && props.map(([k, p]) => <th key={`s${k}`} scope="col" className="num" title="The property head read at the search point: the filter that kept the candidate">{shortLabel(p.label)}, search value</th>)}
+          {show('support') && <th scope="col">Supported</th>}
+          {show('dft') && props.map(([k, p]) => <th key={`d${k}`} scope="col" className="num">{shortLabel(p.label)}, DFT (dataset)</th>)}
           {show('domain') && <th scope="col">Domain</th>}
           {show('rules') && <th scope="col">Rules</th>}
           {show('novelty') && <th scope="col">Novelty</th>}
@@ -90,7 +96,10 @@ export function CandidateTable({ cands, q, setQ, onOpen }: { cands: Candidate[];
             <tr key={c.candidate_id} aria-selected={q.c === c.candidate_id} onClick={() => onOpen(c.candidate_id)} style={{ cursor: 'pointer' }} data-testid="candidate-row">
               <td onClick={(e) => e.stopPropagation()}><input type="checkbox" aria-label={`Select ${c.identity.formula} for comparison`} checked={q.cmp.includes(c.candidate_id)} onChange={() => toggleCmp(c.candidate_id)} /></td>
               {show('formula') && <td><b>{c.identity.formula}</b>{c.flags.length > 0 && <span className="badge badge-warn" style={{ marginLeft: 6 }} title={c.flags.join(' | ')}>flag</span>}</td>}
-              {show('predicted') && Object.entries(c.properties).map(([k, p]) => <td key={k} className="num">{fmt(p.predicted)}{p.difference != null && <span className="small muted"> {signed(p.difference)}</span>}</td>)}
+              {show('predicted') && Object.entries(c.properties).map(([k, p]) => <td key={k} className="num"><b>{fmt(shownValue(p))}</b>{shownDifference(p) != null && <span className="small muted"> {signed(shownDifference(p))}</span>}</td>)}
+              {show('search') && Object.entries(c.properties).map(([k, p]) => <td key={`s${k}`} className="num small muted">{fmt(p.predicted)}{p.difference != null && <span> {signed(p.difference)}</span>}</td>)}
+              {show('support') && <td className="small">{c.support ? (c.support.structure_supported == null ? 'filters only' : c.support.structure_supported ? 'structure-based: yes' : 'structure-based: no') : '—'}{c.support?.dft_supported != null && <span className="faint"> · DFT: {c.support.dft_supported ? 'yes' : 'no'}</span>}</td>}
+              {show('dft') && Object.entries(c.properties).map(([k, p]) => <td key={`d${k}`} className="num small">{p.dft_value != null ? fmt(p.dft_value) : '—'}</td>)}
               {show('domain') && <td><DomainBadge status={c.domain.status} word={c.domain.word} /></td>}
               {show('rules') && <td>{c.rules_passed}/{c.rules_total} passed</td>}
               {show('novelty') && <td className="small">{c.novelty.dataset.found ? `Found (${c.novelty.dataset.match?.material_id})` : 'Not found'}</td>}
@@ -114,40 +123,66 @@ export function CandidateTable({ cands, q, setQ, onOpen }: { cands: Candidate[];
 
 export function CandidateMap({ cands, project, dataset, windows, selected, onOpen }: { cands: Candidate[]; project: Project; dataset: DatasetSummary | null; windows: Record<string, [number | null, number | null]>; selected: string | null; onOpen: (id: string) => void }) {
   const cols = Object.keys(project.dataset.properties);
+  const [source, setSource] = useState<'structure' | 'search' | 'dft'>('structure');
   if (cols.length < 2) return <p className="muted">The map needs two properties.</p>;
   const [px, py] = cols;
   const sx = project.dataset.properties[px], sy = project.dataset.properties[py];
   const W = 640, H = 420, m = { l: 50, r: 14, t: 14, b: 36 };
-  const X = (v: number) => m.l + ((v - sx.min) / (sx.max - sx.min || 1)) * (W - m.l - m.r);
-  const Y = (v: number) => m.t + (H - m.t - m.b) - ((v - sy.min) / (sy.max - sy.min || 1)) * (H - m.t - m.b);
+  // which value positions a candidate: the structure-based prediction (default), the search value, or the dataset's DFT value
+  const valueOf = (c: Candidate, p: string): number | null => {
+    const pr = c.properties[p];
+    if (source === 'search') return pr.predicted;
+    if (source === 'dft') return pr.dft_value ?? null;
+    return shownValue(pr);
+  };
+  const placed = cands.map((c) => ({ c, x: valueOf(c, px), y: valueOf(c, py) })).filter((d): d is { c: Candidate; x: number; y: number } => d.x != null && d.y != null);
+  // axes: the training range, the target window and every candidate, so nothing is clipped
+  const wx = windows[px], wy = windows[py];
+  const span = (vals: number[]) => { const lo = Math.min(...vals), hi = Math.max(...vals); const pad = 0.04 * (hi - lo || 1); return [lo - pad, hi + pad] as [number, number]; };
+  const [xlo, xhi] = span([sx.min, sx.max, ...(wx ? wx.filter((v): v is number => v != null) : []), ...placed.map((d) => d.x)]);
+  const [ylo, yhi] = span([sy.min, sy.max, ...(wy ? wy.filter((v): v is number => v != null) : []), ...placed.map((d) => d.y)]);
+  const X = (v: number) => m.l + ((v - xlo) / (xhi - xlo || 1)) * (W - m.l - m.r);
+  const Y = (v: number) => m.t + (H - m.t - m.b) - ((v - ylo) / (yhi - ylo || 1)) * (H - m.t - m.b);
   const grid = dataset?.ambiguity_grid;
   const maxBox = grid ? Math.max(1, ...grid.n_box.flat()) : 1;
-  const wx = windows[px], wy = windows[py];
+  const outside = cands.length - placed.length;
+  const sourceLabel = source === 'structure' ? 'structure-based prediction' : source === 'search' ? 'search value' : 'DFT value from the dataset';
   return (
     <div className="card">
+      <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <span className="small muted">Candidates placed by their <b>{sourceLabel}</b>{outside > 0 ? ` · ${outside} without this value are not drawn` : ''}</span>
+        <div className="row" style={{ gap: 4 }} role="group" aria-label="Value that places a candidate">
+          {([['structure', 'Structure-based'], ['search', 'Search value'], ['dft', 'DFT (dataset)']] as const).map(([v, l]) => (
+            <button key={v} type="button" className={`btn btn-sm ${source === v ? 'btn-primary' : ''}`} aria-pressed={source === v} onClick={() => setSource(v)}>{l}</button>
+          ))}
+        </div>
+      </div>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Candidates on the ${sx.label} versus ${sy.label} map over the training density`}>
+        <rect x={X(sx.min)} y={Y(sy.max)} width={Math.max(0, X(sx.max) - X(sx.min))} height={Math.max(0, Y(sy.min) - Y(sy.max))} fill="none" stroke="var(--line)" strokeDasharray="2 3"><title>training range of both properties</title></rect>
         {grid && grid.columns[0] === px && grid.axes[px].map((ax, i) => grid.axes[py].map((ay, j) => {
           const n = grid.n_box[i][j]; if (!n) return null;
           const cw = (W - m.l - m.r) / (grid.axes[px].length - 1), ch = (H - m.t - m.b) / (grid.axes[py].length - 1);
           const level = Math.min(5, 1 + Math.floor((4 * Math.log1p(n)) / Math.log1p(maxBox)));
           return <rect key={`${i}-${j}`} x={X(ax) - cw / 2} y={Y(ay) - ch / 2} width={cw} height={ch} fill={`var(--dens-${level})`}><title>{n} training materials near {fmt(ax)} / {fmt(ay)}</title></rect>;
         }))}
-        {(wx || wy) && <rect x={X(wx?.[0] ?? sx.min)} y={Y(wy?.[1] ?? sy.max)} width={X(wx?.[1] ?? sx.max) - X(wx?.[0] ?? sx.min)} height={Y(wy?.[0] ?? sy.min) - Y(wy?.[1] ?? sy.max)} fill="var(--c-targets)" opacity={0.12} stroke="var(--c-targets)" strokeDasharray="4 3" />}
-        {cands.map((c) => {
-          const x = X(c.properties[px].predicted), y = Y(c.properties[py].predicted);
+        {(wx || wy) && <rect x={X(wx?.[0] ?? xlo)} y={Y(wy?.[1] ?? yhi)} width={X(wx?.[1] ?? xhi) - X(wx?.[0] ?? xlo)} height={Y(wy?.[0] ?? ylo) - Y(wy?.[1] ?? yhi)} fill="var(--c-targets)" opacity={0.12} stroke="var(--c-targets)" strokeDasharray="4 3" />}
+        {placed.map(({ c, x: vx, y: vy }) => {
+          const x = X(vx), y = Y(vy);
           const sel = c.candidate_id === selected;
+          const supported = c.support?.structure_supported;
           return <g key={c.candidate_id} style={{ cursor: 'pointer' }} onClick={() => onOpen(c.candidate_id)}>
-            <circle cx={x} cy={y} r={sel ? 7 : 5} fill="var(--c-candidates)" stroke="var(--card)" strokeWidth={2}><title>{c.identity.formula}: {fmt(c.properties[px].predicted, sx.unit)}, {fmt(c.properties[py].predicted, sy.unit)}</title></circle>
+            <circle cx={x} cy={y} r={sel ? 7 : 5} fill={supported === false && source === 'structure' ? 'var(--card)' : 'var(--c-candidates)'} stroke={supported === false && source === 'structure' ? 'var(--c-candidates)' : 'var(--card)'} strokeWidth={2}>
+              <title>{c.identity.formula}: {fmt(vx, sx.unit)}, {fmt(vy, sy.unit)} ({sourceLabel}){supported === false ? ' · not supported by the structure-based prediction' : ''}</title></circle>
             {sel && <text x={x + 9} y={y + 4} fontSize={11} fontWeight={700} fill="var(--ink)">{c.identity.formula}</text>}
           </g>;
         })}
         <line x1={m.l} x2={W - m.r} y1={H - m.b} y2={H - m.b} stroke="var(--line)" /><line x1={m.l} x2={m.l} y1={m.t} y2={H - m.b} stroke="var(--line)" />
-        <text x={(W + m.l) / 2} y={H - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">{sx.label} ({sx.unit}), predicted</text>
-        <text x={12} y={H / 2} textAnchor="middle" fontSize={11} fill="var(--muted)" transform={`rotate(-90 12 ${H / 2})`}>{sy.label} ({sy.unit}), predicted</text>
-        {[sx.min, sx.max].map((v) => <text key={`x${v}`} x={X(v)} y={H - m.b + 14} fontSize={10} textAnchor="middle" fill="var(--faint)">{fmt(v)}</text>)}
-        {[sy.min, sy.max].map((v) => <text key={`y${v}`} x={m.l - 4} y={Y(v) + 3} fontSize={10} textAnchor="end" fill="var(--faint)">{fmt(v)}</text>)}
+        <text x={(W + m.l) / 2} y={H - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">{sx.label} ({sx.unit}), {sourceLabel}</text>
+        <text x={12} y={H / 2} textAnchor="middle" fontSize={11} fill="var(--muted)" transform={`rotate(-90 12 ${H / 2})`}>{sy.label} ({sy.unit}), {sourceLabel}</text>
+        {[xlo, sx.min, sx.max, xhi].map((v, i) => <text key={`x${i}`} x={X(v)} y={H - m.b + 14} fontSize={10} textAnchor="middle" fill="var(--faint)">{fmt(v)}</text>)}
+        {[ylo, sy.min, sy.max, yhi].map((v, i) => <text key={`y${i}`} x={m.l - 4} y={Y(v) + 3} fontSize={10} textAnchor="end" fill="var(--faint)">{fmt(v)}</text>)}
       </svg>
-      <p className="small muted">Grey cells: training materials per window of the training split (darker = more). Pink: the target window. Purple: candidates by their predicted values; click one to open it.</p>
+      <p className="small muted">Grey cells: training materials per window of the training split (darker = more). Dashed box: the training range of both properties. Pink: the target window. Purple: candidates placed by the value chosen above (hollow when the structure-based prediction does not support the target); the axes always include every candidate. Click one to open it.</p>
     </div>
   );
 }

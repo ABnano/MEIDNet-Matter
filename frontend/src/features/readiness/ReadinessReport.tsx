@@ -10,9 +10,9 @@ const HEADLINE: Record<Readiness['verdict'], (r: Readiness) => string> = {
 };
 const VERDICT_WORD: Record<Readiness['verdict'], string> = { SUPPORTED: 'Supported', CAUTION: 'Caution', NOT_RECOMMENDED: 'Not recommended' };
 const MEANING: Record<string, string> = {
-  fidelity: 'How closely the model\'s predictions of the targeted properties match held-out values.',
+  fidelity: 'How closely the model\'s predictions of the targeted properties match the evaluation split. For a published checkpoint that saw that split in training this is a diagnostic, not held-out performance; the card says which.',
   alignment: 'Whether a structure and its properties map to the same place in the shared space, in both directions.',
-  recoverability: 'Whether the decoder recovers held-out structures from their latent codes.',
+  recoverability: 'Whether the decoder recovers the evaluation split\'s structures from their latent codes.',
   target_support: 'Where the target sits in the training distribution and how much training data lies around it.',
   ambiguity: 'How many different structures satisfy the same property target.',
   family_support: 'Whether the chosen family and its elements occur in the training data.',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '@/api/endpoints';
-import type { Candidate } from '@/api/types';
+import { shownDomain, type Candidate } from '@/api/types';
 import { ExternalLink, PRISM_METHOD } from '@/components/shell';
 import { CellViewer } from '@/components/structure/CellViewer';
 import { DomainBadge, Site } from '@/components/ui';
@@ -55,17 +55,23 @@ export function CandidateDetail({ c, projectId, variant, onClose, compared, onCo
 
       <section style={{ marginTop: 16 }}>
         <h3>Properties</h3>
+        {c.support && <p className="small" style={{ margin: '0 0 8px', color: c.support.structure_supported === false ? 'var(--warn)' : 'var(--muted)' }}><b>{c.support.label}.</b> The search value is what kept the candidate; only the structure-based prediction, and a DFT value where the dataset has one, can support the target.</p>}
         <table className="table small">
-          <thead><tr><th>Property</th><th className="num">Target</th><th className="num">Predicted</th><th className="num">Difference</th><th>Uncertainty</th><th>Training range</th><th>Status</th></tr></thead>
+          <thead><tr><th>Property</th><th className="num">Target</th><th className="num" title="The decoded structure, encoded again and read by the model">Structure-based</th><th className="num">Difference</th><th className="num" title="The property head read at the search point">Search value</th><th className="num">DFT (dataset)</th><th>Training range</th><th>Status</th></tr></thead>
           <tbody>{props.map(([k, p]) => (
             <tr key={k}>
-              <td>{p.label} <span className="faint">({p.unit})</span></td><td className="num">{p.target != null ? fmt(p.target) : '—'}</td><td className="num"><b>{fmt(p.predicted)}</b> <span className="faint">{p.evidence_label}</span></td>
-              <td className="num">{signed(p.difference)}</td><td className="faint">{p.uncertainty != null ? fmt(p.uncertainty) : p.uncertainty_note}</td><td className="num">{fmt(p.training_range[0])}–{fmt(p.training_range[1])}</td>
-              <td><DomainBadge status={p.domain.status} word={p.domain.word} /></td>
+              <td>{p.label} <span className="faint">({p.unit})</span></td><td className="num">{p.target != null ? fmt(p.target) : '—'}</td>
+              <td className="num"><b>{p.structure_predicted != null ? fmt(p.structure_predicted) : '—'}</b>{p.structure_in_window != null && <span className="faint small"> {p.structure_in_window ? 'in window' : 'outside'}</span>}</td>
+              <td className="num">{signed(p.structure_predicted != null ? p.structure_difference ?? null : p.difference)}</td>
+              <td className="num muted">{fmt(p.predicted)}{p.in_window != null && <span className="faint small"> {p.in_window ? 'in window' : 'outside'}</span>}</td>
+              <td className="num">{p.dft_value != null ? fmt(p.dft_value) : '—'}</td>
+              <td className="num">{fmt(p.training_range[0])}–{fmt(p.training_range[1])}</td>
+              <td><DomainBadge status={shownDomain(p).status} word={shownDomain(p).word} /></td>
             </tr>
           ))}</tbody>
         </table>
-        {props.map(([k, p]) => <p key={k} className="small muted" style={{ margin: '4px 0' }}>{p.label}: {p.domain.reason}{p.dft_value != null && <> {p.dft_label}: <b className="num">{fmt(p.dft_value, p.unit)}</b>.</>}</p>)}
+        {props.map(([k, p]) => <p key={k} className="small muted" style={{ margin: '4px 0' }}>{p.label}, {p.structure_predicted != null ? 'structure-based prediction' : 'search value'}: {shownDomain(p).reason}{p.dft_value != null && <> {p.dft_label}: <b className="num">{fmt(p.dft_value, p.unit)}</b>.</>}</p>)}
+        <p className="small faint" style={{ margin: '4px 0' }}>Uncertainty: {props[0]?.[1].uncertainty_note ?? 'not available for this model'}.</p>
       </section>
 
       <section style={{ marginTop: 16 }}>

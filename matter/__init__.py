@@ -7,4 +7,4 @@ with their evidence and provenance. The scientific engine is the ``meidnet`` pac
 copies it.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

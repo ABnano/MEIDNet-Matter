@@ -59,8 +59,8 @@ interface Point { requested: number; delivered: number; accepted: boolean; label
 interface Band { requested: number; mean: number; sd: number | null }
 
 /** Delivered against requested band gap: every relaxed cell as a point, the per-request mean ± sd, the identity line and the fit. */
-export function ResponseCurve({ points, bands, fit, width = 560, height = 360 }: { points: Point[]; bands: Band[]; fit: { slope: number; intercept: number }; width?: number; height?: number }) {
-  const m = { l: 52, r: 16, t: 14, b: 44 };
+export function ResponseCurve({ points, bands, fit, width = 560, height = 360, compact = false }: { points: Point[]; bands: Band[]; fit: { slope: number; intercept: number }; width?: number; height?: number; compact?: boolean }) {
+  const m = compact ? { l: 40, r: 12, t: 10, b: 36 } : { l: 52, r: 16, t: 14, b: 44 };
   const max = 4.6;
   const X = (v: number) => m.l + (v / max) * (width - m.l - m.r);
   const Y = (v: number) => height - m.b - (Math.min(v, max) / max) * (height - m.t - m.b);
@@ -91,10 +91,10 @@ export function ResponseCurve({ points, bands, fit, width = 560, height = 360 }:
             <title>{p.label}: requested {p.requested.toFixed(1)}, delivered {p.delivered.toFixed(2)} eV</title>
           </circle>
         ))}
-        <text x={(X(0) + X(max)) / 2} y={height - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">requested band gap (eV)</text>
-        <text transform={`translate(14 ${(Y(0) + Y(max)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fill="var(--muted)">delivered band gap, independent judge on the relaxed cell (eV)</text>
+        <text x={(X(0) + X(max)) / 2} y={height - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">{compact ? 'requested (eV)' : 'requested band gap (eV)'}</text>
+        <text transform={`translate(${compact ? 12 : 14} ${(Y(0) + Y(max)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fill="var(--muted)">{compact ? 'delivered (eV)' : 'delivered band gap, independent judge on the relaxed cell (eV)'}</text>
       </svg>
-      <figcaption className="small muted">Points: relaxed structures (filled when both judges accept them); bars: mean ± one standard deviation per request; solid line: identity; dashed: the fitted response.</figcaption>
+      {!compact && <figcaption className="small muted">Points: relaxed structures (filled when both judges accept them); bars: mean ± one standard deviation per request; solid line: identity; dashed: the fitted response.</figcaption>}
     </figure>
   );
 }

@@ -1,12 +1,23 @@
 // Prose for the research pages. Numbers come from the API; this file holds the sentences around them.
 export const home = {
   eyebrow: 'MEIDNet Matter · multimodal inverse design for materials',
-  h1: 'Ask for a property. Get structures, with the evidence attached.',
-  lead: 'MEIDNet Matter learns the relation between crystal structures and their properties, checks whether a target is supported, and returns candidate structures with their labels, an independent judgement, and a record of every stage they passed.',
-  ctaPlay: 'Generate for a band gap',
+  h1: 'From a target property to candidate crystal structures.',
+  lead: 'Set a band-gap target, inspect the generated structures, and see which checks each candidate has passed. Model predictions, reference DFT values and further validation are shown separately, never merged into one score.',
+  ctaExplore: 'Explore a completed result',
+  ctaPlay: 'Run a band-gap search',
   ctaDemo: 'Try the Perov-5 demo',
-  discoveriesTitle: 'What the pipeline has found',
-  discoveriesLead: 'Results from four datasets. Every number traces to a block of the staged evaluation, a component, and a journal entry.',
+  scope: 'Live MP-20 band-gap generation · Perov-5 exploratory demo · own-data workflow available locally',
+  plain: 'New to the field? A band gap is the energy a material needs before its electrons can move freely. It decides whether a material behaves as a metal, a semiconductor or an insulator, so asking for a band gap is asking for a kind of behaviour. The app proposes crystal structures that two independent models expect to have the gap you asked for.',
+  discoveriesTitle: 'What the generator has delivered',
+  discoveriesLead: 'Structures accepted by two independent models after relaxation, from the MP-20 study. Hover to pause; click a card to open the study.',
+  choicesTitle: 'Three ways in',
+  choices: [
+    ['Explore a result', 'The MP-20 study: 175 generated cells, 13 accepted by two judges after relaxation, the response curve, every structure and its evidence.', '/studies/mp20', 'Open the study'],
+    ['Set my target', 'Ask for one to three band gaps and get cells in seconds, each with a label read from its own structure, an independent reading and three statuses kept apart. Or walk the Perov-5 demo: goal, readiness, candidates, export.', '/play', 'Run a band-gap search'],
+    ['Use my data locally', 'Nothing is uploaded on this site. Eight commands take a folder of structures and a property table through the same stages, with the same bands, on your computer; the code of every block is here to read and change.', '/method#run', 'The steps'],
+  ],
+  featuredTitle: 'The MP-20 study: requested in, delivered out',
+  featuredLead: 'Relaxed, retrospective results: seven requested gaps between 0.5 and 4 eV, 25 cells each. A live search returns unrelaxed cells; its plot is drawn the same way.',
   howTitle: 'How a request becomes a structure',
   how: [
     ['Request', 'A band gap in electron-volts. The property vector is encoded to a point in the shared latent space; no gradient refinement follows, because on MP-20 that step made the model report the target while drifting towards metals.'],

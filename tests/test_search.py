@@ -70,8 +70,16 @@ def test_search_candidates_evidence_and_exports(client, checkpoint):
         for p in ("dir_gap", "heat_all"):
             prop = c["properties"][p]
             assert prop["domain"]["status"] in ("in_distribution", "near_boundary", "extrapolating", "far_outside")
-            assert prop["evidence_label"] == "Predicted" and prop["training_range"] == [0.0, 7.9] or p == "heat_all"
+            assert prop["evidence_label"] == "Search value" and prop["training_range"] == [0.0, 7.9] or p == "heat_all"
             assert c["model_evidence"]["agreement"][p]["label"] in ("agree", "partly agree", "disagree", "not judged")
+            # 0.4.0: the structure-based prediction travels with the search value, each with its own domain status
+            assert prop["structure_predicted"] == c["model_evidence"]["encoder_prediction"][p] and prop["structure_domain"]["status"] in \
+                ("in_distribution", "near_boundary", "extrapolating", "far_outside")
+            assert prop["structure_in_window"] is not None if prop["window"] else prop["structure_in_window"] is None
+        sup = c["support"]
+        assert sup["search_filters_passed"] is True and sup["label"].startswith("Passed the search filters") and sup["n_targeted"] >= 1
+        assert sup["structure_supported"] in (True, False) and ("supported by the structure-based prediction" in sup["label"])
+        assert ("read from the decoded structure it is" in c["why"]) and ("the search valued its" in c["why"])
         assert len(c["model_evidence"]["nearest_training"]) == 3 and c["model_evidence"]["nearest_training"][0]["cosine"] <= 1.0
         assert c["novelty"]["dataset"]["label"].startswith(("Not found in the Perov-5 dataset", "Found in the Perov-5 dataset"))
         v = c["stability"]
@@ -113,7 +121,9 @@ def test_search_candidates_evidence_and_exports(client, checkpoint):
     assert any(n.startswith("cifs/") for n in names) and any(n.startswith("generation/cifs/") for n in names)
     targets = list(csv.DictReader(io.StringIO(z.read("targets.csv").decode("utf-8"))))
     assert len(targets) == len(cands) and all(f"cifs/{t['file']}" in names for t in targets)
-    assert targets[0]["dir_gap_target"] == "2.0" and targets[0]["source"].startswith("predicted (") and targets[0]["validation_stage"] in ("0", "1")
+    assert targets[0]["dir_gap_target"] == "2.0" and targets[0]["source"].startswith("structure-based prediction (") and targets[0]["validation_stage"] in ("0", "1")
+    assert targets[0]["dir_gap_search_value"] and targets[0]["dir_gap_value"]           # both values travel, the structure-based one first
+    assert "structure_dir_gap" in head and "search_dir_gap" in head and "support" in head
     assert (targets[0]["dir_gap_min"], targets[0]["dir_gap_max"]) == ("1.0", "3.0")                      # 2.0 ± 1.0
     assert (targets[0]["heat_all_target"], targets[0]["heat_all_min"], targets[0]["heat_all_max"]) == ("", "", "1.5")   # at most 1.5
     schema = json.loads(z.read("candidate-record.schema.json"))

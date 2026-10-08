@@ -1,11 +1,17 @@
 import { Link } from 'react-router';
-import { research, type BlocksPayload, type Study, type StudyIndexEntry } from '@/api/research';
+import { research, type Accepted, type BlocksPayload, type Study, type StudyIndexEntry } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { ExternalLink, GITHUB, MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
-import { Num, VerdictText } from '@/components/research';
+import { Funnel, Num, VerdictText } from '@/components/research';
+import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
+import { HeroExample } from '@/components/home/HeroExample';
+import { Explainer } from '@/components/home/Explainer';
 import { home as H } from '@/copy/research';
 import { landing as L } from '@/copy/landing';
+
+/** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
+const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) + (a.charge_balanced ? 2 : 0) + (a.requested >= 1 && a.requested <= 3 ? 3 : 0) + (a.flag ? -2 : 0);
 
 export default function Home() {
   const mp20 = useResource<Study>('studies/mp20', (s) => research.study('mp20', s));
@@ -16,64 +22,73 @@ export default function Home() {
   const accepted = mp20.data?.accepted ?? [];
   const newComp = accepted.filter((a) => a.class.startsWith('new composition')).length;
   const redisc = accepted.filter((a) => a.class.startsWith('rediscovered'));
+  const example = [...accepted].sort((a, b) => score(b) - score(a)).find((a) => a.structure) ?? null;
   return (
     <>
       <MarketingHeader />
       <main className="wrap-narrow" id="main">
-        <section className="hero" style={{ gridTemplateColumns: '1fr' }}>
+        <section className="hero">
           <div>
             <div className="eyebrow">{H.eyebrow}</div>
             <h1>{H.h1}</h1>
             <p className="lead">{H.lead}</p>
             <div className="ctas">
-              <Link to="/play" className="btn btn-primary btn-lg">{H.ctaPlay}</Link>
-              <Link to="/p/perov5-demo/goal" className="btn btn-lg" data-testid="cta-demo">{H.ctaDemo}</Link>
+              <Link to="/studies/mp20" className="btn btn-primary btn-lg">{H.ctaExplore}</Link>
+              <Link to="/play" className="btn btn-lg">{H.ctaPlay}</Link>
+              <Link to="/p/perov5-demo/goal" className="btn btn-lg btn-ghost" data-testid="cta-demo">{H.ctaDemo}</Link>
             </div>
-            <div className="trust">Open source · Reproducible runs · Downloadable structures and checkpoints · Every verdict against a reference band</div>
+            <div className="scope-line">{H.scope}</div>
+            <p className="plain">{H.plain}</p>
           </div>
+          {mp20.data ? <HeroExample study={mp20.data} example={example} /> : <div className="hero-example">{mp20.loading && <Spinner label="Loading a result" />}{mp20.error && <ErrorNote error={mp20.error} />}</div>}
+        </section>
+
+        <section className="section" id="walkthrough">
+          <h2>How it works, in six steps</h2>
+          <p className="muted">An animated walkthrough on a real result: press play, or step through it. One sentence for a newcomer, one for a researcher.</p>
+          {example && <Explainer example={example} />}
         </section>
 
         <section className="section" id="discoveries">
           <h2>{H.discoveriesTitle}</h2>
           <p className="muted">{H.discoveriesLead}</p>
-          {(mp20.error || perov5.error) && <ErrorNote error={mp20.error || perov5.error} />}
-          {(mp20.loading || perov5.loading) && <Spinner label="Loading the results" />}
-          {cal && (
-            <div className="stat-tiles">
-              <div className="card"><div className="k">MP-20 · band-gap requests</div><div className="v">{cal.funnel.final} / {cal.funnel.generated}</div><div className="n">structures accepted by two judges after relaxation, from {cal.range.requested.length} requested values</div></div>
-              <div className="card"><div className="k">New compositions</div><div className="v">{newComp}</div><div className="n">new composition and new structure, by the AMD distance to every training structure</div></div>
-              <div className="card"><div className="k">Known compounds returned</div><div className="v">{redisc.length}</div><div className="n">{redisc.map((r) => r.formula).join(', ')} — at the gaps the dataset records for them</div></div>
-              <div className="card"><div className="k">Response</div><div className="v">{cal.linearity.intercept.toFixed(2)} + {cal.linearity.slope.toFixed(2)}·x</div><div className="n">delivered against requested gap; MAE <Num v={cal.accuracy.mae_relaxed_cells} /> eV; serves {cal.range.served[0]}–{cal.range.served[cal.range.served.length - 1]} eV</div></div>
-              {perov5.data && <div className="card"><div className="k">Perov-5 · target following</div><div className="v">ρ {(perov5.data.target_following.rho_range as number[])[0]}–{(perov5.data.target_following.rho_range as number[])[1]}</div><div className="n">against the DFT grid; {perov5.data.target_following.known_compounds_returned as number} known compounds returned at their measured gaps</div></div>}
-            </div>
-          )}
-          {accepted.length > 0 && (
-            <div className="table-wrap" style={{ marginTop: 20 }}>
-              <table className="table">
-                <caption className="sr-only">Accepted structures of the MP-20 study</caption>
-                <thead><tr><th scope="col">requested</th><th scope="col">formula</th><th scope="col">label from the structure</th><th scope="col">independent judge</th><th scope="col">what it is</th><th scope="col">AMD</th><th scope="col">cell</th></tr></thead>
-                <tbody>
-                  {accepted.map((a) => (
-                    <tr key={a.file}>
-                      <td className="num">{a.requested.toFixed(1)} eV</td><td><b>{a.formula}</b>{a.flag && <span className="small faint"> · {a.flag}</span>}</td>
-                      <td className="num"><Num v={a.label_structure_gap} /></td><td className="num"><Num v={a.judge_gap} /></td>
-                      <td className="small">{a.class}{a.known_formula && a.recorded_gaps.length ? ` · recorded ${a.recorded_gaps.map((g) => g.toFixed(2)).join(', ')} eV` : ''}</td>
-                      <td className="num"><Num v={a.amd_nearest} d={3} /></td>
-                      <td><a className="small" href={research.studyFileUrl('mp20', a.file)} download>CIF</a></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="small muted" style={{ marginTop: 8 }}>Both gaps are read on the relaxed cell. Stability is not assessed: no hull energy was computed. <Link to="/studies/mp20">The full study, with the calibration.</Link></p>
-            </div>
-          )}
+          {perov5.error && <ErrorNote error={perov5.error} />}
+          <DiscoveryStrip items={accepted} />
+          {cal && <p className="small muted" style={{ marginTop: 10 }}>{cal.funnel.final} of {cal.funnel.generated} generated cells accepted · {newComp} new compositions · {redisc.length} known compounds returned at their recorded gaps ({redisc.map((r) => r.formula).join(', ')}){perov5.data ? ` · Perov-5 target following ρ ${(perov5.data.target_following.rho_range as number[])[0]}–${(perov5.data.target_following.rho_range as number[])[1]}` : ''}. <Link to="/studies/mp20#accepted">Every accepted structure, with its evidence.</Link></p>}
         </section>
 
-        <section className="section" id="how">
-          <h2>{H.howTitle}</h2>
-          <div className="cards-3">
-            {H.how.map(([t, d], i) => <div className="card step-card" key={t}><div className="n">{i + 1}</div><h3>{t}</h3><p className="muted small">{d}</p></div>)}
+        <section className="section" id="choices">
+          <h2>{H.choicesTitle}</h2>
+          <div className="choices">
+            {H.choices.map(([t, d, to, cta]) => <div className="card" key={t}><h3>{t}</h3><p className="muted small">{d}</p><Link to={to} className="btn btn-sm">{cta}</Link></div>)}
           </div>
+        </section>
+
+        <section className="section" id="featured">
+          <h2>{H.featuredTitle}</h2>
+          <p className="muted">{H.featuredLead}</p>
+          {cal && (
+            <div className="featured">
+              <div className="card">
+                <Funnel stages={[['generated', cal.funnel.generated], ['both judges, generated cell', cal.funnel.both_judges], ['relaxed by two potentials', cal.funnel.relaxed], ['both judges, relaxed cell', cal.funnel.final]]} />
+                <div className="table-wrap" style={{ marginTop: 12 }}>
+                  <table className="table small">
+                    <caption className="sr-only">Per requested band gap</caption>
+                    <thead><tr><th scope="col">requested</th><th scope="col">generated</th><th scope="col">accepted</th><th scope="col">delivered mean</th><th scope="col">sd</th></tr></thead>
+                    <tbody>{cal.per_target.map((p) => <tr key={p.requested}><td className="num">{p.requested.toFixed(1)} eV</td><td className="num">{p.generated}</td><td className="num">{p.final}</td><td className="num"><Num v={p.delivered_mean} /></td><td className="num"><Num v={p.delivered_sd} /></td></tr>)}</tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="card">
+                <h3>What this does and does not show</h3>
+                <ul className="small muted" style={{ margin: '0 0 0 18px' }}>
+                  <li>Response: delivered = {cal.linearity.intercept.toFixed(2)} + {cal.linearity.slope.toFixed(2)}·requested; MAE <Num v={cal.accuracy.mae_relaxed_cells} /> eV on relaxed cells; served range {cal.range.served[0]}–{cal.range.served[cal.range.served.length - 1]} eV.</li>
+                  {(mp20.data?.limits ?? []).slice(0, 4).map((l) => <li key={l}>{l}</li>)}
+                </ul>
+                <p style={{ marginTop: 10 }}><Link to="/studies/mp20">The full study →</Link></p>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="section" id="pipeline">
