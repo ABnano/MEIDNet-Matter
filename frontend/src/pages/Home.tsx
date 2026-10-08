@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { research, type Accepted, type BlocksPayload, type Study, type StudyIndexEntry } from '@/api/research';
 import { useResource } from '@/api/hooks';
-import { ExternalLink, GITHUB, MarketingHeader, SiteFooter } from '@/components/shell';
+import { ExternalLink, GITHUB, MarketingHeader, PRISM_SPACE, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { Funnel, Num, VerdictText } from '@/components/research';
 import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
@@ -38,6 +38,7 @@ export default function Home() {
               <Link to="/p/perov5-demo/goal" className="btn btn-lg btn-ghost" data-testid="cta-demo">{H.ctaDemo}</Link>
             </div>
             <div className="scope-line">{H.scope}</div>
+            <div className="scope-line">{H.prism} <ExternalLink href={PRISM_SPACE}>{H.prismCta} ↗</ExternalLink></div>
             <p className="plain">{H.plain}</p>
           </div>
           {mp20.data ? <HeroExample study={mp20.data} example={example} /> : <div className="hero-example">{mp20.loading && <Spinner label="Loading a result" />}{mp20.error && <ErrorNote error={mp20.error} />}</div>}

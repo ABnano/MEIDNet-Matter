@@ -4,6 +4,7 @@ import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { VerdictText } from '@/components/research';
+import { PipelineOverview } from '@/components/pipeline/Flow';
 import { pipeline as P } from '@/copy/research';
 
 const DATASETS: Array<[string, string]> = [['perov5', 'Perov-5'], ['mp-perovskites', 'MP perovskites'], ['user-246', 'Upload (246)'], ['mp20', 'MP-20']];
@@ -19,6 +20,8 @@ export default function Pipeline() {
         {loading && <Spinner label="Loading the blocks" />}
         {data && (
           <>
+            <PipelineOverview blocks={data.blocks} verdicts={data.dataset_verdicts} />
+            <h2>The ten blocks</h2>
             <div className="block-list">
               {data.blocks.map((b) => (
                 <div className="card block-row" key={b.id}>
@@ -31,10 +34,10 @@ export default function Pipeline() {
                       runs: {b.when} · {b.metrics.length} metrics · code: {b.components.map((c) => c.file).join(', ') || '—'}
                     </div>
                   </div>
-                  <div className="small" style={{ textAlign: 'right' }}>
+                  <div className="small block-verdicts">
                     <div className="micro muted">verdict on each dataset</div>
                     {DATASETS.map(([id, label]) => (
-                      <div key={id}>{label} <VerdictText grade={data.dataset_verdicts?.[id]?.[b.id] ?? '—'} /></div>
+                      <div key={id} className="block-verdict">{label} <VerdictText grade={data.dataset_verdicts?.[id]?.[b.id] ?? '—'} /></div>
                     ))}
                   </div>
                 </div>

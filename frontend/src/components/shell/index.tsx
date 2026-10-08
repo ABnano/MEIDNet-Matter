@@ -5,6 +5,7 @@ import { currentTheme, framed, setTheme } from '@/lib/theme';
 import { useProject } from '@/features/project/useProject';
 
 export const PRISM = 'https://babu09-meidnet.hf.space';
+export const PRISM_SPACE = 'https://huggingface.co/spaces/Babu09/MEIDNet';
 export const PRISM_METHOD = `${PRISM}/docs/understand/how-it-works.html`;
 export const PRISM_SCORE = `${PRISM}/docs/benchmarks/compatibility.html`;
 export const PRISM_ECOSYSTEM = `${PRISM}/docs/ecosystem.html`;
@@ -40,6 +41,7 @@ export function MarketingHeader() {
         <Link to="/" className="brand"><MatterMark /><Wordmark /></Link>
         <nav aria-label="Sections">
           <NavLink to="/pipeline">Pipeline</NavLink><NavLink to="/studies">Studies</NavLink><NavLink to="/play">Generate</NavLink><NavLink to="/method">Method</NavLink>
+          <ExternalLink href={PRISM_SPACE}>Prism</ExternalLink>
           <ExternalLink href={GITHUB}>GitHub</ExternalLink>
         </nav>
         <Link to="/p/perov5-demo/goal" className="btn btn-primary btn-sm">Try the Perov-5 demo</Link>

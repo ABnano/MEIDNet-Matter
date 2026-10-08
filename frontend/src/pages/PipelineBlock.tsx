@@ -5,6 +5,7 @@ import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { CodeViewer, VerdictText } from '@/components/research';
+import { BlockFlow } from '@/components/pipeline/Flow';
 import { pipeline as P } from '@/copy/research';
 
 const fmt = (v: number | null | undefined) => (v === null || v === undefined ? '—' : Number.isInteger(v) ? String(v) : v.toFixed(v < 1 ? 3 : 2));
@@ -32,7 +33,17 @@ export default function PipelineBlock() {
               <p className="small muted">Verdict rule: {b.verdict_rule}.</p>
             </div>
 
-            <h2>Metrics and bands</h2>
+            <h2>How this block works</h2>
+            <p className="muted small">{P.flowLead}</p>
+            <BlockFlow b={b} verdicts={data?.dataset_verdicts} open={open} onOpen={setOpen} />
+            {b.components.filter((c) => c.file === open).map((c) => (
+              <div key={c.file} style={{ marginTop: 12 }}>
+                <p className="small muted">{c.note}{c.needs.length ? ` · needs ${c.needs.join(', ')}` : ''}</p>
+                <CodeViewer file={c.file} />
+              </div>
+            ))}
+
+            <h2 style={{ marginTop: 32 }}>Metrics and bands</h2>
             <div className="table-wrap">
               <table className="table">
                 <caption className="sr-only">Metrics of block {b.id}</caption>
@@ -55,7 +66,7 @@ export default function PipelineBlock() {
             <h2 style={{ marginTop: 32 }}>What each metric means</h2>
             <div className="stack" style={{ gap: 12 }}>
               {b.metrics.map((m) => (
-                <div className="card card-tight" key={m.id}>
+                <div className="card card-tight" key={m.id} id={`m-${m.id}`}>
                   <h3 style={{ marginBottom: 6 }}>{m.name} <span className="small faint mono">{m.id}</span></h3>
                   <dl className="kv">
                     <dt>when good</dt><dd>{m.meaning_good}</dd>

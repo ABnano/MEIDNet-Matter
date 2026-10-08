@@ -40,7 +40,7 @@ def blocks_payload(research_file: str | None = None) -> dict:
     for block in payload["blocks"]:
         comps = []
         for note in block["components"]:
-            file = note.split(" ")[0].strip()
+            file = note.split(" ")[0].strip().rstrip(",;:")          # "relax_cache.py, d1_mlip_check.py" names two files
             info = COMPONENTS.get(file, {})
             comps.append({"file": file, "note": note, "viewable": file in component_files(),
                           "runnable": info.get("runnable", "local"), "needs": info.get("needs", [])})

@@ -4,6 +4,19 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-08
+
+### Added
+- Workflow diagrams. The pipeline page opens with the ten blocks as a three-phase flow (before training, after training, after a
+  run), each box opening its block; every block page starts with its own flow: what the block receives, the programs that compute
+  it (a code box opens the source), the metrics it grades, and its verdict on each dataset.
+- A link to MEIDNet Prism in the header and in the hero.
+
+### Fixed
+- On narrow screens the per-dataset verdicts of a pipeline block fell into the 48 px id column, leaving the row empty; they now span
+  the row as one wrapping line.
+- A component name followed by a comma in a block's note (`relax_cache.py,`) is now recognised as a viewable file.
+
 ## [0.4.0] - 2026-10-08
 
 What a first external tester saw, taken up: what "matches" means, a result at the visual centre of the first visit, and the
