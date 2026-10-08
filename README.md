@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/assets/screenshot.png" alt="MEIDNet Matter: the readiness report and the candidates of a search" width="820"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/ABnano/MEIDNet-Matter/main/docs/assets/screenshot.png" alt="MEIDNet Matter: the readiness report and the candidates of a search" width="820"></p>
 
 # MEIDNet Matter
 
@@ -8,8 +8,9 @@ MEIDNet Matter is a multimodal inverse-design workbench for crystalline material
 
 [![ci](https://github.com/ABnano/MEIDNet-Matter/actions/workflows/ci.yml/badge.svg)](https://github.com/ABnano/MEIDNet-Matter/actions/workflows/ci.yml)
 [![Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-MEIDNet--Matter-4f46e5)](https://huggingface.co/spaces/Babu09/MEIDNet-Matter)
-[![engine](https://img.shields.io/badge/engine-meidnet%202.2-9333ea)](https://pypi.org/project/meidnet/)
-[![licence](https://img.shields.io/badge/licence-MIT-0a7d0a)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/meidnet-matter?label=PyPI&color=4f46e5)](https://pypi.org/project/meidnet-matter/)
+[![engine](https://img.shields.io/badge/engine-meidnet%202.4.0.dev2-9333ea)](https://pypi.org/project/meidnet/)
+[![licence](https://img.shields.io/badge/licence-MIT-0a7d0a)](https://github.com/ABnano/MEIDNet-Matter/blob/main/LICENSE)
 [![paper](https://img.shields.io/badge/npj%20Comput.%20Mater.-2026-1c5cab)](https://doi.org/10.1038/s41524-026-02153-3)
 
 Matter currently searches property-conditioned candidates within supported structural families. Free-geometry crystal generation is planned as additional design backends mature.
@@ -46,25 +47,41 @@ demo project below is the original flow and is kept as it was, with one change: 
 | **Export** | CIF per candidate, the candidate table, the candidate record (versioned: `meidnet-matter/candidate-record/1`, JSON Schema at `/api/schema/candidate-record`), and the run bundle: goal, engine configuration, metrics, readiness, candidates, CIFs, `targets.csv`, the record schema, a manifest with file hashes. |
 | **Score on Prism** | The bundle's `cifs/` and `targets.csv` are the input of `meidnet score` (MEIDNet 2.3.1 or later): validity, uniqueness, novelty, diversity, distribution and the conditional metrics, named as in LeMat-GenBench. The export page gives the commands; [the metrics are defined on Prism](https://babu09-meidnet.hf.space/docs/benchmarks/compatibility.html). |
 
-The demo project: cubic ABX₃ perovskites of the Perov-5 dataset, the published MEIDNet model, the direct band gap and the formation enthalpy. By the engine's thresholds the published model is weak on both properties on held-out data, so the demo opens its searches in exploratory mode by design; [docs/scientific-scope.md](docs/scientific-scope.md) has the numbers and what the evidence shows instead.
+The demo project: cubic ABX₃ perovskites of the Perov-5 dataset, the published MEIDNet model, the direct band gap and the formation enthalpy. By the engine's thresholds the published model is weak on both properties on held-out data, so the demo opens its searches in exploratory mode by design; [docs/scientific-scope.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/scientific-scope.md) has the numbers and what the evidence shows instead.
 
-Coming next (Phase 1): upload your own property table and CIF files, a data-quality report, training in the browser, readiness on your own held-out data, the same search with your model; then imports from Materials Project and NOMAD, a bring-your-own-model backend, and synthesis context linked from existing resources. [docs/data-format.md](docs/data-format.md) describes the upload layout, the candidate record and `targets.csv`.
+Coming next (Phase 1): upload your own property table and CIF files, a data-quality report, training in the browser, readiness on your own held-out data, the same search with your model; then imports from Materials Project and NOMAD, a bring-your-own-model backend, and synthesis context linked from existing resources. [docs/data-format.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/data-format.md) describes the upload layout, the candidate record and `targets.csv`.
 
 Matter is one half of the MEIDNet ecosystem: [MEIDNet Prism](https://babu09-meidnet.hf.space/) is where the method is learned, benchmarked and developed ([the ecosystem](https://babu09-meidnet.hf.space/docs/ecosystem.html)); Matter is where a dataset becomes candidates.
 
 ## Run it yourself
 
-Supported: Linux, macOS, and Windows through WSL (Windows 11 with Smart App Control blocks unsigned wheels, so use WSL
-there). One command installs the engine and the application from the release, with CPU torch; the last line proves it:
+Supported: Linux, macOS, and Windows through WSL (Windows 11 with Smart App Control blocks unsigned wheels one module at
+a time, so use WSL there). One command installs the engine and the application with the judge from PyPI, with CPU torch
+(the default Linux build pulls about 2.5 GB of GPU libraries), pinned to the versions this release was tested with; the
+last line proves the install:
+
+```bash
+pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+  -c https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/constraints.txt "meidnet-matter[judge]"
+python -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version
+```
+
+On a slow or flaky network, [scripts/install.sh](https://github.com/ABnano/MEIDNet-Matter/blob/main/scripts/install.sh)
+does the same with retries, a fresh virtual environment and the check (`bash scripts/install.sh`; `MATTER_SOURCE=release`
+takes the wheels of the latest release instead of PyPI). The same wheels are attached to every release, for an index
+mirror or an offline machine:
 
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
   "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev2-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.6.0-py3-none-any.whl"
-python -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.6.1-py3-none-any.whl"
 ```
 
-From a clone instead (the engine first, never from PyPI, which only has the older 2.2.0):
+`constraints.txt` is written by the release workflow from its own install check (Linux, Python 3.12); on another Python
+drop the `-c` line. The engine on PyPI, `meidnet` 2.4.0.dev2, is the snapshot in `engine/`, published from this repository
+until the upstream MEIDNet release 2.4.0 replaces it.
+
+From a clone instead (the engine first, so that nothing older is fetched from PyPI):
 
 ```bash
 git clone https://github.com/ABnano/MEIDNet-Matter && cd MEIDNet-Matter
@@ -76,10 +93,10 @@ python -m uvicorn matter.app:app --port 8000   # http://127.0.0.1:8000/
 
 The potentials used for relaxation (TensorNet, CHGNet) are fetched from the Hugging Face Hub on first use; the classic
 transfer is used by default because the Hub's Xet transfer can stall silently on some networks (`HF_HUB_DISABLE_XET`).
-The known-good versions of every dependency are the ones in [deploy/requirements.txt](deploy/requirements.txt), which the
+The known-good versions of every dependency are the ones in [deploy/requirements.txt](https://github.com/ABnano/MEIDNet-Matter/blob/main/deploy/requirements.txt), which the
 public Space runs.
 
-Nothing leaves your computer. Details, the Docker image and the Space deploy: [docs/deployment.md](docs/deployment.md). What happens to your data on the shared Space: [docs/privacy.md](docs/privacy.md).
+Nothing leaves your computer. Details, the Docker image and the Space deploy: [docs/deployment.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/deployment.md). What happens to your data on the shared Space: [docs/privacy.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/privacy.md).
 
 ## How it works
 
@@ -95,7 +112,7 @@ node scripts/smoke_browser.mjs http://127.0.0.1:8000 build/smoke   # the browser
 
 ## Citation
 
-If you use MEIDNet Matter, please cite the MEIDNet paper and the software ([CITATION.cff](CITATION.cff)):
+If you use MEIDNet Matter, please cite the MEIDNet paper and the software ([CITATION.cff](https://github.com/ABnano/MEIDNet-Matter/blob/main/CITATION.cff)):
 
 > A. Babu, R. Almeida Gouvêa, P. Vandergheynst, G.-M. Rignanese, MEIDNet: Multimodal generative AI framework for inverse materials design, npj Computational Materials 12, 287 (2026). doi:10.1038/s41524-026-02153-3
 

@@ -51,6 +51,15 @@ jobs:
           cd "$RUNNER_TEMP"
           meidnet-matter version
           python -c "import matter.app"
+      - name: The known-good versions (this very install), a release asset the install command can pin to
+        run: |
+          v=$(python -c "import matter; print(matter.__version__)")
+          { echo "# MEIDNet Matter $v: every dependency at the version the release's own install check used"
+            echo "# (Linux, Python $(python -c 'import sys; print("%d.%d" % sys.version_info[:2])'), CPU torch, $(date -u +%Y-%m-%d))."
+            echo "# pip install --extra-index-url https://download.pytorch.org/whl/cpu -c <this file> \"meidnet-matter[judge]\""
+            python -m pip freeze --exclude-editable | grep -v -E '^(meidnet|meidnet-matter)[= @]' | grep -v ' @ ' | sed -E 's/\+cpu$//'
+          } > dist/constraints.txt
+          test "$(grep -c '==' dist/constraints.txt)" -gt 40
       - name: Frontend zip
         run: |
           v=$(python -c "import matter; print(matter.__version__)")
@@ -68,9 +77,12 @@ jobs:
           v="${GITHUB_REF_NAME#v}"
           awk "/^## \[$v\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > notes.md
           gh release create "$GITHUB_REF_NAME" dist/* --title "MEIDNet Matter $v" --notes-file notes.md
-      - name: The Python distributions for PyPI (not the frontend zip)
+      - name: The Python distributions for PyPI (not the frontend zip), one folder per project
         if: github.event_name == 'push'
-        run: mkdir -p pypi && cp dist/*.whl dist/*.tar.gz pypi/
+        run: |
+          mkdir -p pypi/engine pypi/app
+          cp dist/meidnet-[0-9]*.whl pypi/engine/
+          cp dist/meidnet_matter-*.whl dist/meidnet_matter-*.tar.gz pypi/app/
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'push'
         with:
@@ -78,10 +90,11 @@ jobs:
           path: pypi/
 
   pypi:
-    # PyPI trusted publishing, no token stored anywhere. On pypi.org the project meidnet-matter (and meidnet, for the
-    # engine wheel Matter needs) lists ABnano/MEIDNet-Matter, this file (release.yml) and the environment "pypi" as a
-    # publisher. Until it does, this job fails on its own and the GitHub release above is unaffected; once it does,
-    # "Re-run failed jobs" on the tag's run uploads the files.
+    # PyPI trusted publishing, no token stored anywhere. On pypi.org the projects meidnet-matter (the application) and
+    # meidnet (the engine wheel Matter needs) each list ABnano/MEIDNet-Matter, this file (release.yml) and the environment
+    # "pypi" as a publisher; a token is scoped to one project, so each project is uploaded by its own step. Until the
+    # publishers exist this job fails on its own and the GitHub release above is unaffected; once they do, "Re-run failed
+    # jobs" on the tag's run uploads the files.
     needs: build
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -95,6 +108,13 @@ jobs:
         with:
           name: pypi
           path: dist/
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - name: The engine (project meidnet)
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          packages-dir: dist/engine/
           skip-existing: true      # the engine wheel is shared by app releases until the engine's version moves
+      - name: The application (project meidnet-matter)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/app/
+          skip-existing: true

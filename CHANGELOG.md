@@ -4,6 +4,26 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-08
+
+The install, the way a newcomer expects it: `pip install "meidnet-matter[judge]"`.
+
+### Added
+- PyPI: the release workflow uploads the application (`meidnet-matter`) and the engine snapshot (`meidnet` 2.4.0.dev2, so the
+  application's dependency resolves without a clone) by trusted publishing, one step per project; the upstream MEIDNet release
+  2.4.0 will replace the snapshot on PyPI.
+- `constraints.txt` on every release: every dependency at the version the release's own install check used (Linux, Python
+  3.12, CPU torch). `pip install -c <that file> "meidnet-matter[judge]"` reproduces a tested environment; the independent
+  tester had asked for a lock file of known-good versions.
+- `scripts/install.sh`: the install in one go with retries (three attempts, long timeouts), a fresh virtual environment (venv,
+  or uv when venv is missing, as on a stock Ubuntu), CPU torch first, the pinned install from PyPI or from the release's wheels
+  (`MATTER_SOURCE=release`), and the import check. It refuses to run in a Windows shell and points to WSL, where Smart App
+  Control does not block the wheels.
+
+### Changed
+- README and Method page: the PyPI command first, the release-wheel command as the fallback for a mirror or an offline
+  machine, the installer for slow networks. The README's links are absolute, so the PyPI project page renders them.
+
 ## [0.6.0] - 2026-10-08
 
 The independent user's double-perovskite journey run again end to end with the fixed engine (snapshot 2.4.0.dev2), and
