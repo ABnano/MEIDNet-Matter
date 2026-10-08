@@ -47,14 +47,30 @@ Matter is one half of the MEIDNet ecosystem: [MEIDNet Prism](https://babu09-meid
 
 ## Run it yourself
 
+Supported: Linux, macOS, and Windows through WSL (Windows 11 with Smart App Control blocks unsigned wheels, so use WSL
+there). One command installs the engine and the application from the release, with CPU torch; the last line proves it:
+
+```bash
+pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev1-py3-none-any.whl" \
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.5.0-py3-none-any.whl"
+python -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version
+```
+
+From a clone instead (the engine first, never from PyPI, which only has the older 2.2.0):
+
 ```bash
 git clone https://github.com/ABnano/MEIDNet-Matter && cd MEIDNet-Matter
-pip install ./engine                           # the engine: the vendored MEIDNet snapshot with the symmetry decoder
-pip install -e ".[dev,judge]"                  # the application and the independent judge; CPU torch wheels are fine
+pip install --extra-index-url https://download.pytorch.org/whl/cpu ./engine && pip install -e ".[dev,judge]"
 python scripts/fetch_assets.py                 # the checkpoints the studies use, each verified against its checksum
 cd frontend && npm ci && npm run build && cd ..
 python -m uvicorn matter.app:app --port 8000   # http://127.0.0.1:8000/
 ```
+
+The potentials used for relaxation (TensorNet, CHGNet) are fetched from the Hugging Face Hub on first use; the classic
+transfer is used by default because the Hub's Xet transfer can stall silently on some networks (`HF_HUB_DISABLE_XET`).
+The known-good versions of every dependency are the ones in [deploy/requirements.txt](deploy/requirements.txt), which the
+public Space runs.
 
 Nothing leaves your computer. Details, the Docker image and the Space deploy: [docs/deployment.md](docs/deployment.md). What happens to your data on the shared Space: [docs/privacy.md](docs/privacy.md).
 

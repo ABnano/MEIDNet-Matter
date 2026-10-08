@@ -32,6 +32,7 @@ jobs:
       - name: The engine snapshot is coherent
         run: |
           python -c "import meidnet, meidnet.symmetry; assert meidnet.__version__.startswith('2.4.0'), meidnet.__version__"
+          meidnet --version && python -m meidnet --version
           python -m meidnet_eval.stages --validate
       - name: Model files (cached by checksum)
         uses: actions/cache@v4

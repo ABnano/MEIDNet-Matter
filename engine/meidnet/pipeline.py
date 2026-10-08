@@ -148,7 +148,20 @@ def train(cfg: MEIDNetConfig, epochs: int | None = None) -> str:
         model.crystal_decoder.add_symmetry_head(N_SPACEGROUPS, MAX_ORBITS, cfg.model.latent_dim)
         if cfg.model.coordinate_bins:
             model.crystal_decoder.add_coordinate_bins(cfg.model.coordinate_bins)
-        intake = os.path.dirname(cfg.data.table)
+        intake = os.path.dirname(os.path.abspath(cfg.data.table))
+        if not os.path.exists(os.path.join(intake, "wyckoff_train.json.gz")):
+            # the symmetry decoder trains on a side-car of space groups and symmetry-distinct sites; build it here so
+            # a user who followed the guide is not sent to a command the guide never listed
+            import subprocess
+            import sys as _sys
+            log(f"symmetry targets missing in {intake}: building them (python -m meidnet_eval.wyckoff_targets, a few minutes) ...")
+            splits = ["train"] + (["val"] if cfg.data.val_table else [])
+            r = subprocess.run([_sys.executable, "-m", "meidnet_eval.wyckoff_targets", intake, "--splits", *splits,
+                                "--max-sites", str(min(16, cfg.data.max_sites))], capture_output=True, text=True)
+            for line in (r.stdout or "").splitlines()[-4:]:
+                log("  " + line)
+            if r.returncode != 0:
+                raise SystemExit("the symmetry targets could not be built:\n" + (r.stderr or "")[-1500:])
         cfg.training._sym_targets = load_targets(intake, "train")
         log(f"D1 symmetry decoder: {len(cfg.training._sym_targets)} training structures carry usable targets")
     ckpt = cfg.checkpoint_path

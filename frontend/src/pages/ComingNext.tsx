@@ -6,13 +6,14 @@ export default function ComingNext() {
     <>
       <MarketingHeader />
       <main className="wrap-narrow page">
-        <div className="page-head"><h1>Start with my data — coming next</h1></div>
+        <div className="page-head"><h1>Start with my data</h1><p>Available now on your computer; a browser upload is planned.</p></div>
         <div className="card" style={{ maxWidth: 720 }}>
-          <p>Phase 1 of MEIDNet Matter adds the upload of a property table with CIF files (CSV or Excel, or a ZIP with a <code>structures/</code> folder), a data-quality report that names every excluded row and why, training in the browser with progress, a readiness report measured on your own held-out data, and the same search and evidence with your model.</p>
-          <p className="muted">The workflow is already in place: Data → Goal → Readiness → Candidates → Export. Until then, the Perov-5 project shows every step on a real dataset and model.</p>
+          <p>Nothing is uploaded on this site. The same stages the site shows run locally on a folder of structures and a property table: one table, intake and split, the S0 gate (is the data usable, generation or screening?), training with a template that matches your route, the scorecard, then generation with two independent readings or screening of a family with the independent judge, and the report. Every command is on the Method page, with the code of every block one click away.</p>
+          <p className="muted">Planned: the upload of a property table with CIF files, a data-quality report in the browser, training with progress, and readiness measured on your own held-out data, so the Data → Goal → Readiness → Candidates → Export flow runs here as the Perov-5 project does.</p>
           <div className="row">
-            <Link to="/p/perov5-demo/goal" className="btn btn-primary">Try the Perov-5 demo</Link>
-            <Link to="/" className="btn">Back to the start</Link>
+            <Link to="/method#run" className="btn btn-primary">The commands, step by step</Link>
+            <Link to="/p/perov5-demo/goal" className="btn">Try the Perov-5 demo</Link>
+            <Link to="/" className="btn btn-ghost">Back to the start</Link>
           </div>
         </div>
       </main>

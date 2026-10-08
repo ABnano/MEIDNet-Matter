@@ -62,11 +62,12 @@ materials: define property targets and chemistry rules, read the Design Readines
 support the target?), search for candidate structures, and export them with their evidence and a run manifest.
 MEIDNet is the engine; MEIDNet Prism (https://babu09-meidnet.hf.space) is where to learn the method and benchmark it.
 
-Matter currently searches property-conditioned candidates within supported structural families. Free-geometry
-crystal generation is planned as additional design backends mature.
+Matter runs family-free generation live (MP-20, the symmetry decoder, two independent readings per cell) and the
+Perov-5 demo within a structural family; the same stages run on your own data locally (Method page).
 
-This version: the Perov-5 demo project end to end (cubic ABX3 perovskites, the published MEIDNet model, direct band
-gap and formation enthalpy).
+This version: the staged pipeline (ten blocks with their bands and code), four executed studies with downloadable
+checkpoints, live band-gap generation on MP-20 with 3D cards and an evidence map, the Perov-5 demo project, and a
+step-by-step guide to run every stage on your own data.
 
 * [Open the app](https://babu09-meidnet-matter.hf.space/) · [Code](https://github.com/ABnano/MEIDNet-Matter) ·
   [Engine](https://github.com/ABnano/MEIDNet) · [Model](https://huggingface.co/Babu09/MEIDNet) ·

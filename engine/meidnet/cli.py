@@ -93,6 +93,45 @@ generation:
   # overrides: {{tolerance_factor: {{min: 0.8, max: 1.0}}}}
 """
 
+TEMPLATE_GENERATION = """\
+# MEIDNet configuration for family-free generation (the symmetry decoder), set up like the configuration behind
+# MEIDNet Matter's live generator (checkpoints/configs/mp20_wyck.yaml).  Needs the symmetry side-car files
+# (wyckoff_<split>.json.gz) next to the tables; `meidnet train` builds them when they are missing.
+# Every setting is explained at https://babu09-meidnet.hf.space/docs/reference/config.html
+name: {name}
+description: "family-free generation with the symmetry decoder"
+output_dir: runs/{{name}}
+
+data:
+  table: {table}                 # the intake's train.csv (one row per material, CIF text in cif_column)
+  val_table: {val_table}
+  id_column: {id_column}
+  cif_column: {cif_column}
+  properties:
+{properties}
+  max_sites: 20
+  site_order: roles
+  align_to_prototype: false      # no family: atoms are ordered by role, not aligned to a prototype
+
+model:
+  latent_dim: 128
+  decoder_coordinate_input: zeros
+  periodic_encoder: true
+  element_features: cgcnn
+  decoder_geometry: wyckoff      # the symmetry decoder: a space group and the symmetry-distinct sites
+
+training:
+  epochs: 200
+  batch_size: 16
+  learning_rate: 0.001
+  seed: 0
+  device: auto
+  save_every: 50
+  loss_weights: {{structure_reconstruction: 1.0, structure_property: 1.0, symmetry: 1.0}}   # labels read from the structure need all three
+
+# then:  python -m meidnet_eval.generate_to_target --ckpt runs/{name}/out/model.pt --intake <intake> --gap <column> --targets 1 2 3 --tag mytag
+"""
+
 TEMPLATE_PEROV5 = """\
 # MEIDNet configuration reproducing the published Perov-5 experiment.
 # Data: `meidnet download-data` fetches the CDVAE Perov-5 split into data/perov5/.
@@ -140,6 +179,13 @@ def cmd_init(a):
         sys.exit(f"{path} already exists (use --force to overwrite)")
     if a.template == "perov5":
         text = TEMPLATE_PEROV5
+    elif a.template == "generation":
+        props = a.properties or ["band_gap"]
+        pl = "\n".join(f"    - {{column: {p}, unit: \"\", normalize: true}}" for p in props)
+        table = a.table
+        val_table = os.path.join(os.path.dirname(table), "val.csv") if os.path.basename(table) == "train.csv" else "null"
+        text = TEMPLATE_GENERATION.format(name=a.name, table=table, val_table=val_table, id_column=a.id_column,
+                                          cif_column=a.cif_column, properties=pl)
     else:
         props = a.properties or ["band_gap"]
         pl = "\n".join(f"    - {{column: {p}, unit: \"\"}}" for p in props)
@@ -179,6 +225,55 @@ def cmd_generate(a):
         g = cfg.generation
         g.rounds, g.steps, g.population = min(g.rounds, 3), min(g.steps, 150), min(g.population, 24)
     generate(cfg)
+    _annotate_generation(cfg)
+
+
+def _annotate_generation(cfg):
+    """After `meidnet generate`: say which candidates already exist in the training data (with the data's own value),
+    and print the model's validation error next to the targets, so a predicted hit is read as a model estimate."""
+    import csv as _csv
+    import pandas as pd
+    out = os.path.join(cfg.out_dir, "generation", "candidates.csv")
+    if not os.path.exists(out):
+        return
+    cands = pd.read_csv(out)
+    if cands.empty:
+        return
+    try:
+        from pymatgen.core import Composition, Structure
+        table = pd.read_csv(cfg.resolve(cfg.data.table)) if str(cfg.data.table).endswith(".csv") else pd.read_excel(cfg.resolve(cfg.data.table))
+        if "formula" in table.columns:
+            keys = table["formula"].astype(str).map(lambda f: Composition(f).reduced_formula)
+        else:
+            keys = table[cfg.data.cif_column].astype(str).map(lambda c: Structure.from_str(c, fmt="cif").composition.reduced_formula)
+        props = [p.column for p in cfg.data.properties]
+        known = {}
+        for k, (_, row) in zip(keys, table.iterrows()):
+            known.setdefault(k, {p: row.get(p) for p in props})
+        ck = cands["formula"].astype(str).map(lambda f: Composition(f).reduced_formula)
+        cands["known_in_training"] = ck.map(lambda k: k in known)
+        for p in props:
+            cands[f"training_{p}"] = ck.map(lambda k: known.get(k, {}).get(p))
+        cands.to_csv(out, index=False, quoting=_csv.QUOTE_MINIMAL)
+        n_known = int(cands["known_in_training"].sum())
+        print(f"\n{n_known} of {len(cands)} candidates are already in the training table (training_<property> columns give the "
+              f"data's own values; the pred_ columns are the model's estimates); {len(cands) - n_known} are new compositions.")
+        for _, r in cands[cands["known_in_training"]].iterrows():
+            vals = ", ".join(f"{p}: model {r.get('pred_' + p):.2f} vs data {r.get('training_' + p):.2f}" for p in props
+                             if pd.notna(r.get(f"training_{p}")) and pd.notna(r.get(f"pred_{p}")))
+            print(f"  known: {r['formula']:<14} {vals}")
+    except Exception as e:                                    # the annotation must never undo a finished run
+        print(f"(known/new annotation skipped: {e})")
+    try:
+        from meidnet.checkpoint import load_checkpoint
+        lm = load_checkpoint(cfg.model_path if getattr(cfg, "model_path", None) else cfg.checkpoint_path, device="cpu")
+        val = (lm.meta.get("history") or {}).get("val") or []
+        if val and val[-1].get("mae"):
+            print("validation error of this model (held-out, from training): " + ", ".join(f"{k} {v:.3g}" for k, v in val[-1]["mae"].items())
+                  + ".  A candidate's predicted value is an estimate with that error; the independent check is "
+                  "python -m meidnet_eval.target_calibration <generation folder> --judge megnet --test-csv <intake>/test.csv")
+    except Exception as e:
+        print(f"(validation error not read: {e})")
 
 
 def cmd_info(a):
@@ -303,7 +398,8 @@ def main(argv=None):
 
     s = sub.add_parser("init", help="write a starter meidnet.yaml")
     s.add_argument("-o", "--output", default="meidnet.yaml")
-    s.add_argument("--template", choices=["custom", "perov5"], default="custom")
+    s.add_argument("--template", choices=["custom", "perov5", "generation"], default="custom",
+                   help="custom: a family model (screening and family generation); generation: the symmetry decoder for family-free generation; perov5: the paper's demo")
     s.add_argument("--name", default="my_materials")
     s.add_argument("--table", default="materials.csv")
     s.add_argument("--id-column", default="material_id")

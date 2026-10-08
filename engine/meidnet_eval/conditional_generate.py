@@ -208,8 +208,9 @@ def generate_pool(lm, gap, targets, *, per_target=8, oversample=40, sigma=0.3, s
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", required=True); ap.add_argument("--ckpt", required=True)
-    ap.add_argument("--data", default=None, help="unused; kept so older commands still run"); ap.add_argument("--gap", required=True)
+    ap.add_argument("--tag", default="pool", help="name of the run folder inside --out (default pool)"); ap.add_argument("--ckpt", required=True)
+    ap.add_argument("--data", default=None, help="unused; kept so older commands still run")
+    ap.add_argument("--gap", default=None, help="the target property column; default: the checkpoint's column whose name contains 'gap', else its first property")
     ap.add_argument("--targets", type=float, nargs="+", required=True)
     ap.add_argument("--atoms", type=int, nargs="+", default=[4, 6, 8])
     ap.add_argument("--geometry", choices=["free", "wyckoff"], default="free",
@@ -259,6 +260,9 @@ def main():
     out = os.path.join(a.out, a.tag); os.makedirs(f"{out}/cifs", exist_ok=True)
     lm = load_checkpoint(a.ckpt, device="cpu")
     cols = list(lm.stats.columns)
+    if a.gap is None:
+        a.gap = next((c for c in cols if "gap" in c.lower()), cols[0])
+        print(f"--gap not given: targeting '{a.gap}' (the checkpoint predicts {cols})", flush=True)
     if a.gap not in cols:
         raise SystemExit(f"the checkpoint predicts {cols}, not {a.gap}")
     if a.geometry == "wyckoff" and not a.max_atoms:

@@ -282,7 +282,7 @@ def build_user246(a, out: str) -> dict:
         "dataset": {"name": "User upload", "rows": audit["rows"], "train": audit["split_sizes"].get("train"), "val": audit["split_sizes"].get("val"),
                     "test": audit["split_sizes"].get("test"), "elements": audit["elements"], "prototypes": audit["prototypes"],
                     "compositions_per_element": finite(prev["values"]["density"]), "shared_profile_share": finite(prev["values"]["shared_profile"]),
-                    "zero_share": finite(prev["values"]["zero_share"]), "source": "a colleague's dataset: hybrid-functional gaps and dielectric constants; aggregates only are published",
+                    "zero_share": finite(prev["values"]["zero_share"]), "source": "a colleague's dataset of perovskite-type compounds (ABX\u2083, A\u2082BB\u2032X\u2086 double perovskites and elpasolites): hybrid-functional gaps and dielectric constants; aggregates only are published",
                     "properties": ["band gap (hybrid functional)", "dielectric constant"]},
         "mode": "screening",
         "headline": "The best encoder of any dataset on the smallest training set (0.19 spreads, r 0.97); the decoder cannot generate (0%), as the preview predicted; screening returned 13 metastable, formula-novel candidates in known structure types.",

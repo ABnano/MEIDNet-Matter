@@ -43,6 +43,7 @@ COMPONENTS = {
     "relax_cache.py": {"runnable": "local", "needs": ["matgl"]},
     "reliability_map.py": {"runnable": "local", "needs": []},
     "scorecard.py": {"runnable": "local", "needs": []},
+    "screen_local.py": {"runnable": "local", "needs": ["matgl (judge)"]},
     "screen_polymorphs.py": {"runnable": "local", "needs": []},
     "stability_distorted.py": {"runnable": "local", "needs": ["matgl"]},
     "stages.py": {"runnable": "web", "needs": []},

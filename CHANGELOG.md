@@ -4,6 +4,46 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-08
+
+What an independent first-time user found while taking a public double-perovskite dataset from the Space through every
+command of the "Run it on your data" guide, fixed at the source (engine snapshot 2.4.0.dev1). Their package of evidence
+(install logs, every console, both trained models, the generation and screening runs) drove each item.
+
+### Added
+- One-command install: the engine wheel is attached to every release next to the application wheel; the README and the
+  Method page print the command with CPU torch and an import check, and name the supported platforms (Linux, macOS,
+  Windows through WSL; Windows 11 with Smart App Control blocks unsigned wheels).
+- `meidnet` is a real command after `pip install` (console script and `python -m meidnet`); CI runs `meidnet --version`.
+- `meidnet init --template generation`: the symmetry-decoder configuration of the live generator, for the guide's
+  generation route; `meidnet train` builds the symmetry side-car itself when it is missing.
+- Screening mode on a laptop: `meidnet_eval.screen_local` enumerates any family (any number of cation groups, any anion),
+  labels every composition from its template cell with the trained model, keeps the ones inside the window, judges them with
+  the independent MEGNet judge qualified on the test split, and marks known compositions with the data's own value. Block S0's
+  remedy prints the command; `generate_to_target` warns when S0 graded the data for screening.
+- `meidnet generate` marks every candidate known or new against the training table, prints the data's own value beside the
+  model's estimate, and prints the model's validation error next to the targets.
+- `ingest_upload` joins on the structure file's name as well as on composition, uses a -<space group> tag to pick a polymorph,
+  reports how each row was matched, and exits non-zero when nothing matched.
+- `preview --family` accepts a shipped family name, `--variant` or `family:variant`, measures the novelty frontier over the
+  union of variants when none is given, and counts how many structures have the family's own prototype.
+- A test runs `--help` on every command the Method page prints and fails when a flag is unknown.
+
+### Changed
+- `scorecard` computes every block for the first model named, whatever its name (`mine=` works; `main=` still names it).
+- `conditional_generate` no longer requires `--tag` and `--gap`: the run folder defaults to `pool` and the target column to the
+  checkpoint's gap column. `instrument_sheet` runs on a pool alone (unrelaxed cells, said so) and accepts `--relax` for the
+  relaxation shards; `generate_to_target` is the one-command chain the Method page now prints.
+- Training on CPU uses 4 threads unless OMP_NUM_THREADS or `training.threads` says otherwise (16 threads were 35× slower on
+  small cells) and prints the measured pace after two epochs.
+- Relaxation fetches the potentials with the classic Hub transfer (`HF_HUB_DISABLE_XET=1` unless set) and prints the cache
+  path and the load time, so a stalled download is recognisable.
+- `metrics_sun` says "not assessed" instead of "0 of N stable" when no hull energies were given.
+- The scorecard's remedy no longer says "switch the structure losses on" when the configuration already has them on.
+- The live generator points family-specific needs to the own-data route; a known formula whose recorded gaps all lie outside
+  the window says so. The 246-structure study names its material classes. The Space card, the new-project page and the
+  start-with-my-data page describe the local workflow as available now.
+
 ## [0.4.2] - 2026-10-08
 
 ### Fixed

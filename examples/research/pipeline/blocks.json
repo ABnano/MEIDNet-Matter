@@ -8,6 +8,7 @@
     "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on composition)",
     "intake.py (audit, prototypes, composition-grouped split)",
     "preview.py (the gate: runs with no model)",
+    "screen_local.py (screening mode on a laptop: enumerate the family, label every composition from its template cell, judge independently)",
     "auto_family.py (design space learned from the data)"
    ],
    "id": "S0",
@@ -147,7 +148,7 @@
       "mp": "FAIL"
      },
      "reference_note": "Trained identically on Perov-5 subsets: 12 -> 0.1%, 30 -> 0.7%, 80 -> 5.4%, 218 -> 64% composition recovery (journal Entry 44), so this predicts S3 before training.",
-     "remedy": "Use screening mode (the pipeline switches automatically), or add data.",
+     "remedy": "Use screening mode:  python -m meidnet_eval.screen_local <intake> --ckpt MODEL.pt --family FAMILY[:variant] --gap COLUMN --targets ...  (enumerates the family, labels every composition from its template structure, judges independently); or add data.",
      "superseded_by": "",
      "unit": "compositions/element",
      "warn_at": 80
@@ -594,7 +595,7 @@
       "mp": "FAIL"
      },
      "reference_note": "",
-     "remedy": "Use screening mode, or add data (see the density metric in S0).",
+     "remedy": "Use screening mode (python -m meidnet_eval.screen_local <intake> --ckpt MODEL.pt --family FAMILY[:variant] --gap COLUMN --targets ...), or add data (see the density metric in S0).",
      "superseded_by": "",
      "unit": "%",
      "warn_at": 50
@@ -1633,7 +1634,7 @@
  },
  "generated_from": {
   "module": "meidnet_eval.stages",
-  "sha256": "0ee541e7ea0bade31b6a120bb24ae7964c7fb5c81e84491d4b36e0a54d9d1e08"
+  "sha256": "427e2a2f5996491a4d251d5a9c9ebeab056af2b76665328cd23b1bdbbd13a6f6"
  },
  "grades": [
   "PASS",

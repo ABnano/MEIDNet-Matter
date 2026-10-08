@@ -23,11 +23,26 @@ POTENTIALS = {"tensornet": "TensorNet-PES-MatPES-PBE-2025.2", "chgnet": "CHGNet-
 _CACHE = {}
 
 
+def load_potential(name, log=print):
+    """The matgl potential, fetched from the Hugging Face Hub on first use.  The Hub's Xet transfer can stall for good
+    on some networks with no message, so the classic HTTP transfer is used unless the user chose otherwise, and the
+    cache path is printed so a stalled download is recognisable."""
+    import time
+    os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+    import matgl
+    cache = os.path.join(os.path.expanduser("~"), ".cache", "matgl")
+    cached = os.path.isdir(os.path.join(cache, POTENTIALS[name]))
+    log(f"potential {POTENTIALS[name]}: {'in the cache' if cached else 'downloading from the Hugging Face Hub (once)'} -> {cache}", flush=True)
+    t0 = time.time()
+    pot = matgl.load_model(POTENTIALS[name])
+    log(f"  loaded in {time.time() - t0:.0f} s", flush=True)
+    return pot
+
+
 def relaxer(name):
     if name not in _CACHE:
-        import matgl
         from matgl.ext.ase import Relaxer
-        _CACHE[name] = Relaxer(potential=matgl.load_model(POTENTIALS[name]), relax_cell=True)
+        _CACHE[name] = Relaxer(potential=load_potential(name), relax_cell=True)
     return _CACHE[name]
 
 

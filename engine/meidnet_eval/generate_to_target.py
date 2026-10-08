@@ -62,6 +62,22 @@ def main():
     py_model, py_judge = a.python, a.python_judge or a.python
     out = os.path.abspath(os.path.join(a.out, a.tag))
     test_csv = a.test_csv or os.path.join(a.intake, "test.csv")
+    # S0's verdict, when the preview ran: family-free generation on data it graded for screening is a measured dead end
+    preview = os.path.join(a.intake, "preview.json")
+    if os.path.exists(preview):
+        try:
+            import json as _json
+            pv = _json.load(open(preview, encoding="utf-8"))
+            mode = pv.get("predicted_mode") or pv.get("mode")
+            dens = (pv.get("values") or {}).get("density")
+            if mode == "screening":
+                print("=" * 78 + f"\nWARNING: block S0 graded this intake for SCREENING, not generation"
+                      + (f" ({dens:.0f} compositions per element; generation needs about 200)" if isinstance(dens, (int, float)) else "")
+                      + ".\nFamily-free generation will return structures outside your family and the independent judge will reject most of them."
+                      "\nThe local screening path is:  python -m meidnet_eval.screen_local <intake> --ckpt MODEL --family FAMILY[:variant] --targets ...\n"
+                      + "=" * 78, flush=True)
+        except Exception as e:                                   # the warning must never stop a run
+            print(f"(preview.json not read: {e})", flush=True)
 
     # 1 generate (the window here is looser than the final one: the judge and relaxation still have to act)
     run(py_model, "conditional_generate.py", "--tag", a.tag, "--ckpt", a.ckpt, "--gap", a.gap, "--geometry", "wyckoff",

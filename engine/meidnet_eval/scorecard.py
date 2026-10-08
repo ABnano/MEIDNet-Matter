@@ -100,6 +100,10 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     models = dict(m.split("=", 1) for m in a.models)
+    if "main" not in models:                       # the first model named is the one every block is computed for
+        first = next(iter(models))
+        print(f"no model is named 'main': treating '{first}' as the main model (control= and seed1= are the comparisons)", flush=True)
+        models = {"main": models[first], **{k: v for k, v in models.items() if k != first}}
     env = dict(os.environ, PYTHONPATH=os.path.dirname(HERE), EVAL_DATA=a.intake, EVAL_GAP=a.gap,
                CHECKUP_MATERIALS="/nonexistent", PYTHONUNBUFFERED="1")
     if a.cost:
@@ -158,6 +162,19 @@ def main():
                 measured.setdefault("main", {})["judge_qualification"] = j["mae_nonzero"] / sd
 
     # ── grade every block through the central definition ──
+    # a remedy that says "switch the structure losses on" is empty advice when the configuration already has them on:
+    # read the main checkpoint's training configuration once and condition the wording on it
+    lw = {}
+    try:
+        from meidnet.checkpoint import load_checkpoint as _lc
+        lw = (_lc(models["main"], device="cpu").meta.get("config", {}).get("training", {}) or {}).get("loss_weights", {}) or {}
+    except Exception:
+        lw = {}
+    def remedy_for(m):
+        text = m.remedy
+        if "structure losses" in text.lower() and float(lw.get("structure_reconstruction", 0) or 0) > 0:
+            text += " In this configuration the structure losses are already on, so the limit is the data (block S0's density), not the losses."
+        return text
     report = {}
     for name, vals in measured.items():
         blocks = {}
@@ -176,7 +193,7 @@ def main():
                                  band=("context only" if m.info_only else f"PASS {p}" + (f" / WARN {w}" if w else "")),
                                  grade=grades[m.id],
                                  note=("" if grades[m.id] in ("PASS", "INFO") or m.info_only else
-                                       f"{m.meaning_bad} Remedy: {m.remedy}")))
+                                       f"{m.meaning_bad} Remedy: {remedy_for(m)}")))
             blocks[sid] = dict(name=st.name, question=st.question, verdict=verdict, metrics=rows)
         report[name] = blocks
 

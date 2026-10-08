@@ -16,6 +16,7 @@ report can say, in plain words, how good the model is.
 """
 from __future__ import annotations
 
+import os
 import time
 
 import numpy as np
@@ -164,6 +165,11 @@ def fit(model: DualAutoencoderModel, train_set: MaterialsDataset, val_set: Mater
     (``history["stopped"] = True``).
     """
     model.to(device)
+    # CPU threads: on graphs of 10-20 atoms more threads only spin (measured 142 s versus 4 s per epoch with 16 versus 4
+    # threads on one dataset), so cap them unless the user chose a count (OMP_NUM_THREADS or training.threads)
+    if str(device) == "cpu" and not os.environ.get("OMP_NUM_THREADS"):
+        torch.set_num_threads(int(getattr(tcfg, "threads", 0) or min(4, os.cpu_count() or 4)))
+        log(f"CPU threads: {torch.get_num_threads()} (set OMP_NUM_THREADS or training.threads to change)")
     loader = DataLoader(train_set, batch_size=tcfg.batch_size, shuffle=True, drop_last=True)
     if len(loader) == 0:
         raise ValueError(f"Only {len(train_set)} training materials: need at least batch_size={tcfg.batch_size}.")
@@ -204,6 +210,9 @@ def fit(model: DualAutoencoderModel, train_set: MaterialsDataset, val_set: Mater
             msg += "  val MAE " + ", ".join(f"{k} {v:.3g}" for k, v in ev["mae"].items())
             msg += f"  retrieval@1 {ev['retrieval_top1']:.2f}"
         log(msg)
+        if ep == 2:                                   # the measured pace, so a slow run is recognised at once
+            per_epoch = (time.time() - t0) / 2
+            log(f"measured: {per_epoch:.1f} s per epoch -> about {per_epoch * (tcfg.epochs - 2) / 60:.0f} min for the remaining {tcfg.epochs - 2} epochs")
         if on_epoch:
             on_epoch(ep, rec)
         if checkpoint_fn and (ep % tcfg.save_every == 0 or ep == tcfg.epochs):

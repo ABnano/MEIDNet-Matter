@@ -57,9 +57,12 @@ def wilson(k, n, z=1.96):
     return (max(0.0, c - h), min(1.0, c + h))
 
 
-def load_template(path, intake, props):
-    """Family object for one polymorph template, built the way auto_family.verify builds it."""
-    g = dict(family=os.path.abspath(path), seed=0, per_target=1,
+def load_template(path, intake, props, variant=None):
+    """Family object for one polymorph template, built the way auto_family.verify builds it.  `path` may be a shipped
+    family name or a yaml path, optionally with the variant after a colon (double_perovskite_a2bbx6:halide)."""
+    if variant is None and ":" in path and not os.path.exists(path):
+        path, variant = path.rsplit(":", 1)
+    g = dict(family=os.path.abspath(path) if os.path.exists(path) else path, seed=0, per_target=1, variant=variant,
              objectives=[dict(property=props[0], loss="l2", weight=1.0)], targets=[{props[0]: 0.0}])
     cfg = config_from_dict({"name": "screen", "output_dir": "unused",
                             "data": {"table": f"{intake}/train.csv", "properties": [{"column": p} for p in props]},

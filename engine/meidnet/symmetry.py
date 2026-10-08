@@ -34,7 +34,8 @@ def load_targets(intake: str, split: str) -> dict:
     """The side-car targets written by eval/wyckoff_targets.py, keeping only the rows that rebuild correctly."""
     path = f"{intake}/wyckoff_{split}.json.gz"
     if not os.path.exists(path):
-        raise SystemExit(f"{path} is missing: run eval/wyckoff_targets.py on {intake} first")
+        raise SystemExit(f"{path} is missing: run  python -m meidnet_eval.wyckoff_targets {intake}  first "
+                         "(meidnet train does this itself when the intake folder is writable)")
     with gzip.open(path, "rt") as f:
         raw = json.load(f)
     return {k: v for k, v in raw.items() if v.get("roundtrip")}

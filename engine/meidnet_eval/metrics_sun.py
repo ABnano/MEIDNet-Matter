@@ -198,11 +198,23 @@ def main():
                amd_nearest_reference=dict(median=float(np.nanmedian([it["amd_nearest"] for it in items])),
                                           min=float(np.nanmin([it["amd_nearest"] for it in items])),
                                           max=float(np.nanmax([it["amd_nearest"] for it in items]))))
+    has_hull = any(it["e_hull"] == it["e_hull"] for it in items)
+    out["stability_assessed"] = bool(has_hull)
+    if not has_hull:                       # no hull energies given: stability is not a verdict here, it is not computed
+        for key in ("stable_on_hull", "metastable_near_hull", "SUN_strict_on_hull", "MSUN_near_hull"):
+            out[key] = dict(n=None, rate=None, note="not assessed: no hull energies given (an e_hull column)")
+        out["cSUN_mean"] = out["cSUN_max"] = None
     print(f"\n{'metric':34s} {'count':>6s}  rate")
     for key in ("stable_on_hull", "metastable_near_hull", "unique_structure_level", "novel_structure_level",
                 "SUN_strict_on_hull", "MSUN_near_hull"):
-        print(f"{key:34s} {out[key]['n']:6d}  {100*out[key]['rate']:5.1f}%")
-    print(f"{'cSUN (our weighting, continuous)':34s} {'':6s}  mean {out['cSUN_mean']:.3f}, best {out['cSUN_max']:.3f}")
+        if out[key]["n"] is None:
+            print(f"{key:34s} {'':6s}  not assessed (no hull energies given)")
+        else:
+            print(f"{key:34s} {out[key]['n']:6d}  {100*out[key]['rate']:5.1f}%")
+    if out["cSUN_mean"] is None:
+        print(f"{'cSUN (our weighting, continuous)':34s} {'':6s}  not assessed (no hull energies given)")
+    else:
+        print(f"{'cSUN (our weighting, continuous)':34s} {'':6s}  mean {out['cSUN_mean']:.3f}, best {out['cSUN_max']:.3f}")
     print(f"\npolymorph groups (one formula, several structures): {len(polymorphs)}"
           + (f" -> {polymorphs}" if polymorphs else ""))
     print(f"AMD distance to the nearest reference structure: median {out['amd_nearest_reference']['median']:.3f}, "

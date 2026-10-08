@@ -15,10 +15,10 @@ export default function CreateProject() {
             <Link to="/p/perov5-demo/goal" className="btn btn-primary">Open Perov-5</Link>
           </div>
           <div className="card">
-            <span className="ribbon">Coming next</span>
+            <span className="ribbon">Available now, locally</span>
             <h3 style={{ marginTop: 10 }}>Start from data</h3>
-            <p className="muted small">Upload crystal structures and properties; Matter checks them, trains a model and reports its readiness.</p>
-            <Link to="/start-with-my-data" className="btn">What arrives in Phase 1</Link>
+            <p className="muted small">Eight commands take a folder of structures and a property table through the same stages as this site, on your computer: table, intake, the S0 gate, training, scorecard, generation or screening, the report. Nothing is uploaded here; a browser upload is planned.</p>
+            <Link to="/method#run" className="btn">The commands, step by step</Link>
           </div>
           <div className="card">
             <span className="ribbon">Planned</span>

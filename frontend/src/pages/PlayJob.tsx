@@ -184,7 +184,7 @@ export default function PlayJob() {
                         <dt>relaxed and re-judged</dt><dd>{statusesOf(open).relaxed}</dd>
                         <dt>formation energy label</dt><dd><Num v={open.label_formation_energy_eV_atom} /> eV/atom (model estimate, unrelaxed)</dd>
                         <dt>lattice</dt><dd className="mono">a {open.lattice.a} b {open.lattice.b} c {open.lattice.c} Å · α {open.lattice.alpha} β {open.lattice.beta} γ {open.lattice.gamma}° · {open.volume_per_atom} Å³/atom · space group {open.spacegroup}</dd>
-                        <dt>known formula</dt><dd>{open.known_formula === null ? '—' : open.known_formula ? `yes, recorded ${open.recorded_gaps_eV.map((g) => g.toFixed(2)).join(', ')} eV` : 'not in MP-20'}</dd>
+                        <dt>known formula</dt><dd>{open.known_formula === null ? '—' : open.known_formula ? `yes, recorded ${open.recorded_gaps_eV.map((g) => g.toFixed(2)).join(', ')} eV` : 'not in MP-20'}{open.known_formula && open.recorded_gaps_eV.length > 0 && !open.recorded_gaps_eV.some((g) => Math.abs(g - open.target_eV) <= job.request.window_eV) && <span className="small" style={{ color: 'var(--warn)' }}> · every recorded gap of this formula lies outside your window: this cell is a different polymorph or the models disagree with the record</span>}</dd>
                         <dt>novelty</dt><dd><Num v={open.amd_nearest_reference} d={3} /> AMD to the nearest reference structure{open.novel_by_amd ? ' · new above 0.3' : ''}</dd>
                         <dt>stability</dt><dd>{open.stability.status}: {open.stability.note}</dd>
                         <dt>sha256</dt><dd className="mono">{open.sha256}</dd>

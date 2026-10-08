@@ -42,6 +42,17 @@ def split_name(n: str):
     return phase, rest.strip("-"), tag
 
 
+def _spacegroup(cand) -> int:
+    """Space-group number of a structure file's cell (cached on the entry); 0 when it cannot be determined."""
+    if "sg" not in cand:
+        try:
+            from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+            cand["sg"] = int(SpacegroupAnalyzer(cand["struct"], symprec=0.1).get_space_group_number())
+        except Exception:
+            cand["sg"] = 0
+    return cand["sg"]
+
+
 def composition_of(text):
     from pymatgen.core import Composition
     try:
@@ -109,17 +120,29 @@ def main():
 
     rows, skipped = [], {"no structure file": [], "ambiguous: several structures share this composition": [],
                          "property not a number": []}
+    by_stem = {os.path.splitext(c["file"])[0].lower(): c for v in by_comp.values() for c in v}   # join on the file name too
+    n_by_file = 0
     for _i, rd in d.iterrows():          # iterrows, not itertuples: human header names contain spaces and '+'
         name = str(rd[id_col]).strip()
         if not name or name.lower() in ("nan", "materials"):
             continue
-        phase, chem, _tag = split_name(name)
-        comp = composition_of(chem)
-        cands = by_comp.get(comp, []) if comp is not None else []
-        if not cands:
-            skipped["no structure file"].append(name); continue
-        free = [c for c in cands if c["file"] not in used]
-        pick = [c for c in free if c["phase"] == phase] if phase else free
+        phase, chem, tag = split_name(name)
+        # 1. a name that is a structure file's name (JVASP-123, mp-456, sample_07): the most direct key a download gives
+        hit = by_stem.get(name.lower()) or by_stem.get(os.path.splitext(name)[0].lower())
+        if hit is not None and hit["file"] not in used:
+            cands, pick = [hit], [hit]
+            n_by_file += 1
+        else:
+            comp = composition_of(chem)
+            cands = by_comp.get(comp, []) if comp is not None else []
+            if not cands:
+                skipped["no structure file"].append(name); continue
+            free = [c for c in cands if c["file"] not in used]
+            pick = [c for c in free if c["phase"] == phase] if phase else free
+            if tag and len(pick) > 1:                       # a '-<space group>' tag chooses among polymorphs
+                sg_pick = [c for c in pick if _spacegroup(c) == int(tag)]
+                if sg_pick:
+                    pick = sg_pick
         if not pick:
             pick = [c for c in cands if c["phase"] == phase] or cands
             if len(pick) > 1 or pick[0]["file"] in used:
@@ -146,17 +169,20 @@ def main():
     out = out.rename(columns=simple)
     out.to_csv(os.path.join(a.out, "table.csv"), index=False)
     unmatched_files = sorted(c["file"] for v in by_comp.values() for c in v if c["file"] not in used)
-    rep = dict(table_rows=len(d), structure_files=n_files, matched=len(out),
+    rep = dict(table_rows=len(d), structure_files=n_files, matched=len(out), matched_by_file_name=n_by_file,
                skipped={k: len(v) for k, v in skipped.items()}, skipped_examples={k: v[:15] for k, v in skipped.items()},
                structure_files_unmatched=len(unmatched_files), structure_files_unmatched_examples=unmatched_files[:15],
                property_columns=simple, natoms=out.natoms.value_counts().sort_index().to_dict() if len(out) else {},
                formulas=int(out.formula.nunique()) if len(out) else 0)
     json.dump(rep, open(os.path.join(a.out, "ingest_report.json"), "w"), indent=1)
-    print(f"matched {len(out)} of {len(d)} rows ({rep['formulas']} distinct formulas); skipped {rep['skipped']}; "
-          f"{rep['structure_files_unmatched']} structure files unused", flush=True)
+    print(f"matched {len(out)} of {len(d)} rows ({rep['formulas']} distinct formulas; {n_by_file} by file name, "
+          f"{len(out) - n_by_file} by composition); skipped {rep['skipped']}; {rep['structure_files_unmatched']} structure files unused", flush=True)
     if len(out):
         print(f"atoms per cell: {rep['natoms']}")
         print(out[["material_id", "formula", "natoms"] + list(simple.values())].head(8).to_string(index=False))
+    else:
+        raise SystemExit("nothing matched: the name column must hold either the structure file's name (without its extension) "
+                         "or a composition; see ingest_report.json for what was tried")
 
 
 if __name__ == "__main__":

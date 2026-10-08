@@ -11,7 +11,7 @@
   "prototypes": 21,
   "rows": 236,
   "shared_profile_share": 0.0,
-  "source": "a colleague's dataset: hybrid-functional gaps and dielectric constants; aggregates only are published",
+  "source": "a colleague's dataset of perovskite-type compounds (ABX₃, A₂BB′X₆ double perovskites and elpasolites): hybrid-functional gaps and dielectric constants; aggregates only are published",
   "test": 34,
   "train": 166,
   "val": 36,

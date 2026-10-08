@@ -17,12 +17,17 @@ def load(a):
     pool = pd.read_csv(f"{a.pool}/candidates.csv")
     pcal = json.load(open(f"{a.pool}/calibration.json"))
     pool["judge_generated"] = pool["file"].map(lambda f: pcal["per_candidate"].get(f, {}).get("independent_gap"))
-    cons = pd.read_csv(f"{a.pool}/candidates_consensus.csv")
-    rel = pd.read_csv(f"{a.relaxed}/candidates.csv")
-    rcal = json.load(open(f"{a.relaxed}/calibration.json"))["per_candidate"]
-    rel["label_structure"] = rel["file"].map(lambda f: rcal.get(f, {}).get("reencoded_gap"))
-    rel["judge"] = rel["file"].map(lambda f: rcal.get(f, {}).get("independent_gap"))
-    mlip = [r for f in glob.glob(f"{a.consensus}/mlip_shard*.json") for r in json.load(open(f))]
+    cons = pd.read_csv(f"{a.pool}/candidates_consensus.csv") if os.path.exists(f"{a.pool}/candidates_consensus.csv") else pool.iloc[0:0]
+    if a.relaxed and os.path.exists(f"{a.relaxed}/candidates.csv"):
+        rel = pd.read_csv(f"{a.relaxed}/candidates.csv")
+        rcal = json.load(open(f"{a.relaxed}/calibration.json"))["per_candidate"]
+        rel["label_structure"] = rel["file"].map(lambda f: rcal.get(f, {}).get("reencoded_gap"))
+        rel["judge"] = rel["file"].map(lambda f: rcal.get(f, {}).get("independent_gap"))
+    else:                                   # no relaxed folder: the sheet describes the generated (unrelaxed) cells and says so
+        rel = cons.copy()
+        rel["label_structure"] = rel.get("label_gap", rel.get("label_structure_gap"))
+        rel["judge"] = rel["file"].map(lambda f: pcal["per_candidate"].get(f, {}).get("independent_gap"))
+    mlip = [r for f in glob.glob(f"{a.consensus}/mlip_shard*.json") for r in json.load(open(f))] if a.consensus else []
     drop = {os.path.basename(r["file"]): r.get("tensornet_drop_per_atom") for r in mlip}
     kept = {os.path.basename(r["file"]): r.get("tensornet_spacegroup_relaxed") == r.get("spacegroup_designed") for r in mlip}
     rel["drop"] = rel["file"].map(lambda f: drop.get(os.path.basename(f)))
@@ -107,9 +112,11 @@ def accepted_table(final, a) -> pd.DataFrame:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pool", required=True)
-    ap.add_argument("--relaxed", required=True)
-    ap.add_argument("--consensus", required=True)
+    ap.add_argument("--pool", required=True, help="the generation folder (candidates.csv, calibration.json, candidates_consensus.csv)")
+    ap.add_argument("--relaxed", default=None, help="the relaxed folder re-judged by target_calibration (generate_to_target writes OUT/TAG/relaxed); "
+                                                     "without it the sheet describes the unrelaxed cells")
+    ap.add_argument("--consensus", "--relax", dest="consensus", default=None,
+                    help="the folder holding the relaxation shards mlip_shard*.json (generate_to_target writes OUT/TAG/relax)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--window", type=float, default=0.5)
     ap.add_argument("--min-gap", type=float, default=0.1)
@@ -159,6 +166,8 @@ def main():
                                               novel_share=sun["novel_structure_level"]["rate"],
                                               unique_share=sun["unique_structure_level"]["rate"]),
         stability_note="energy drop on relaxation only; no hull energy, so stability is not claimed",
+        cells=("relaxed" if a.relaxed and os.path.exists(f"{a.relaxed}/candidates.csv")
+               else "unrelaxed: generated cells only; relax them and re-judge before quoting a gap"),
     )
     json.dump(sheet, open(f"{a.out}/instrument.json", "w"), indent=1)
     accepted_table(final, a).to_csv(f"{a.out}/accepted_materials.csv", index=False)
@@ -172,10 +181,16 @@ def main():
               f"{f(r['delivered_mean'],14)} {f(r['delivered_sd'])} {f(r['delivered_min'])} {f(r['delivered_max'])} {f(r['bias'],6)} | "
               f"{f(r['drop_median'])} {f(r['spacegroup_kept'],7)}")
     acc, lin = sheet["accuracy"], sheet["linearity"]
-    print(f"\naccuracy: MAE generated {acc['mae_generated_cells']:.2f} -> relaxed {acc['mae_relaxed_cells']:.2f} eV "
+    cells = sheet.get("cells", "relaxed")
+    print(f"\ncells: {cells}")
+    print(f"accuracy: MAE generated {acc['mae_generated_cells']:.2f} -> {'relaxed' if cells == 'relaxed' else 'kept (unrelaxed)'} {acc['mae_relaxed_cells']:.2f} eV "
           f"(95% CI {acc['mae_relaxed_ci95'][0]:.2f}-{acc['mae_relaxed_ci95'][1]:.2f}); within {a.window} eV: {acc['within_window']} of {acc['of']}")
-    print(f"linearity: delivered = {lin['intercept']:.2f} + {lin['slope']:.2f} x requested (R2 {lin['r2']:.2f}, Spearman {lin['spearman']:.2f}); ideal 0 + 1.00 x")
-    print(f"precision: within-target sd median {sheet['precision']['within_target_sd_median']:.2f} eV")
+    if len(x) >= 3 and lin["slope"] == lin["slope"]:
+        print(f"linearity: delivered = {lin['intercept']:.2f} + {lin['slope']:.2f} x requested (R2 {lin['r2']:.2f}, Spearman {lin['spearman']:.2f}); ideal 0 + 1.00 x")
+    else:
+        print("linearity: not measurable with fewer than three accepted cells")
+    psd = sheet["precision"]["within_target_sd_median"]
+    print("precision: within-target sd median " + (f"{psd:.2f} eV" if psd is not None else "not measurable (one cell per request)"))
     print("resolution:", ", ".join(f"{p['pair'][0]:.1f}->{p['pair'][1]:.1f}: {'yes' if p['separable'] else 'no'}" for p in resolution))
     print(f"range: served {served} of {sheet['range']['requested']}")
     if sheet["novelty"]:

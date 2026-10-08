@@ -55,6 +55,7 @@ export const studies = {
 };
 
 export const play = {
+  familyPointer: 'Need a specific family (double perovskites, a halide variant, your own chemistry)? This generator is family-free and trained on MP-20. Train on your own data instead: Method › Run it on your data, which also has a screening command for small datasets.',
   h1: 'Generate structures for a band gap',
   lead: 'Family-free generation with the MP-20 symmetry decoder. You ask for one to three band gaps; the server generates cells, reads each cell\'s label from its own structure, asks an independent judge, and returns the ones both place inside your window. Relaxation is not run here: download the cells and relax them locally with the command the result gives you.',
   rangeNote: 'Measured on MP-20: the generator serves 0.5–3 eV with a slope of 0.86 and a precision of about ±0.7 eV per structure; it saturates above 3 eV. Expect few or no accepted structures there.',

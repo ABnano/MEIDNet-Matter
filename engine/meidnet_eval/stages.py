@@ -160,7 +160,7 @@ S0 = Stage(
                "Each element is seen in enough different compounds for the decoder to learn it.",
                "The decoder cannot learn a reliable latent to element mapping; generation will not work and the run must "
                "use screening.",
-               "Use screening mode (the pipeline switches automatically), or add data.",
+               "Use screening mode:  python -m meidnet_eval.screen_local <intake> --ckpt MODEL.pt --family FAMILY[:variant] --gap COLUMN --targets ...  (enumerates the family, labels every composition from its template structure, judges independently); or add data.",
                "measured in the density experiment; computed by intake.py in the preview",
                reference=dict(fixed=218, final=218, mp=12),
                reference_note="Trained identically on Perov-5 subsets: 12 -> 0.1%, 30 -> 0.7%, 80 -> 5.4%, 218 -> 64% "
@@ -276,7 +276,7 @@ S3 = Stage(
                "same conditions as generation (zero start coordinates).", "%", "higher", 80, 50,
                "The decoder can propose compositions, so the generative engine may be used.",
                "The decoder cannot reconstruct compositions; the run must screen the design space instead of generating.",
-               "Use screening mode, or add data (see the density metric in S0).",
+               "Use screening mode (python -m meidnet_eval.screen_local <intake> --ckpt MODEL.pt --family FAMILY[:variant] --gap COLUMN --targets ...), or add data (see the density metric in S0).",
                "pipeline_checkup.py / decoder_autopsy.py",
                reference=dict(published=0.03, control=0.98, fixed=51.4, final=64.1, mp=1.37)),
         Metric("condition_drop", "Training to generation condition drop",
@@ -557,6 +557,7 @@ STAGE_SCRIPTS = {
         "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on composition)",
         "intake.py (audit, prototypes, composition-grouped split)",
         "preview.py (the gate: runs with no model)",
+        "screen_local.py (screening mode on a laptop: enumerate the family, label every composition from its template cell, judge independently)",
         "auto_family.py (design space learned from the data)",
     ],
     "S1": [

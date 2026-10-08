@@ -43,7 +43,7 @@ export default function Play() {
     <>
       <MarketingHeader />
       <main className="wrap-narrow page" id="main">
-        <div className="page-head"><h1>{P.h1}</h1><p>{P.lead}</p></div>
+        <div className="page-head"><h1>{P.h1}</h1><p>{P.lead}</p><p className="small muted">{P.familyPointer.split('Method ›')[0]}<Link to="/method#run">Method › Run it on your data</Link>{P.familyPointer.split('your own data')[1]}</p></div>
         {ck.error && <ErrorNote error={ck.error} retry={ck.reload} />}
         <div className="cards-2" style={{ alignItems: 'start' }}>
           <div className="card stack" style={{ gap: 16 }}>

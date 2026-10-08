@@ -142,6 +142,7 @@ class TrainingSection(_Section):
     seed: int = Field(0, description="Random seed for weight initialisation and data shuffling.")
     device: str = Field("auto", description="'auto', 'cpu' or 'cuda'.")
     save_every: int = Field(50, ge=1, description="Write an intermediate checkpoint every N epochs.")
+    threads: int = Field(0, ge=0, description="CPU threads for training; 0 = min(4, cores). OMP_NUM_THREADS overrides.")
     resume_from: Optional[str] = Field(
         None, description="Continue from an existing checkpoint instead of starting from scratch: a path, or 'auto' to "
                           "pick up this run's own output if it exists. Lets a long training run cross a queue's wall-clock "

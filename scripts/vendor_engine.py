@@ -39,6 +39,9 @@ dependencies = [
   "scikit-learn>=1.3", "matplotlib>=3.7", "pyyaml>=6.0", "pydantic>=2.5", "openpyxl>=3.1",
 ]
 
+[project.scripts]
+meidnet = "meidnet.cli:main"
+
 [tool.setuptools.packages.find]
 include = ["meidnet", "meidnet.*", "meidnet_eval", "meidnet_eval.*"]
 
@@ -78,7 +81,7 @@ RUNNABLE = {
     "journey.py": ("web", []), "ingest_upload.py": ("web", []), "intake.py": ("web", []),
     "d1_mlip_check.py": ("local", ["matgl", "ase"]), "candidate_cells.py": ("local", ["matgl", "ase"]),
     "relax_cache.py": ("local", ["matgl"]), "stability_distorted.py": ("local", ["matgl"]),
-    "generate_to_target.py": ("local", ["matgl"]),
+    "generate_to_target.py": ("local", ["matgl"]), "screen_local.py": ("local", ["matgl (judge)"]),
     "discover.py": ("hpc", ["slurm", "mp_api"]), "sun_validate.py": ("hpc", ["matgl", "mp_api"]),
     "fetch_oqmd_structures.py": ("hpc", ["network"]), "prefetch_mp.py": ("hpc", ["mp_api"]),
     "mp_perovskite_dataset.py": ("hpc", ["mp_api"]), "mixed_anion_coverage.py": ("hpc", ["mp_api"]),

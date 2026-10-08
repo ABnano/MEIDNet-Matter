@@ -46,7 +46,9 @@ def main():
     ap.add_argument("--stability", default=None, help="column that ranks polymorphs of one composition (lower = better)")
     ap.add_argument("--targets", type=float, nargs="+", default=None)
     ap.add_argument("--window", type=float, default=0.25)
-    ap.add_argument("--family", default=None, help="family yaml, to measure the novelty frontier as well")
+    ap.add_argument("--family", default=None, help="family yaml or shipped family name, to measure the novelty frontier as well; "
+                                                    "a variant may follow a colon (double_perovskite_a2bbx6:halide)")
+    ap.add_argument("--variant", default=None, help="the family's variant, when it has several (halide, oxide, ...)")
     ap.add_argument("--out", default=None, help="where preview.json is written (default INTAKE/preview.json)")
     a = ap.parse_args()
 
@@ -73,11 +75,36 @@ def main():
                 from screen_polymorphs import load_template
             from meidnet.designspace import enumerate_space
             from pymatgen.core import Composition
-            fam = load_template(a.family, a.intake, [a.gap])
-            sp = enumerate_space(fam, None)
-            space = {Composition(r["f"]).reduced_composition for r in sp["rows"] if all(r["ok"].values())}
+            try:
+                fams = [load_template(a.family, a.intake, [a.gap], variant=a.variant)]
+            except SystemExit as e:                               # "needs a variant; choose one of: ...": measure the union
+                msg = str(e)
+                if "needs a variant" not in msg:
+                    raise
+                names = [v.strip() for v in msg.split("choose one of:")[-1].replace(".", "").split(",")]
+                fams = [load_template(a.family, a.intake, [a.gap], variant=v) for v in names if v]
+                print(f"  family has variants {names}: the novelty frontier is measured over their union (or pass --variant)")
+            space = set()
+            for fam in fams:
+                sp = enumerate_space(fam, None)
+                space |= {Composition(r["f"]).reduced_composition for r in sp["rows"] if all(r["ok"].values())}
             have = {Composition(f).reduced_composition for f in full.formula}
             values["novelty_frontier"] = (len(space - have) / len(space)) if space else 0.0
+            # family conformance: how many uploaded structures have the family's own prototype (space group and site pattern)
+            try:
+                # the family's own cell: its first allowed element on every site, analysed for its space group
+                from meidnet.constraints import build_candidate
+                from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+                f0 = fams[0]
+                cell = build_candidate(f0, {g: f0.groups[g].sample[0] for g in f0.groups}).raw
+                sg = int(SpacegroupAnalyzer(cell, symprec=0.1).get_space_group_number())
+                if sg and "prototype" in full.columns:
+                    n_conf = int(full["prototype"].astype(str).str.contains(f"|{sg}|", regex=False).sum())
+                    values["family_conformance"] = n_conf / len(full)
+                    print(f"  structures in the family's prototype (space group {sg}): {n_conf} of {len(full)}"
+                          + ("   <- the rest are something else; check the audit's prototype list" if n_conf < len(full) else ""))
+            except Exception as e:
+                print(f"  (family conformance not measured: {e})")
         except Exception as e:                                  # a family is optional: never block the gate on it
             print(f"  (novelty frontier not measured: {e})")
 
