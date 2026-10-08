@@ -4,6 +4,69 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-08
+
+The independent user's double-perovskite journey run again end to end with the fixed engine (snapshot 2.4.0.dev2), and
+what their package had left open made runnable: relaxation and stability for every route, block S8, the local web app,
+scoring on Prism. The site now has a mirror on GitHub Pages for networks that block `*.hf.space`.
+
+### Added
+- `meidnet_eval.check_candidates`: one check for any candidate table, whichever route produced it (family-free generation,
+  screening, family generation): the label read from each cell, the MEGNet judge qualified on the test split, the two-model
+  consensus, relaxation by two potentials (TensorNet, CHGNet), both readings again on the relaxed cells, optionally the
+  energy above the hull, novelty against the data, REPORT.md, report.json, the instrument sheet and a Prism-ready
+  `targets.csv`. Every accepted structure is classed as a new composition, a rediscovery (a DFT value inside the window) or
+  contradicted by a DFT value; the DFT value comes from the user's own data first, then from the hull's reference set (JARVIS-DFT
+  or the Materials Project), so "new" means absent from both. `generate_to_target` now runs its back half through it, `screen_local
+  --check` runs it on the screening shortlist, and `meidnet generate` prints the command for its candidates (the glue the
+  tester had to write by hand).
+- `meidnet_eval.hull_mlip`: the energy above the convex hull with one potential for every phase. The candidates and every
+  near-hull competing phase of their chemical systems, taken from a reference set of known crystals (the public JARVIS-DFT 3D
+  file, or the Materials Project with an API key), are relaxed by the same potential, in a process pool, with a cache keyed by
+  structure content. `--validate INTAKE --stability-col COL` calibrates the estimate on known materials of the user's data and
+  reports the mean and median error, the rank correlation, the agreement on "within 0.1 eV/atom", and the reference values that
+  are implausible for a known compound (listed, with the statistics given without them too). The same option,
+  `--hull-reference`, works on `screen_local`, `generate_to_target` and `check_candidates`; block S7's stable share is computed
+  by it.
+- Block S8 in the scorecard: `--judge megnet` qualifies the MEGNet band-gap judge on the intake's test split before it judges
+  anything (every fidelity head is measured, the best is kept).
+- The Method page: S8 in the scorecard step, `--check` in the screening step, and a stability step for any route (with
+  where to download the JARVIS-DFT file).
+- A static mirror of the site on GitHub Pages, https://abnano.github.io/MEIDNet-Matter/, for networks that block
+  `*.hf.space` (public Wi-Fi often does, and the Space then shows a grey page). `npm run build:mirror` builds the same app
+  with relative paths and its routes after `#`, `scripts/build_mirror.py` writes every read-only API response the pages
+  use as a file beside it (from the application itself), and `.github/workflows/pages.yml` publishes it for every release.
+  Everything that reads works there; generation and the demo search point to the Space, and a banner says whether the
+  Space is reachable from the visitor's network (with the secure-DNS remedy when it is not). The Space's card, the README
+  and the site's footer link the mirror; from the mirror, Prism links go to Prism's own mirror.
+- The release workflow uploads the application and the engine wheel to PyPI with trusted publishing, once the publishers
+  are registered on pypi.org (`meidnet-matter`, and `meidnet` for the engine wheel); until then that job fails on its own
+  and the GitHub release is unaffected.
+- A relaxed cell whose closest atoms sit nearer than 0.6 of their two radii is collapsed, not a crystal: `check_candidates`
+  sets it aside before judging the relaxed cells again and lists it in the report, and the instrument sheet leaves it out of
+  every number (counted in its funnel). Every one of the 1,282 known materials of the tester's data lies above 0.73.
+- The hull module marks a value it cannot read as a stability statement and leaves it out of the stable share: a cell that
+  collapsed during its relaxation, or one more than 0.1 eV/atom below every known phase of its system (the note names the
+  element pairs the reference set has no compound for: JARVIS-DFT has, for one, no cesium halide). A relaxation stopped by
+  the step limit is noted as an upper estimate. The relaxation record says whether the optimiser converged.
+
+### Changed
+- The screening report is `screening_report.md` (it would collide with the check's `REPORT.md` on case-insensitive file
+  systems); with `--check` the screening skips its quick judge, which the check runs on the same cells and again after
+  relaxation. `screen_local --relax tensornet` (0.5.0) now means `--check`.
+- `relaxer()` can load a potential quietly (process-pool workers).
+- The pipeline pages: block S8 lists `scorecard.py --judge megnet` as the component that computes it (its code opens on the
+  block page), S6 and S7 list the check and the hull module, and S0's upload adapter is described as joining on the file name.
+
+### Fixed
+- The potential loader looked for cached models in the wrong folder for matgl 4 and always said "downloading"; it now
+  reports matgl's own cache folder (`~/.cache/matgl/models--materialyze--<name>`).
+- Links to a section of a page (`/studies/mp20#accepted`, `/method#run`) now scroll to it once the section has loaded.
+- The page preloaded two font files that were never shipped (the server answered with its HTML page); the references are
+  gone, so the site loads nothing beyond its own scripts and styles. The look is unchanged.
+- Requests to the Materials Project from the new hull module name their client: the API's front end refuses Python's default user
+  agent (Cloudflare error 1010), which would have made `--reference mp` fail for every user.
+
 ## [0.5.1] - 2026-10-08
 
 ### Fixed

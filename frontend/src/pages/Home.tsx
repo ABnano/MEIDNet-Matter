@@ -55,7 +55,7 @@ export default function Home() {
           <p className="muted">{H.discoveriesLead}</p>
           {perov5.error && <ErrorNote error={perov5.error} />}
           <DiscoveryStrip items={accepted} />
-          {cal && <p className="small muted" style={{ marginTop: 10 }}>{cal.funnel.final} of {cal.funnel.generated} generated cells accepted · {newComp} new compositions · {redisc.length} known compounds returned at their recorded gaps ({redisc.map((r) => r.formula).join(', ')}){perov5.data ? ` · Perov-5 target following ρ ${(perov5.data.target_following.rho_range as number[])[0]}–${(perov5.data.target_following.rho_range as number[])[1]}` : ''}. <Link to="/studies/mp20#accepted">Every accepted structure, with its evidence.</Link></p>}
+          {cal && <p className="small muted" style={{ marginTop: 10 }}>{cal.funnel.final} of {cal.funnel.generated} generated cells accepted{cal.funnel.collapsed_on_relaxation ? ` (${cal.funnel.collapsed_on_relaxation} relaxed cells collapsed and were set aside)` : ''} · {newComp} new compositions · {redisc.length} known compounds returned at their recorded gaps ({redisc.map((r) => r.formula).join(', ')}){perov5.data ? ` · Perov-5 target following ρ ${(perov5.data.target_following.rho_range as number[])[0]}–${(perov5.data.target_following.rho_range as number[])[1]}` : ''}. <Link to="/studies/mp20#accepted">Every accepted structure, with its evidence.</Link></p>}
         </section>
 
         <section className="section" id="choices">

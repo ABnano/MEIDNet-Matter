@@ -1,7 +1,7 @@
 name: release
 
 # A GitHub release for every v* tag: the wheel and sdist (with the built frontend inside), the frontend as a zip,
-# and a check that the Space's Docker image builds.
+# and a check that the Space's Docker image builds; then the same Python distributions go to PyPI.
 on:
   push:
     tags: ["v*"]
@@ -68,3 +68,33 @@ jobs:
           v="${GITHUB_REF_NAME#v}"
           awk "/^## \[$v\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > notes.md
           gh release create "$GITHUB_REF_NAME" dist/* --title "MEIDNet Matter $v" --notes-file notes.md
+      - name: The Python distributions for PyPI (not the frontend zip)
+        if: github.event_name == 'push'
+        run: mkdir -p pypi && cp dist/*.whl dist/*.tar.gz pypi/
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: pypi
+          path: pypi/
+
+  pypi:
+    # PyPI trusted publishing, no token stored anywhere. On pypi.org the project meidnet-matter (and meidnet, for the
+    # engine wheel Matter needs) lists ABnano/MEIDNet-Matter, this file (release.yml) and the environment "pypi" as a
+    # publisher. Until it does, this job fails on its own and the GitHub release above is unaffected; once it does,
+    # "Re-run failed jobs" on the tag's run uploads the files.
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/meidnet-matter/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pypi
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true      # the engine wheel is shared by app releases until the engine's version moves

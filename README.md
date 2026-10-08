@@ -18,13 +18,20 @@ Matter currently searches property-conditioned candidates within supported struc
 
 **Live:** https://babu09-meidnet-matter.hf.space/ — open the Perov-5 demo project, set a band-gap target, exclude lead, read the readiness report, run the search (about a minute on the shared CPU), open a candidate, download its CIF or the whole run bundle.
 
+**Mirror for any network:** https://abnano.github.io/MEIDNet-Matter/ — the same site on GitHub Pages, for networks that block
+`*.hf.space` (public Wi-Fi often does: the Space then shows a grey page). Everything that reads works there (studies, the
+staged pipeline with its code, the method, checkpoints, every structure file); generation and the demo search point to the
+Space, and the mirror says whether the Space is reachable from your network. It is rebuilt for every release
+(`.github/workflows/pages.yml`: `npm run build:mirror`, then `scripts/build_mirror.py`). Prism has its own mirror at
+https://abnano.github.io/MEIDNet/.
+
 ## What it does, in this version
 
 The home page opens on a worked result: a real accepted structure with both of its readings, a small requested-versus-delivered
 plot, an animated six-step walkthrough, and a rolling strip of the structures the generator delivered. From there: **Pipeline**
 (the ten blocks with their bands and code), **Studies** (Perov-5, Materials Project perovskites, an external upload, MP-20, with
 checkpoints), **Generate** (live band-gap generation on MP-20 with two independent readings per cell, 3D cards and an evidence
-map) and **Method** (mechanism, strengths, limits, and the commands that run the same stages on your own data). The Perov-5
+map) and **Method** (mechanism, strengths, limits, and the commands that run the same stages on your own data: whatever route produced your candidates, one check gives them the qualified judge, relaxation by two potentials, both readings again on the relaxed cells, the energy above the hull with one potential for every phase, novelty, and a class: new, rediscovered, or contradicted by your data's own value). The Perov-5
 demo project below is the original flow and is kept as it was, with one change: every candidate now shows the
 **structure-based prediction** first and the **search value** beside it, and says which of the two supports the target.
 
@@ -52,8 +59,8 @@ there). One command installs the engine and the application from the release, wi
 
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
-  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev1-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.5.1-py3-none-any.whl"
+  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev2-py3-none-any.whl" \
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.6.0-py3-none-any.whl"
 python -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version
 ```
 

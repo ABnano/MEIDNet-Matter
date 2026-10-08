@@ -25,7 +25,7 @@ export function HeroExample({ study, example }: { study: Study; example?: Accept
             <div className="small">asked <b>{pick.requested.toFixed(1)} eV</b> · independent judge <b className="num">{pick.judge_gap.toFixed(2)}</b> eV · label from the structure <span className="num">{pick.label_structure_gap.toFixed(2)}</span> eV</div>
             <div className="small muted" style={{ marginTop: 4 }}>{shortClass(pick.class)} · charge balanced · space group {pick.spacegroup_relaxed ?? pick.spacegroup_designed} · both readings on the relaxed cell</div>
             <div className="row" style={{ gap: 8, marginTop: 8 }}>
-              <Link to="/studies/mp20#accepted" className="btn btn-sm">All 13 accepted</Link>
+              <Link to="/studies/mp20#accepted" className="btn btn-sm">All {accepted.length} accepted</Link>
               <a className="btn btn-sm btn-ghost" href={research.studyFileUrl('mp20', pick.file)} download>CIF ↓</a>
             </div>
           </div>
@@ -33,7 +33,7 @@ export function HeroExample({ study, example }: { study: Study; example?: Accept
       )}
       {cal && points.length > 0 && (
         <div className="card card-tight">
-          <div className="micro" style={{ marginBottom: 4 }}>requested gap in, delivered gap out · 13 relaxed cells, 7 requests</div>
+          <div className="micro" style={{ marginBottom: 4 }}>requested gap in, delivered gap out · {points.length} accepted relaxed cells, {bands.length} requests</div>
           <ResponseCurve points={points} bands={bands} fit={cal.linearity} width={420} height={230} compact />
           <div className="small muted">Fitted response {cal.linearity.intercept.toFixed(2)} + {cal.linearity.slope.toFixed(2)}·x · MAE {cal.accuracy.mae_relaxed_cells.toFixed(2)} eV · stability not assessed.</div>
         </div>
