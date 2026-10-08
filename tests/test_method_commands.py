@@ -48,3 +48,14 @@ def test_each_method_command_accepts_its_flags(cmd):
 
 def test_the_page_prints_at_least_nine_commands():
     assert len(printed_commands()) >= 9
+
+
+def test_install_line_names_the_current_versions():
+    import matter
+    text = METHOD.read_text(encoding="utf-8")
+    assert f"meidnet_matter-{matter.__version__}-py3-none-any.whl" in text, "the Method page's install line must name the current application wheel"
+    try:
+        import meidnet
+    except ImportError:
+        pytest.skip("engine not installed")
+    assert f"meidnet-{meidnet.__version__}-py3-none-any.whl" in text, "the Method page's install line must name the current engine wheel"

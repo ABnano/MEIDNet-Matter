@@ -4,6 +4,14 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-08
+
+### Fixed
+- The 0.5.0 release workflow stopped before publishing: the engine wheel carried no readme, which the strict metadata check
+  refuses. The vendored engine's project file now names its README, and the screening command no longer uses a Python 3.12-only
+  f-string form, so the engine imports on Python 3.10 as well. A test checks that the install line on the Method page names the
+  current application and engine versions.
+
 ## [0.5.0] - 2026-10-08
 
 What an independent first-time user found while taking a public double-perovskite dataset from the Space through every

@@ -53,7 +53,7 @@ there). One command installs the engine and the application from the release, wi
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
   "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev1-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.5.0-py3-none-any.whl"
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.5.1-py3-none-any.whl"
 python -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version
 ```
 

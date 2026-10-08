@@ -32,6 +32,7 @@ build-backend = "setuptools.build_meta"
 name = "meidnet"
 version = "{version}"
 description = "MEIDNet engine snapshot vendored by MEIDNet Matter: multimodal inverse design for crystalline materials"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 dependencies = [

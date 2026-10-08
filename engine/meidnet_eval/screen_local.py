@@ -172,8 +172,10 @@ def main(argv=None):
         lines.append("")
     lines += ["| target | formula | model label | judge | known in data (its value) | both in window |", "|---|---|---|---|---|---|"]
     for _, r in df.iterrows():
-        kv = f"yes ({r[f'data_{a.gap}']:.2f})" if r["known_in_data"] and pd.notna(r[f"data_{a.gap}"]) else ("yes" if r["known_in_data"] else "new")
-        lines.append(f"| {r['target']:.1f} | {r['formula']} | {r['label_structure']:.2f} | {'' if r['judge'] is None or pd.isna(r['judge']) else f'{r['judge']:.2f}'} | {kv} | {'yes' if r['consensus'] else 'no'} |")
+        dv = r[f"data_{a.gap}"]
+        kv = ("yes (%.2f)" % dv) if r["known_in_data"] and pd.notna(dv) else ("yes" if r["known_in_data"] else "new")
+        jv = "" if r["judge"] is None or pd.isna(r["judge"]) else "%.2f" % r["judge"]
+        lines.append("| %.1f | %s | %.2f | %s | %s | %s |" % (r["target"], r["formula"], r["label_structure"], jv, kv, "yes" if r["consensus"] else "no"))
     with open(os.path.join(a.out, "report.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     json.dump({"family": fam.name, "variant": fam.variant, "gap": a.gap, "targets": a.targets, "window": a.window,
