@@ -114,6 +114,11 @@ try {
   check('export: candidate-record schema', schema && schema.status === 200 && schema.id === 'meidnet-matter/candidate-record/1' && schema.stages === 6, JSON.stringify(schema));
   const cands = await ev(`fetch('/api/runs/' + ${JSON.stringify(runId)} + '/candidates').then(r => r.json().then(cs => ({n: cs.length, clustered: cs.filter(c => c.cluster).length, schema: cs[0] && cs[0].schema})))`);
   check('candidates: every candidate is a versioned record with a cluster', cands && cands.n > 0 && cands.clustered === cands.n && cands.schema === 'meidnet-matter/candidate-record/1', JSON.stringify(cands));
+  // 6b. the staged pipeline: a block's workflow diagram, and its code opening from a box (0.4.2: the viewer must render)
+  await goto(`${BASE}/pipeline/S6`);
+  check('pipeline: workflow diagram', await waitFor(`document.querySelectorAll('.flow-node').length >= 5`, 20000));
+  check('pipeline: code viewer renders', (await click('.flow-node.kind-code')) && await waitFor(`!!document.querySelector('.code-viewer pre code')`, 20000));
+
   // 7. the direct-app link is hidden outside a frame; no page errors
   check('shell: direct-app link hidden outside a frame', !(await ev(`!!document.querySelector('a[title*="outside the Hugging Face frame"]')`)));
   const unexpected = errors.filter((e) => !/favicon|og\.png/.test(e));

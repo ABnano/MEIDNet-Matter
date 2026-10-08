@@ -28,5 +28,18 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   return body as T;
 }
 
+/** A plain-text resource (a component's source): the body is returned as text, never parsed as JSON. */
+export async function requestText(path: string, signal?: AbortSignal): Promise<string> {
+  const headers = new Headers({ Accept: 'text/plain', 'X-Matter-Session': sessionId() });
+  const res = await fetch(path, { headers, signal });
+  const text = await res.text();
+  if (!res.ok) {
+    let message = `${res.status} ${res.statusText}`;
+    try { message = (JSON.parse(text) as { error?: { message?: string } }).error?.message ?? message; } catch { /* not JSON */ }
+    throw new ApiError(res.status, 'http_error', message);
+  }
+  return text;
+}
+
 export const get = <T,>(path: string, signal?: AbortSignal) => request<T>(path, { signal });
 export const post = <T,>(path: string, body: unknown, signal?: AbortSignal) => request<T>(path, { method: 'POST', body: JSON.stringify(body), signal });

@@ -91,12 +91,7 @@ export default function PipelineBlock() {
                   title={c.note}>{c.file}{c.runnable !== 'web' ? ` · ${c.runnable}` : ''}</button>
               ))}
             </div>
-            {b.components.filter((c) => c.file === open).map((c) => (
-              <div key={c.file}>
-                <p className="small muted">{c.note}{c.needs.length ? ` · needs ${c.needs.join(', ')}` : ''}</p>
-                <CodeViewer file={c.file} />
-              </div>
-            ))}
+            {open && <p className="small muted">The source of {open} is open above, under the workflow diagram.</p>}
             <div style={{ marginTop: 24 }} className="row">
               {data?.blocks.map((x) => <Link key={x.id} to={`/pipeline/${x.id}`} className={`btn btn-sm ${x.id === b.id ? 'btn-primary' : ''}`}>{x.id}</Link>)}
             </div>

@@ -1,5 +1,5 @@
 // The research routes (pipeline blocks, studies, checkpoints, generation jobs) and their types.
-import { get, post, request } from './client';
+import { get, post, requestText } from './client';
 
 export type Grade = 'PASS' | 'WARN' | 'FAIL' | 'INFO' | 'PARTIAL';
 
@@ -98,7 +98,7 @@ export const research = {
   blocks: (signal?: AbortSignal) => get<BlocksPayload>('/api/pipeline/blocks', signal),
   block: (id: string, signal?: AbortSignal) => get<BlockDef>(`/api/pipeline/blocks/${id}`, signal),
   components: () => get<ComponentInfo[]>('/api/pipeline/components'),
-  component: (file: string, signal?: AbortSignal) => request<string>(`/api/pipeline/components/${encodeURIComponent(file)}`, { signal, headers: { Accept: 'text/plain' } }),
+  component: (file: string, signal?: AbortSignal) => requestText(`/api/pipeline/components/${encodeURIComponent(file)}`, signal),
   componentUrl: (file: string) => `/api/pipeline/components/${encodeURIComponent(file)}`,
   studies: (signal?: AbortSignal) => get<{ studies: StudyIndexEntry[] }>('/api/studies', signal),
   study: (id: string, signal?: AbortSignal) => get<Study>(`/api/studies/${id}`, signal),

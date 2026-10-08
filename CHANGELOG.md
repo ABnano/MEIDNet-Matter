@@ -4,6 +4,13 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-08
+
+### Fixed
+- The code viewer on a block page never finished loading: the API client parsed every response as JSON, so a component's
+  plain-text source came back as nothing and the viewer waited forever. Plain-text resources now have their own request path, with
+  a unit test, and the live check waits for the viewer to render.
+
 ## [0.4.1] - 2026-10-08
 
 ### Added
