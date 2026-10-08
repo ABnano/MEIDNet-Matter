@@ -3,12 +3,16 @@ import { Link, NavLink, Outlet, useParams } from 'react-router';
 import { MatterMark, Wordmark } from '@/components/brand/MatterMark';
 import { currentTheme, framed, setTheme } from '@/lib/theme';
 import { useProject } from '@/features/project/useProject';
+import { MIRROR_URL, PRISM_MIRROR, SPACE_PAGE, STATIC_MIRROR } from '@/lib/mirror';
+import { MirrorBanner } from './Mirror';
 
-export const PRISM = 'https://babu09-meidnet.hf.space';
-export const PRISM_SPACE = 'https://huggingface.co/spaces/Babu09/MEIDNet';
-export const PRISM_METHOD = `${PRISM}/docs/understand/how-it-works.html`;
-export const PRISM_SCORE = `${PRISM}/docs/benchmarks/compatibility.html`;
-export const PRISM_ECOSYSTEM = `${PRISM}/docs/ecosystem.html`;
+// Prism on its Space, or, from the mirror, Prism's own GitHub Pages mirror (the same pages, without the /docs prefix)
+export const PRISM = STATIC_MIRROR ? PRISM_MIRROR : 'https://babu09-meidnet.hf.space';
+export const PRISM_SPACE = STATIC_MIRROR ? PRISM_MIRROR : 'https://huggingface.co/spaces/Babu09/MEIDNet';
+const PRISM_DOCS = STATIC_MIRROR ? PRISM_MIRROR.replace(/\/$/, '') : `${PRISM}/docs`;
+export const PRISM_METHOD = `${PRISM_DOCS}/understand/how-it-works.html`;
+export const PRISM_SCORE = `${PRISM_DOCS}/benchmarks/compatibility.html`;
+export const PRISM_ECOSYSTEM = `${PRISM_DOCS}/ecosystem.html`;
 export const GITHUB = 'https://github.com/ABnano/MEIDNet-Matter';
 export const ENGINE = 'https://github.com/ABnano/MEIDNet';
 
@@ -36,6 +40,8 @@ export function DirectAppLink() {
 
 export function MarketingHeader() {
   return (
+    <>
+    <MirrorBanner />
     <header className="mhead">
       <div className="wrap-narrow">
         <Link to="/" className="brand"><MatterMark /><Wordmark /></Link>
@@ -48,6 +54,7 @@ export function MarketingHeader() {
         <ThemeToggle /><DirectAppLink />
       </div>
     </header>
+    </>
   );
 }
 
@@ -61,6 +68,7 @@ export function SiteFooter() {
         <Link to="/play">Generate</Link>
         <Link to="/method">Method</Link>
         <ExternalLink href={GITHUB}>Code</ExternalLink>
+        {STATIC_MIRROR ? <ExternalLink href={SPACE_PAGE}>Live app (Hugging Face)</ExternalLink> : <ExternalLink href={MIRROR_URL}>Mirror for restricted networks</ExternalLink>}
         <ExternalLink href={PRISM}>MEIDNet Prism</ExternalLink>
         <ExternalLink href={ENGINE}>MEIDNet engine</ExternalLink>
         <ExternalLink href="https://doi.org/10.1038/s41524-026-02153-3">Paper</ExternalLink>

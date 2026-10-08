@@ -1,0 +1,54 @@
+name: pages
+
+# The static mirror on GitHub Pages, https://abnano.github.io/MEIDNet-Matter/: the same site for networks that block
+# *.hf.space (public Wi-Fi often does).  Every page that reads works there from pre-rendered files; what computes live
+# (generation, the demo search) points to the Space.  Built for every release tag, or by hand from the Actions tab, and
+# pushed to the gh-pages branch, which GitHub Pages serves (Settings > Pages: branch gh-pages, folder /).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: The mirror's frontend (relative paths, routes after '#')
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build:mirror
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install (CPU torch, the vendored engine, Matter)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install ./engine
+          pip install -e .
+      - name: Pre-render the read-only API
+        run: python scripts/build_mirror.py --out build/mirror
+      - name: Publish to the gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/mirror
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "Static mirror of ${{ github.ref_name }}"

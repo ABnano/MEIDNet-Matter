@@ -139,7 +139,7 @@ export default function Study() {
 
             {s.accepted && s.accepted.length > 0 && (
               <section className="section" id="accepted">
-                <h2 id="accepted">Accepted structures</h2>
+                <h2>Accepted structures</h2>
                 <p className="muted">Both judges within {s.calibration?.window_eV} eV of the request on the relaxed cell; a judged metal never satisfies a non-zero request. Classes: {Object.entries(s.accepted_classes ?? {}).map(([k, v]) => `${v} ${k}`).join('; ')}.</p>
                 <div className="table-wrap">
                   <table className="table">

@@ -1,4 +1,5 @@
 // The research routes (pipeline blocks, studies, checkpoints, generation jobs) and their types.
+import { apiUrl } from '@/lib/mirror';
 import { get, post, requestText } from './client';
 
 export type Grade = 'PASS' | 'WARN' | 'FAIL' | 'INFO' | 'PARTIAL';
@@ -32,7 +33,10 @@ export interface Accepted {
   structure?: { sites: Array<{ element: string; frac: [number, number, number] }>; lattice: number[][] } | null;
 }
 export interface Calibration {
-  window_eV: number; metal_floor_eV: number; funnel: { generated: number; both_judges: number; relaxed: number; final: number };
+  window_eV: number; metal_floor_eV: number;
+  /** relaxed = the relaxed cells that stayed physical; collapsed_on_relaxation (0.6.0) = those whose atoms were pushed into each other. */
+  funnel: { generated: number; both_judges: number; collapsed_on_relaxation?: number; relaxed: number; final: number };
+  collapsed_on_relaxation?: Array<{ formula: string; target: number; contact_ratio: number }>;
   judge: { fidelity: number; n: number; mae: number; spearman: number; mae_on_nonzero: number | null; share_zero_truth: number };
   per_target: Array<{ requested: number; generated: number; both_judges: number; relaxed: number; final: number; generated_judge_mean: number;
     delivered_mean: number | null; delivered_sd: number | null; delivered_min: number | null; delivered_max: number | null; bias: number | null;
@@ -55,7 +59,7 @@ export interface Study {
   ablation?: { columns: string[]; rows: Array<Record<string, unknown>>; note: string };
   rediscoveries?: Rediscovery[]; judges?: Record<string, Record<string, unknown>>;
   calibration?: Calibration; accepted?: Accepted[]; accepted_classes?: Record<string, number>;
-  pool?: { generated: number; both_judges_generated: number; relaxed: number; accepted: number };
+  pool?: { generated: number; both_judges_generated: number; relaxed: number; accepted: number; collapsed_on_relaxation?: number };
   checks?: Array<{ stage: string; check: string; status: string; detail: string }>;
   lessons?: string[];
 }
@@ -99,10 +103,10 @@ export const research = {
   block: (id: string, signal?: AbortSignal) => get<BlockDef>(`/api/pipeline/blocks/${id}`, signal),
   components: () => get<ComponentInfo[]>('/api/pipeline/components'),
   component: (file: string, signal?: AbortSignal) => requestText(`/api/pipeline/components/${encodeURIComponent(file)}`, signal),
-  componentUrl: (file: string) => `/api/pipeline/components/${encodeURIComponent(file)}`,
+  componentUrl: (file: string) => apiUrl(`/api/pipeline/components/${encodeURIComponent(file)}`),
   studies: (signal?: AbortSignal) => get<{ studies: StudyIndexEntry[] }>('/api/studies', signal),
   study: (id: string, signal?: AbortSignal) => get<Study>(`/api/studies/${id}`, signal),
-  studyFileUrl: (id: string, name: string) => `/api/studies/${id}/files/${name}`,
+  studyFileUrl: (id: string, name: string) => apiUrl(`/api/studies/${id}/files/${name}`),
   checkpoints: (signal?: AbortSignal) => get<{ release: string; checkpoints: CheckpointInfo[] }>('/api/checkpoints', signal),
   checkpoint: (id: string) => get<CheckpointInfo>(`/api/checkpoints/${id}`),
   generate: (body: GenerateRequest) => post<GenJob>('/api/generate', body),

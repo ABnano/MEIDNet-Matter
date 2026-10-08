@@ -69,7 +69,12 @@ This version: the staged pipeline (ten blocks with their bands and code), four e
 checkpoints, live band-gap generation on MP-20 with 3D cards and an evidence map, the Perov-5 demo project, and a
 step-by-step guide to run every stage on your own data.
 
-* [Open the app](https://babu09-meidnet-matter.hf.space/) · [Code](https://github.com/ABnano/MEIDNet-Matter) ·
+**On public or restricted Wi-Fi** the app may show a grey page: the network blocks *.hf.space, where the app itself
+lives. The same site, readable on any network, is mirrored at https://abnano.github.io/MEIDNet-Matter/ (live generation
+and the demo search stay here); Prism's is at https://abnano.github.io/MEIDNet/. Turning on secure DNS in the browser
+usually opens this page too.
+
+* [Open the app](https://babu09-meidnet-matter.hf.space/) · [Mirror](https://abnano.github.io/MEIDNet-Matter/) · [Code](https://github.com/ABnano/MEIDNet-Matter) ·
   [Engine](https://github.com/ABnano/MEIDNet) · [Model](https://huggingface.co/Babu09/MEIDNet) ·
   [Paper](https://doi.org/10.1038/s41524-026-02153-3)
 

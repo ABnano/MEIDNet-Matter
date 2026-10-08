@@ -1,6 +1,5 @@
-/* Plus Jakarta Sans and IBM Plex Mono: SIL Open Font License 1.1, see /fonts/ */
-@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 500 800; font-display: swap; src: url(/fonts/plusjakartasans-latin.woff2) format('woff2'); }
-@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url(/fonts/ibmplexmono-normal-latin.woff2) format('woff2'); }
+/* Faces: Plus Jakarta Sans and IBM Plex Mono where the visitor has them installed, else the system's faces below (no font
+   files are shipped, so the site needs nothing beyond its own scripts and styles on any network). */
 
 :root {
   /* brand (shared with MEIDNet Prism) */
