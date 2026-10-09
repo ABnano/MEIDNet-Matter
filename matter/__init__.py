@@ -1,10 +1,10 @@
 """
-MEIDNet Matter: from your materials data to candidate structures.
+MEIDNet Matter: crystal structures for a requested band gap, each with the evidence for it.
 
-A researcher brings crystal structures and properties. Matter reports what the data and the model support (the
-Design Readiness report), then runs a constrained, property-conditioned search and returns candidate structures
-with their evidence and provenance. The scientific engine is the ``meidnet`` package; Matter imports it and never
+Ask for a band gap and get crystal structures back, each with two machine-learning readings of the PBE gap, its checks
+and its limits. Matter reports what the data and the model support (the Design Readiness report), generates or
+searches candidate structures and returns them with their evidence and provenance. The scientific engine is the ``meidnet`` package; Matter imports it and never
 copies it.
 """
 
-__version__ = "0.8.1"
+__version__ = "0.9.0"

@@ -4,6 +4,43 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-09
+
+What a new visitor meets first: the demo search, the links that outlive a run, the page head, and small fixes.
+
+### Changed
+- Perov-5 demo: the default model is now desc-full-sp4, the desc-full recipe with four times the weight on reading the
+  properties from the structure: of the 15 checkpoints trained on the training split (six new desc-full variants and nine
+  existing models), the one with the best band-gap reading on the validation split, under a rule written down before the
+  new ones finished training. On the held-out test split its band-gap
+  error is 0.41 of the spread on the materials with a non-zero gap (fair; desc-full: 0.53, weak) and its formation-enthalpy
+  error 0.08 (good), so the default goal is graded CAUTION and runs as a normal search instead of in exploratory mode. The
+  trade-off: it rebuilds held-out structures from their joint encoding less often (composition 20%, desc-full 58%), which
+  the readiness report shows; the inverse path, from a property target to a structure, is unchanged (38.9% of sites).
+  The published model stays selectable. A checkpoints folder without the new file falls back to the published model and
+  says so.
+- When every reason against a target is the model's weak reading of a property, the readiness page leads with "Run
+  exploratory search" and says why; "Adjust target" stays the first action when the target itself is the problem. A
+  "fair" reading states its ratio to the spread, and the latent-neighbourhood sentence no longer says the neighbours read a
+  property better when they do not.
+- The front door says what Matter does in five lines (what, for whom, input, output, time) on the Space card and in the
+  README; the page title, description, preview image and short description no longer promise an upload. One main action,
+  "Run a band-gap search", in the header and on the home page. `/demo`, an old landing page, now leads to the demo.
+- The Space image installs every dependency at a pinned version (`deploy/constraints.txt`, frozen from a clean install of
+  exactly what the image installs: CPU torch, the engine, `meidnet-matter[judge]` and the Space's own requirements, uvicorn's
+  extras included), and the release's `constraints.txt` now includes the judge's stack (matgl, torch-geometric, lightning).
+
+### Fixed
+- A run or a generation job the server no longer has says so at once: 410 `gone` when this server removed it (a finished
+  run is kept for an hour after its last use), 404 `run_not_found` with the reason otherwise (every restart starts empty).
+  Its pages explain it and offer "Re-run this goal" (the search's goal is kept in the browser that ran or opened it) or
+  "Generate again" instead of a spinner and a raw error code. A goal kept in a tab that names a model the demo no longer
+  has falls back to the default model.
+- A refused search (busy, host full) no longer leaves a record stuck in "queued".
+- Pages keep their side margins on narrow screens (`.page` sets only its vertical padding).
+- Every page has its own title; the formula in the candidate tables is a button that opens the candidate from the
+  keyboard; the faint text colour reaches 4.5:1 contrast; large responses travel gzip-compressed.
+
 ## [0.8.1] - 2026-10-09
 
 ### Fixed
