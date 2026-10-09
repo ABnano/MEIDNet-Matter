@@ -51,6 +51,24 @@ class DemoArtefacts:
         self._latents: dict[str, object] = {}
         self._lock = threading.Lock()
 
+    def cell(self, material_id: str) -> dict | None:
+        """The cell of a material as sites and a lattice, from the compact store the demo build writes (Perov-5: cubic,
+        five sites), or None when the demo ships no cells."""
+        with self._lock:
+            if not hasattr(self, "_cells"):
+                p = os.path.join(self.dir, "explore_cells.npz")
+                self._cells = None
+                if os.path.isfile(p):
+                    z = np.load(p)
+                    self._cells = {"index": {str(i): n for n, i in enumerate(z["material_id"])}, "a": z["a"], "species": z["species"], "frac": z["frac"]}
+        c = self._cells
+        if c is None or material_id not in c["index"]:
+            return None
+        n = c["index"][material_id]
+        a = float(c["a"][n])
+        return {"lattice": [[a, 0.0, 0.0], [0.0, a, 0.0], [0.0, 0.0, a]],
+                "sites": [{"element": str(e), "frac": [round(float(x), 4) for x in f]} for e, f in zip(c["species"][n], c["frac"][n])]}
+
     def _json(self, name: str):
         with open(os.path.join(self.dir, name), encoding="utf-8") as f:
             return json.load(f)

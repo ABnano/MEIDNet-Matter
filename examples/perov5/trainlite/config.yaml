@@ -1,0 +1,38 @@
+# Train Lite's recipe. To run it at full size on your computer: point data.table and data.val_table at the
+# Perov-5 CSVs (python -m meidnet.cli download-data), set training.epochs to 200, then  meidnet train config.yaml
+name: perov5_trainlite
+description: 'Train Lite: the demo''s recipe (element descriptors, perovskite site
+  order, periodic encoder, four times the weight on reading the properties from the
+  structure) on a 1,500-material subset of Perov-5.'
+output_dir: trainlite/out
+data:
+  table: trainlite/train.csv
+  val_table: trainlite/val.csv
+  id_column: material_id
+  cif_column: cif
+  properties:
+  - column: heat_all
+    label: Formation enthalpy
+    unit: eV/atom
+    normalize: true
+  - column: dir_gap
+    label: Direct band gap
+    unit: eV
+    normalize: true
+  max_sites: 5
+  site_order: perovskite
+  align_to_prototype: false
+model:
+  decoder_coordinate_input: zeros
+  periodic_encoder: true
+  element_features: cgcnn
+training:
+  epochs: 20
+  batch_size: 64
+  learning_rate: 0.001
+  seed: 0
+  device: cpu
+  save_every: 1000
+  loss_weights:
+    structure_reconstruction: 1.0
+    structure_property: 4.0

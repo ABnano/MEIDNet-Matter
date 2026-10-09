@@ -1,0 +1,32 @@
+{
+ "full_model": {
+  "epochs": 200,
+  "model_id": "desc-full-sp4",
+  "training_rows": 11356,
+  "val_mae": {
+   "dir_gap": 0.20726403528898954,
+   "heat_all": 0.06032936275005341
+  },
+  "val_mae_dir_gap_nonzero": 0.6709297857813903,
+  "val_r2": {
+   "dir_gap": 0.8540784861128576,
+   "heat_all": 0.9876097610585752
+  }
+ },
+ "full_training_command": "meidnet train config.yaml    # after pointing data.table / data.val_table at the Perov-5 CSVs and setting training.epochs: 200",
+ "recipe": "the demo's default recipe at the subset's size (checkpoints/configs/desc_full_sp4.yaml, 200 epochs on 11,356 materials)",
+ "schema": "meidnet-matter/trainlite-reference/1",
+ "subset": {
+  "nonzero_gap_train": 441,
+  "nonzero_gap_val": 143,
+  "sampling": "30% of each subset has a non-zero band gap (Perov-5 itself: 4%); a plain sample would hold about 60 non-zero gaps in 1,500 rows. Sampled from the training and validation splits; the test split is untouched.",
+  "seed": 0,
+  "spread": {
+   "dir_gap": 1.361270405009804,
+   "heat_all": 0.748163487659393
+  },
+  "spread_dir_gap_nonzero": 1.5554548667359256,
+  "train": 1500,
+  "val": 500
+ }
+}

@@ -21,6 +21,8 @@ class Services:
     studies: object = None              # Studies (static research artefacts)
     reference: object = None            # Reference (known formulas, reference AMD set)
     generations: object = None          # GenerationStore
+    trainings: object = None            # TrainStore (Train Lite jobs)
+    trainlite: object = None            # Subset (the featurised Train Lite data and its reference)
     startup_error: str | None = None
     generation_error: str | None = None
     default_note: str | None = None     # set when the demo's default model file is missing and another one stands in
@@ -76,6 +78,9 @@ class Services:
             s.studies = Studies(settings.research_dir)
             s.reference = Reference(settings.research_dir)
             s.generations = GenerationStore(os.path.join(settings.run_root, "generate"), settings.public)
+            from matter.services.trainlite import Subset, TrainStore
+            s.trainings = TrainStore(os.path.join(settings.run_root, "train"), settings.public)
+            s.trainlite = Subset(settings.demo_dir)
             if settings.warm_start:
                 import threading
                 threading.Thread(target=s.warm, daemon=True, name="warm-start").start()

@@ -86,6 +86,11 @@ def read_materials(data_dir: str, columns: list[str], max_sites: int | list[int]
             rows.append({"material_id": str(mid), "split": split, "formula": str(formula),
                          "reduced_formula": formula_key(formula), "site_key": key or "",
                          "elements": sorted(str(e) for e in s.composition.elements),
+                         # the cell itself, compactly: every Perov-5 cell is cubic with five sites (checked at build time)
+                         "cell": {"a": float(s.lattice.a), "species": [str(site.specie.symbol) for site in s],
+                                  "frac": [[round(float(x), 4) for x in site.frac_coords] for site in s],
+                                  "cubic": bool(abs(s.lattice.a - s.lattice.b) < 1e-3 and abs(s.lattice.a - s.lattice.c) < 1e-3
+                                                and all(abs(ang - 90) < 1e-2 for ang in s.lattice.angles))},
                          "records": {ms: Record(str(mid), d, props, s.composition.reduced_formula) for ms, d in dense.items()},
                          **{c: float(v) for c, v in zip(columns, props)}})
         log(f"  {split}: {sum(r['split'] == split for r in rows):,} materials read")
@@ -319,7 +324,7 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
                               *(repr(float(r[c])) for c in columns)]) + "\n")
 
     # per model
-    model_entries, project_models = [], []
+    model_entries, project_models, latents_by_model = [], [], {}
     for mid, lm in loaded.items():
         path = models[mid]
         train = [r["records"][lm.model.max_sites] for r in by_split["train"]]          # featurised at this model's size
@@ -327,6 +332,7 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
         log(f"model {mid}: evaluating on {len(test):,} held-out materials ...")
         ev = evaluate_split(lm, train, test, columns)
         Zc_tr, Zc, Zp, P = ev.pop("_latents")
+        latents_by_model[mid] = Zc_tr
         ids_tr = np.array([r.material_id for r in train])
         _, _, P_tr = __import__("meidnet.benchmark", fromlist=["encode"]).encode(lm, train, space="projection")
         np.savez_compressed(os.path.join(out, f"latents_train.{mid}.npz"), z=Zc_tr.astype(np.float16), material_id=ids_tr,
@@ -363,6 +369,8 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
     write_json(os.path.join(out, "models.json"), model_entries)
 
     default_model = project_models[0]
+    build_explore(out, rows, by_split, columns, default_model, latents_by_model[default_model], log)
+    build_trainlite(data_dir, out, loaded[default_model], default_model, columns, log, limit=limit)
     project = {
         "project_id": "perov5-demo", "title": "Perov-5 example", "dataset_id": "perov5",
         "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the "
@@ -400,6 +408,135 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
     write_json(os.path.join(out, "manifest.json"), manifest)
     log(f"wrote {out}")
     return manifest
+
+
+# ───────────────────────── Explore: the map and the cells ─────────────────────────
+def pca2(Z: np.ndarray) -> tuple[np.ndarray, list[float]]:
+    """A 2D principal-component projection of unit latents; the sign of each axis is fixed (largest loading positive),
+    so a rebuild gives the same picture."""
+    X = Z.astype(np.float64)
+    X = X - X.mean(0)
+    _, s, vt = np.linalg.svd(X, full_matrices=False)
+    comps = vt[:2].copy()
+    for i in range(2):
+        if comps[i, np.argmax(np.abs(comps[i]))] < 0:
+            comps[i] = -comps[i]
+    xy = X @ comps.T
+    var = s ** 2 / max(1, len(X) - 1)
+    return xy, [float(var[0] / var.sum()), float(var[1] / var.sum())]
+
+
+def build_explore(out: str, rows: list[dict], by_split: dict, columns: list[str], model_id: str, Zc_tr: np.ndarray, log=print) -> None:
+    """explore.json: every training material as a point of the default model's latent map (PCA of the projection-space
+    latents, two coordinates), with its formula, properties and A|B|X sites; explore_cells.npz: the cell of every
+    material of every split, for the viewer and the per-material route."""
+    train = by_split["train"]
+    xy, explained = pca2(Zc_tr)
+    assert len(xy) == len(train)
+    points = [[r["material_id"], r["formula"], round(float(x), 3), round(float(y), 3), *[round(float(r[c]), 4) for c in columns], r["site_key"]]
+              for r, (x, y) in zip(train, xy)]
+    write_json(os.path.join(out, "explore.json"), {
+        "schema": "meidnet-matter/explore/1", "project_id": "perov5-demo", "model_id": model_id, "split": "train",
+        "columns": ["material_id", "formula", "x", "y", *columns, "site_key"], "points": points,
+        "projection": {"method": "PCA of the structure latents (projection space, unit sphere)", "explained_variance": [round(v, 4) for v in explained],
+                       "note": "Two principal components of a 128-dimensional space: a projection for looking, not a measure of similarity. "
+                               "Nearest neighbours on the material card are computed in the full space."},
+        "n": len(points)})
+    if not all(r["cell"]["cubic"] for r in rows):
+        raise SystemExit("a Perov-5 cell is not cubic: the compact cell store assumes a cubic lattice")
+    n_sites = {len(r["cell"]["species"]) for r in rows}
+    if n_sites != {5}:
+        raise SystemExit(f"Perov-5 cells with {sorted(n_sites)} sites: the compact cell store assumes five")
+    np.savez_compressed(os.path.join(out, "explore_cells.npz"), material_id=np.array([r["material_id"] for r in rows]),
+                        a=np.array([r["cell"]["a"] for r in rows], dtype=np.float32),
+                        species=np.array([r["cell"]["species"] for r in rows]),
+                        frac=np.array([r["cell"]["frac"] for r in rows], dtype=np.float32))
+    log(f"explore: {len(points):,} points ({100 * sum(explained):.0f}% of the variance in two axes), {len(rows):,} cells")
+
+
+# ───────────────────────── Train Lite: a small, fixed experiment ─────────────────────────
+TRAINLITE = {"train": 1500, "val": 500, "nonzero_share": 0.3, "seed": 0}
+# the demo's own recipe (checkpoints/configs/desc_full_sp4.yaml) at the subset's size; the table paths are placeholders
+# because the subset ships featurised, and are replaced when a user runs the same recipe at full size locally
+TRAINLITE_CONFIG = {
+    "name": "perov5_trainlite",
+    "description": "Train Lite: the demo's recipe (element descriptors, perovskite site order, periodic encoder, four times the "
+                   "weight on reading the properties from the structure) on a 1,500-material subset of Perov-5.",
+    "output_dir": "trainlite/out",
+    "data": {"table": "trainlite/train.csv", "val_table": "trainlite/val.csv", "id_column": "material_id", "cif_column": "cif",
+             "properties": [{"column": "heat_all", "label": "Formation enthalpy", "unit": "eV/atom", "normalize": True},
+                            {"column": "dir_gap", "label": "Direct band gap", "unit": "eV", "normalize": True}],
+             "max_sites": 5, "site_order": "perovskite", "align_to_prototype": False},
+    "model": {"decoder_coordinate_input": "zeros", "periodic_encoder": True, "element_features": "cgcnn"},
+    "training": {"epochs": 20, "batch_size": 64, "learning_rate": 0.001, "seed": 0, "device": "cpu", "save_every": 1000,
+                 "loss_weights": {"structure_reconstruction": 1.0, "structure_property": 4.0}},
+}
+
+
+def trainlite_subset(df, n: int, seed: int, nonzero_share: float):
+    """A sample that keeps the band gaps visible: Perov-5 has 96% zero gaps, so a plain sample would hold about 60 non-zero
+    gaps in 1,500 rows; this one holds 30% (or every one there is)."""
+    import pandas as pd
+    nz, z = df[df["dir_gap"] > 0], df[df["dir_gap"] == 0]
+    n = min(n, len(df))
+    k = min(len(nz), int(n * nonzero_share))
+    return pd.concat([nz.sample(k, random_state=seed), z.sample(n - k, random_state=seed)]).sample(frac=1, random_state=seed)
+
+
+def build_trainlite(data_dir: str, out: str, lm, model_id: str, columns: list[str], log=print, limit: int | None = None) -> None:
+    """trainlite/subset.npz (the subset featurised the way the recipe trains, so the server never parses a CIF),
+    trainlite/config.yaml (the recipe for a local run at full size) and trainlite/reference.json (the sizes, the sampling,
+    and the demo's default model measured on the same 500 validation materials)."""
+    import yaml
+    from meidnet.benchmark import encode, property_metrics
+    from matter.jsonsafe import finite
+    from meidnet.config import config_from_dict
+    from meidnet.data import load_records, read_table
+    tl = os.path.join(out, "trainlite"); os.makedirs(tl, exist_ok=True)
+    cfg = config_from_dict(dict(TRAINLITE_CONFIG), base_dir=out)
+    parts, records = {}, {}
+    for split, n in (("train", TRAINLITE["train"]), ("val", TRAINLITE["val"])):
+        if limit:                                             # a small build (tests): the same shape, fewer rows
+            n = max(64, min(n, limit if split == "train" else limit // 3))
+        df = trainlite_subset(read_table(os.path.join(data_dir, f"{split}.csv")), n, TRAINLITE["seed"] + (0 if split == "train" else 1), TRAINLITE["nonzero_share"])
+        recs, _ = load_records(df, cfg.data, lambda p: p, None, source=f"trainlite {split}")
+        if len(recs) != n:
+            raise SystemExit(f"Train Lite {split}: {len(recs)} of {n} rows usable")
+        records[split], parts[split] = recs, df
+    dense = np.concatenate([np.stack([r.dense for r in records[s]]) for s in ("train", "val")]).astype(np.float32)
+    props = np.concatenate([np.stack([r.properties for r in records[s]]) for s in ("train", "val")]).astype(np.float32)
+    ids = np.array([r.material_id for s in ("train", "val") for r in records[s]])
+    formulas = np.array([r.formula for s in ("train", "val") for r in records[s]])
+    split = np.array(["train"] * len(records["train"]) + ["val"] * len(records["val"]))
+    np.savez_compressed(os.path.join(tl, "subset.npz"), dense=dense, props=props, material_id=ids, formula=formulas, split=split,
+                        columns=np.array(columns), max_sites=np.array(cfg.data.max_sites), site_order=np.array(cfg.data.site_order))
+    with open(os.path.join(tl, "config.yaml"), "w", encoding="utf-8", newline="\n") as f:
+        f.write("# Train Lite's recipe. To run it at full size on your computer: point data.table and data.val_table at the\n"
+                "# Perov-5 CSVs (python -m meidnet.cli download-data), set training.epochs to 200, then  meidnet train config.yaml\n")
+        yaml.safe_dump(TRAINLITE_CONFIG, f, sort_keys=False)
+    # the demo's default model on the same 500 validation materials: the reference a small run is compared with
+    _, _, P = encode(lm, records["val"], space="projection")
+    Y = np.array([r.properties for r in records["val"]], dtype=float)
+    m = property_metrics(columns, Y, P)
+    nz_tr = parts["train"]["dir_gap"] > 0
+    reference = {"schema": "meidnet-matter/trainlite-reference/1",
+                 "subset": {"train": len(records["train"]), "val": len(records["val"]), "seed": TRAINLITE["seed"],
+                            "nonzero_gap_train": int(nz_tr.sum()), "nonzero_gap_val": int((parts["val"]["dir_gap"] > 0).sum()),
+                            "sampling": f"{int(100 * TRAINLITE['nonzero_share'])}% of each subset has a non-zero band gap (Perov-5 itself: 4%); "
+                                        "a plain sample would hold about 60 non-zero gaps in 1,500 rows. Sampled from the training and "
+                                        "validation splits; the test split is untouched.",
+                            "spread": {c: float(np.std(parts["train"][c])) for c in columns},
+                            "spread_dir_gap_nonzero": float(np.std(parts["train"].loc[nz_tr, "dir_gap"]))},
+                 "full_model": {"model_id": model_id, "training_rows": int(lm.meta.get("data_report", {}).get("rows", 0)) or None,
+                                "epochs": (lm.meta.get("config") or {}).get("training", {}).get("epochs"),
+                                "val_mae": {c: float(m[f"mae_{c}"]) for c in columns},
+                                "val_mae_dir_gap_nonzero": float(m.get("mae_dir_gap_nonzero", float("nan"))),
+                                "val_r2": {c: float(m[f"r2_{c}"]) for c in columns}},
+                 "recipe": "the demo's default recipe at the subset's size (checkpoints/configs/desc_full_sp4.yaml, 200 epochs on 11,356 materials)",
+                 "full_training_command": "meidnet train config.yaml    # after pointing data.table / data.val_table at the Perov-5 CSVs and setting training.epochs: 200"}
+    write_json(os.path.join(tl, "reference.json"), finite(reference))
+    log(f"trainlite: {len(records['train'])} + {len(records['val'])} materials featurised; reference {model_id} val MAE "
+        + ", ".join(f"{c} {m[f'mae_{c}']:.3f}" for c in columns))
 
 
 def _models_sentence(entries: list[dict]) -> str:

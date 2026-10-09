@@ -8,7 +8,7 @@ import pytest
 
 from tests.conftest import DEMO_DIR, ROOT
 
-MAX_BYTES = 6 * 1024 * 1024
+MAX_BYTES = 9 * 1024 * 1024      # two models' latents, the Explore map and cells, the Train Lite subset: 7.4 MB in 0.10.0
 
 
 def _json(name):
