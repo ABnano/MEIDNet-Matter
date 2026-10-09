@@ -1,156 +1,6 @@
 {
  "accepted": [
   {
-   "amd_nearest": 0.412,
-   "charge_balanced": false,
-   "class": "new composition, new structure",
-   "file": "accepted/HfZrAuI4_T0.5_n14_31.cif",
-   "flag": "",
-   "formula": "HfZrAuI4",
-   "judge_gap": 0.323,
-   "known_formula": false,
-   "label_structure_gap": 0.096,
-   "natoms": 14,
-   "recorded_gaps": [],
-   "relaxation_drop_eV_atom": 5.3137,
-   "requested": 0.5,
-   "spacegroup_designed": 2,
-   "spacegroup_relaxed": 2,
-   "structure": {
-    "lattice": [
-     [
-      7.1383,
-      0.0,
-      1.0322
-     ],
-     [
-      -0.108,
-      6.1956,
-      0.2868
-     ],
-     [
-      0.0,
-      0.0,
-      20.9153
-     ]
-    ],
-    "sites": [
-     {
-      "element": "Hf",
-      "frac": [
-       0.875,
-       0.3526,
-       0.3157
-      ]
-     },
-     {
-      "element": "Hf",
-      "frac": [
-       0.125,
-       0.6474,
-       0.6843
-      ]
-     },
-     {
-      "element": "Zr",
-      "frac": [
-       0.8786,
-       0.8576,
-       0.3152
-      ]
-     },
-     {
-      "element": "Zr",
-      "frac": [
-       0.1214,
-       0.1424,
-       0.6848
-      ]
-     },
-     {
-      "element": "Au",
-      "frac": [
-       0.4383,
-       0.4039,
-       0.6686
-      ]
-     },
-     {
-      "element": "Au",
-      "frac": [
-       0.5617,
-       0.5961,
-       0.3314
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.7881,
-       0.8765,
-       0.7367
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.2119,
-       0.1235,
-       0.2633
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.268,
-       0.8795,
-       0.7853
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.732,
-       0.1205,
-       0.2147
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.7497,
-       0.0877,
-       0.4291
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.2503,
-       0.9123,
-       0.5709
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.148,
-       0.5978,
-       0.3773
-      ]
-     },
-     {
-      "element": "I",
-      "frac": [
-       0.852,
-       0.4022,
-       0.6227
-      ]
-     }
-    ]
-   }
-  },
-  {
    "amd_nearest": 0.348,
    "charge_balanced": true,
    "class": "new composition, new structure",
@@ -162,6 +12,7 @@
    "label_structure_gap": 0.426,
    "natoms": 7,
    "recorded_gaps": [],
+   "reference_id": null,
    "relaxation_drop_eV_atom": 10.7716,
    "requested": 0.5,
    "spacegroup_designed": 6,
@@ -245,178 +96,9 @@
    }
   },
   {
-   "amd_nearest": 1.319,
-   "charge_balanced": true,
-   "class": "new polymorph of known formula",
-   "file": "accepted/KTe_T1_n16_6.cif",
-   "flag": "",
-   "formula": "KTe",
-   "judge_gap": 0.625,
-   "known_formula": true,
-   "label_structure_gap": 0.972,
-   "natoms": 16,
-   "recorded_gaps": [
-    0.2132,
-    0.6709
-   ],
-   "relaxation_drop_eV_atom": 5.2373,
-   "requested": 1.0,
-   "spacegroup_designed": 38,
-   "spacegroup_relaxed": 65,
-   "structure": {
-    "lattice": [
-     [
-      11.5321,
-      0.0,
-      0.0
-     ],
-     [
-      0.0,
-      10.186,
-      -0.0
-     ],
-     [
-      0.0,
-      0.0,
-      12.6494
-     ]
-    ],
-    "sites": [
-     {
-      "element": "K",
-      "frac": [
-       0.7853,
-       0.7518,
-       0.9602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.2147,
-       0.7518,
-       0.9602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.7853,
-       0.7482,
-       0.4602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.2147,
-       0.7482,
-       0.4602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.2147,
-       0.2482,
-       0.9602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.7853,
-       0.2482,
-       0.9602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.2147,
-       0.2518,
-       0.4602
-      ]
-     },
-     {
-      "element": "K",
-      "frac": [
-       0.7853,
-       0.2518,
-       0.4602
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.1873,
-       0.3606,
-       0.7107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.1873,
-       0.1394,
-       0.2107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.8127,
-       0.3606,
-       0.7107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.8127,
-       0.1394,
-       0.2107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.1873,
-       0.6394,
-       0.7107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.1872,
-       0.8606,
-       0.2107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.8127,
-       0.6394,
-       0.7107
-      ]
-     },
-     {
-      "element": "Te",
-      "frac": [
-       0.8127,
-       0.8606,
-       0.2107
-      ]
-     }
-    ]
-   }
-  },
-  {
    "amd_nearest": 0.238,
    "charge_balanced": false,
-   "class": "rediscovered known structure",
+   "class": "new polymorph of known formula",
    "file": "accepted/Na2O2_T1.5_n16_173.cif",
    "flag": "",
    "formula": "Na2O2",
@@ -427,6 +109,7 @@
    "recorded_gaps": [
     1.7724
    ],
+   "reference_id": null,
    "relaxation_drop_eV_atom": 17.0542,
    "requested": 1.5,
    "spacegroup_designed": 136,
@@ -584,7 +267,7 @@
   {
    "amd_nearest": 0.01,
    "charge_balanced": true,
-   "class": "rediscovered known structure",
+   "class": "new polymorph of known formula",
    "file": "accepted/SrO_T2.5_n16_280.cif",
    "flag": "judges disagree",
    "formula": "SrO",
@@ -596,6 +279,7 @@
     2.5667,
     3.4487
    ],
+   "reference_id": null,
    "relaxation_drop_eV_atom": 5.9596,
    "requested": 2.5,
    "spacegroup_designed": 63,
@@ -751,127 +435,9 @@
    }
   },
   {
-   "amd_nearest": 0.95,
-   "charge_balanced": true,
-   "class": "new composition, new structure",
-   "file": "accepted/BaBHS2_T3_n10_198.cif",
-   "flag": "",
-   "formula": "BaBHS2",
-   "judge_gap": 2.753,
-   "known_formula": false,
-   "label_structure_gap": 2.733,
-   "natoms": 10,
-   "recorded_gaps": [],
-   "relaxation_drop_eV_atom": 3.2359,
-   "requested": 3.0,
-   "spacegroup_designed": 2,
-   "spacegroup_relaxed": 2,
-   "structure": {
-    "lattice": [
-     [
-      9.5298,
-      0.0,
-      -1.1164
-     ],
-     [
-      -1.7938,
-      8.6661,
-      0.4082
-     ],
-     [
-      0.0,
-      0.0,
-      11.8323
-     ]
-    ],
-    "sites": [
-     {
-      "element": "Ba",
-      "frac": [
-       0.7322,
-       0.9583,
-       0.5643
-      ]
-     },
-     {
-      "element": "Ba",
-      "frac": [
-       0.2678,
-       0.0417,
-       0.4357
-      ]
-     },
-     {
-      "element": "B",
-      "frac": [
-       0.5338,
-       0.7509,
-       0.6796
-      ]
-     },
-     {
-      "element": "B",
-      "frac": [
-       0.4662,
-       0.2491,
-       0.3204
-      ]
-     },
-     {
-      "element": "H",
-      "frac": [
-       0.5811,
-       0.8617,
-       0.1299
-      ]
-     },
-     {
-      "element": "H",
-      "frac": [
-       0.4189,
-       0.1383,
-       0.8701
-      ]
-     },
-     {
-      "element": "S",
-      "frac": [
-       0.6887,
-       0.7375,
-       0.7621
-      ]
-     },
-     {
-      "element": "S",
-      "frac": [
-       0.3113,
-       0.2625,
-       0.2379
-      ]
-     },
-     {
-      "element": "S",
-      "frac": [
-       0.4101,
-       0.8007,
-       0.576
-      ]
-     },
-     {
-      "element": "S",
-      "frac": [
-       0.5899,
-       0.1993,
-       0.424
-      ]
-     }
-    ]
-   }
-  },
-  {
    "amd_nearest": 0.311,
    "charge_balanced": true,
-   "class": "rediscovered (borderline)",
+   "class": "rediscovered known structure",
    "file": "accepted/CaO_T3_n16_540.cif",
    "flag": "",
    "formula": "CaO",
@@ -883,6 +449,7 @@
     3.12,
     3.6919
    ],
+   "reference_id": "mp-545512",
    "relaxation_drop_eV_atom": 1.1902,
    "requested": 3.0,
    "spacegroup_designed": 15,
@@ -1039,21 +606,22 @@
   }
  ],
  "accepted_classes": {
-  "new composition, new structure": 3,
-  "new polymorph of known formula": 1,
-  "rediscovered (borderline)": 1,
-  "rediscovered known structure": 2
+  "new composition, new structure": 1,
+  "new polymorph of known formula": 2,
+  "rediscovered known structure": 1
  },
  "calibration": {
   "accuracy": {
    "mae_generated_cells": 1.102961089015007,
-   "mae_relaxed_cells": 0.8044702664894217,
+   "mae_relaxed_cells": 0.8759545145126489,
    "mae_relaxed_ci95": [
-    0.4365080717074521,
-    1.252116487525842
+    0.4565251421183347,
+    1.3825380811897605
    ],
-   "of": 17,
-   "within_window": 9
+   "mae_same_cells_before_relaxation": 0.24506933643267706,
+   "of": 13,
+   "same_cells": 13,
+   "within_window": 6
   },
   "cells": "relaxed",
   "collapsed_on_relaxation": [
@@ -1161,9 +729,10 @@
   "funnel": {
    "both_judges": 37,
    "collapsed_on_relaxation": 20,
-   "final": 7,
+   "final": 4,
    "generated": 175,
-   "relaxed": 17
+   "not_bulk_on_relaxation": 4,
+   "relaxed": 13
   },
   "judge": {
    "by_fidelity": {
@@ -1181,55 +750,74 @@
   },
   "linearity": {
    "ideal": "slope 1, intercept 0",
-   "intercept": 0.2426177839943242,
-   "r2": 0.3115164449616546,
-   "slope": 0.8019725309926912,
-   "spearman": 0.6688298702835197
+   "intercept": 0.3400120080813116,
+   "r2": 0.23565339494627194,
+   "slope": 0.7145928993173268,
+   "spearman": 0.6480935966100891
   },
   "metal_floor_eV": 0.1,
+  "not_bulk_on_relaxation": [
+   {
+    "formula": "HfZrAuI4",
+    "reason": "empty layer 8.9 A (a slab, not a bulk crystal)",
+    "target": 0.5
+   },
+   {
+    "formula": "KTe",
+    "reason": "empty layer 6.6 A (a slab, not a bulk crystal)",
+    "target": 1.0
+   },
+   {
+    "formula": "PS",
+    "reason": "empty layer 8.7 A (a slab, not a bulk crystal)",
+    "target": 2.0
+   },
+   {
+    "formula": "BaBHS2",
+    "reason": "packing fraction 0.11 (too little matter for a bulk crystal)",
+    "target": 3.0
+   }
+  ],
   "novelty": {
-   "amd_median": 0.37991019764700074,
+   "amd_median": 0.310508452591649,
    "amd_min": 0.0099198584041841,
-   "novel_share": 0.875,
+   "novel_share": 0.8,
    "unique_share": 1.0
   },
   "per_target": [
    {
-    "bias": -0.21000142395496368,
+    "bias": -0.22642096132040024,
     "both_judges": 14,
     "delivered_max": 0.5101311802864075,
-    "delivered_mean": 0.2899985760450363,
+    "delivered_mean": 0.27357903867959976,
     "delivered_min": 0.03702689707279205,
-    "delivered_sd": 0.23825557563392322,
-    "drop_median": 5.3137,
-    "final": 2,
+    "delivered_sd": 0.33453524686874836,
+    "drop_median": 6.5447999999999995,
+    "final": 1,
     "final_formulas": [
-     "HfZrAuI4",
      "Na2Ag2Sb2Te"
     ],
     "generated": 25,
     "generated_judge_mean": 0.8084534806013107,
-    "relaxed": 3,
+    "relaxed": 2,
     "requested": 0.5,
-    "spacegroup_kept": 0.6666666666666666
+    "spacegroup_kept": 0.5
    },
    {
-    "bias": -0.3751363754272461,
+    "bias": null,
     "both_judges": 2,
-    "delivered_max": 0.6248636245727539,
-    "delivered_mean": 0.6248636245727539,
-    "delivered_min": 0.6248636245727539,
+    "delivered_max": null,
+    "delivered_mean": null,
+    "delivered_min": null,
     "delivered_sd": null,
-    "drop_median": 5.2373,
-    "final": 1,
-    "final_formulas": [
-     "KTe"
-    ],
+    "drop_median": null,
+    "final": 0,
+    "final_formulas": [],
     "generated": 25,
     "generated_judge_mean": 0.9879284405708313,
-    "relaxed": 1,
+    "relaxed": 0,
     "requested": 1.0,
-    "spacegroup_kept": 0.0
+    "spacegroup_kept": null
    },
    {
     "bias": -0.5482634678483009,
@@ -1250,18 +838,18 @@
     "spacegroup_kept": 0.5
    },
    {
-    "bias": 0.5676825642585754,
+    "bias": -0.3534468412399292,
     "both_judges": 5,
-    "delivered_max": 3.48881196975708,
-    "delivered_mean": 2.5676825642585754,
+    "delivered_max": 1.6465531587600708,
+    "delivered_mean": 1.6465531587600708,
     "delivered_min": 1.6465531587600708,
-    "delivered_sd": 1.3026736979566516,
-    "drop_median": 4.72485,
+    "delivered_sd": null,
+    "drop_median": 3.7742,
     "final": 0,
     "final_formulas": [],
     "generated": 25,
     "generated_judge_mean": 1.3525932532548905,
-    "relaxed": 2,
+    "relaxed": 1,
     "requested": 2.0,
     "spacegroup_kept": 1.0
    },
@@ -1284,23 +872,22 @@
     "spacegroup_kept": 0.5
    },
    {
-    "bias": -0.15464329719543457,
+    "bias": -0.06181144714355469,
     "both_judges": 2,
     "delivered_max": 2.9381885528564453,
-    "delivered_mean": 2.8453567028045654,
-    "delivered_min": 2.7525248527526855,
-    "delivered_sd": 0.13128406136355403,
-    "drop_median": 2.21305,
-    "final": 2,
+    "delivered_mean": 2.9381885528564453,
+    "delivered_min": 2.9381885528564453,
+    "delivered_sd": null,
+    "drop_median": 1.1902,
+    "final": 1,
     "final_formulas": [
-     "BaBHS2",
      "CaO"
     ],
     "generated": 25,
     "generated_judge_mean": 1.9234603106975556,
-    "relaxed": 2,
+    "relaxed": 1,
     "requested": 3.0,
-    "spacegroup_kept": 0.5
+    "spacegroup_kept": 0.0
    },
    {
     "bias": -3.3510152101516724,
@@ -1334,41 +921,12 @@
    ],
    "served": [
     0.5,
-    1.0,
     1.5,
     2.5,
     3.0
    ]
   },
-  "resolution": [
-   {
-    "delta_mean": 1.6159460321068764,
-    "pair": [
-     1.5,
-     2.0
-    ],
-    "pooled_sd": 1.1895830768825104,
-    "separable": true
-   },
-   {
-    "delta_mean": 0.7852526307106018,
-    "pair": [
-     2.0,
-     2.5
-    ],
-    "pooled_sd": 1.0553625444324877,
-    "separable": false
-   },
-   {
-    "delta_mean": -0.5075784921646118,
-    "pair": [
-     2.5,
-     3.0
-    ],
-    "pooled_sd": 0.5233817640126952,
-    "separable": false
-   }
-  ],
+  "resolution": [],
   "stability_note": "energy drop on relaxation only; no hull energy, so stability is not claimed",
   "window_eV": 0.5
  },
@@ -1396,25 +954,10 @@
   "zero_share": 0.68
  },
  "files": {
-  "accepted/BaBHS2_T3_n10_198.cif": {
-   "bytes": 1168,
-   "media": "chemical/x-cif",
-   "sha256": "d1913b707b3232b5124eb69275e6b9c2c143585aea8fa3ae867a2051536f75ba"
-  },
   "accepted/CaO_T3_n16_540.cif": {
    "bytes": 1472,
    "media": "chemical/x-cif",
    "sha256": "6ce04e06f8488d55915bf0e777319d297400f6c6f92459ebf75bc3067d839f11"
-  },
-  "accepted/HfZrAuI4_T0.5_n14_31.cif": {
-   "bytes": 1385,
-   "media": "chemical/x-cif",
-   "sha256": "c50260a7e93c58201a3471ed37f5087de080fc5e052e73e19466d0ac5361b717"
-  },
-  "accepted/KTe_T1_n16_6.cif": {
-   "bytes": 1476,
-   "media": "chemical/x-cif",
-   "sha256": "222ed4122d02c48bc57017a954c9b002c87cb0e32119050ead22bd36417d54b1"
   },
   "accepted/Na2Ag2Sb2Te_T0.5_n7_38.cif": {
    "bytes": 1039,
@@ -2322,7 +1865,7 @@
    "sha256": "7b9fee7415ab1e6044148e8a6037df879926ef02f4ccbf9e7dce386670ce4fb9"
   }
  },
- "headline": "Requested band gap in, relaxed structures out: 7 accepted from 175 generated, 3 new compositions, and known compounds returned at their recorded gaps; 20 of the 37 relaxed cells collapsed and were set aside.",
+ "headline": "Requested band gap in, relaxed structures out: 4 accepted from 175 generated (1 new composition, 2 new polymorphs of a known formula, 1 known structure found again); of the 37 relaxed cells, 20 collapsed and 4 were slabs or sparse cells, all set aside.",
  "id": "mp20",
  "judge": {
   "by_fidelity": {
@@ -2339,21 +1882,25 @@
   "spearman": 0.8151632376218869
  },
  "limits": [
-  "Serviceable range 1–3 eV; above 3 eV the generator saturates.",
-  "Resolution about 1 eV; precision ±0.7 eV per structure.",
+  "Served 0.5, 1.5, 2.5, 3 eV of the requested 0.5, 1, 1.5, 2, 2.5, 3, 4 eV; delivered = 0.34 + 0.71 × requested (R² 0.24).",
+  "Precision ±0.7 eV per structure (the median spread of the delivered gaps for one request).",
+  "Both readings are machine-learning estimates of the PBE band gap MP-20 records; PBE gaps are usually smaller than measured ones.",
   "The generated cell is a starting point: relaxation lowers the energy by 1.3–8.7 eV/atom and moves atoms 1.4–2.3 Å; the relaxed cell is the product.",
-  "20 of the 37 relaxed cells collapsed (closest atoms under 0.6 of their radii; a sound crystal is near 1) and are set aside: the accepted structures and every calibration number come from the 17 that stayed physical.",
+  "Of the 37 relaxed cells, 20 collapsed (closest atoms under 0.6 of their radii; a sound crystal is near 1) and 4 are slabs or sparse cells (an empty layer over 6 Å or a packing fraction under 0.12, lines that 98.7% of the 45,229 known MP-20 crystals meet): all are set aside, and the accepted structures and every calibration number come from the 13 that remain.",
+  "Relaxation moves the cells away from what the judge expected: on the same 13 cells its error against the request is 0.25 eV before relaxation and 0.88 eV after.",
+  "A known formula counts as rediscovered only when its relaxed cell matches an MP-20 entry of that formula (StructureMatcher, every entry compared).",
   "No hull energy is computed: nothing here is called stable.",
   "Coordinate accuracy (RMSE 0.24) is the open defect; a Wyckoff-letter head is the identified fix."
  ],
  "mode": "generation, family-free (symmetry decoder)",
  "order": 4,
  "pool": {
-  "accepted": 7,
+  "accepted": 4,
   "both_judges_generated": 37,
   "collapsed_on_relaxation": 20,
   "generated": 175,
-  "relaxed": 17
+  "not_bulk_on_relaxation": 4,
+  "relaxed": 13
  },
  "reproduce": [
   {
@@ -2370,9 +1917,9 @@
   "eval/results/d1_pool",
   "eval/results/d1_consensus",
   "eval/results/d1_relaxed",
-  "eval/results/d1_relaxed_physical",
-  "eval/results/d1_instrument_physical",
-  "journal entries 53–64, 70"
+  "eval/results/d1_relaxed_bulk",
+  "eval/results/d1_instrument_bulk",
+  "journal entries 53–64, 70, 71"
  ],
  "title": "MP-20",
  "verdicts": {
@@ -2394,7 +1941,7 @@
   },
   "S4": {
    "grade": "PASS",
-   "note": "label read from the returned cell; agrees with the independent judge within 0.5 eV for 19 of 22"
+   "note": "label read from the returned cell; agrees with the judge (a second model) within 0.5 eV for 19 of 22"
   },
   "S5": {
    "grade": "PASS",
@@ -2402,11 +1949,11 @@
   },
   "S6": {
    "grade": "PASS",
-   "note": "independent judge against the request: 1.10 eV on generated cells, 0.80 eV on the 17 relaxed cells that stayed physical; two-judge consensus yield 0.21"
+   "note": "judge against the request: 1.10 eV on all 175 generated cells; on the same 13 cells 0.25 eV before relaxation and 0.88 eV after it; two-judge consensus yield 0.21"
   },
   "S7": {
    "grade": "PARTIAL",
-   "note": "two potentials relax all 37 consensus cells; 20 collapse (closest atoms under 0.6 of their radii) and are set aside; novel 88% of the accepted-window cells; no hull energy computed"
+   "note": "two potentials relax all 37 consensus cells; 20 collapse (closest atoms under 0.6 of their radii) and 4 are slabs or sparse cells (an empty layer over 6 Å or a packing fraction under 0.12), all set aside; novel 80% of the accepted-window cells; no hull energy computed"
   },
   "S8": {
    "grade": "PASS",

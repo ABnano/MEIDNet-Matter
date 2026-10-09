@@ -1,6 +1,51 @@
 [
  {
   "backend": "meidnet",
+  "description": "MEIDNet retrained on the Perov-5 training split with element descriptors: the final Perov-5 configuration of the research pipeline (MEIDNet 2 checkpoint).",
+  "family": null,
+  "file": "desc_full.pt",
+  "latent_dim": 128,
+  "latents_file": "latents_train.desc-full.npz",
+  "legacy": false,
+  "max_sites": 5,
+  "model_id": "desc-full",
+  "note": "",
+  "properties": [
+   {
+    "column": "heat_all",
+    "label": "Formation enthalpy",
+    "max": 5.16,
+    "mean": 1.4850704473406147,
+    "min": -0.64,
+    "std": 0.7390788300661576,
+    "unit": "eV/atom"
+   },
+   {
+    "column": "dir_gap",
+    "label": "Direct band gap",
+    "max": 7.9,
+    "mean": 0.09107960549489257,
+    "min": 0.0,
+    "std": 0.5470602826046325,
+    "unit": "eV"
+   }
+  ],
+  "property_ranges": {
+   "dir_gap": [
+    0.0,
+    7.9
+   ],
+   "heat_all": [
+    -0.64,
+    5.16
+   ]
+  },
+  "sha256": "24059804ceae1fafbf4279c527fa9974f5576f9de6d27753a975cd77a4a54b83",
+  "trained_on": "train",
+  "training_rows": 11356
+ },
+ {
+  "backend": "meidnet",
   "description": "The published Perov-5 model of the MEIDNet paper (MEIDNet v1 checkpoint).",
   "family": "perovskite_abx3",
   "file": "dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth",

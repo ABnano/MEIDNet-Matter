@@ -84,7 +84,7 @@ MP20_VERDICT_NOTES = {
     "S1": ("PASS", "held-out band-gap MAE 0.27 eV, formation energy 0.054 eV/atom (baseline 0.26 / 0.047)"),
     "S2": ("PASS", "alignment cosine 0.48 at 100 epochs, 0.64 at 350 (baseline 0.63)"),
     "S3": ("WARN", "template-free valid cells 63% (free decoder 2%), 55 space groups, space group exact 68%; composition exact 12%; coordinate RMSE 0.24"),
-    "S4": ("PASS", "label read from the returned cell; agrees with the independent judge within 0.5 eV for 19 of 22"),
+    "S4": ("PASS", "label read from the returned cell; agrees with the judge (a second model) within 0.5 eV for 19 of 22"),
     "S5": ("PASS", "target anchor only (latent refinement removed: semiconductor share 20% → 42–62%); one anion required; cell capped"),
     "S6": ("PASS", "independent judge against the request: 1.10 eV on generated cells, 0.68 eV on relaxed cells; two-judge consensus yield 0.21"),
     "S7": ("PARTIAL", "two potentials relax all 37 consensus cells; designed space group kept 50–100%; unique 100%, novel 95%; no hull energy computed"),
@@ -324,16 +324,6 @@ def known_formulas(intake: str) -> dict:
     return {k: sorted(v) for k, v in sorted(known.items())}
 
 
-def classify(known: bool, amd):
-    if known and amd is not None and amd < 0.3:
-        return "rediscovered known structure"
-    if known and amd is not None and amd < 0.35:
-        return "rediscovered (borderline)"
-    if known:
-        return "new polymorph of known formula"
-    return "new composition, new structure"
-
-
 def build_mp20(a, out: str) -> dict:
     from meidnet_eval import stages
     from meidnet_eval.metrics_sun import amd as amd_vector
@@ -341,9 +331,9 @@ def build_mp20(a, out: str) -> dict:
     sd = os.path.join(out, "studies", "mp20"); files = {}
     sup = os.path.join(out, "support", "mp20"); os.makedirs(sup, exist_ok=True)
     audit = json.load(open(os.path.join(D, "audit.json"))); prev = json.load(open(os.path.join(D, "preview.json")))
-    # the calibration without the relaxed cells that collapsed (d1_instrument_physical; d1_instrument is the sheet before
-    # the contact test, kept as it was)
-    inst = json.load(open(os.path.join(R, "d1_instrument_physical", "instrument.json")))
+    # the calibration without the relaxed cells that collapsed or are slabs or sparse cells (d1_instrument_bulk; the sheets
+    # before those tests, d1_instrument and d1_instrument_physical, are kept as they were)
+    inst = json.load(open(os.path.join(R, "d1_instrument_bulk", "instrument.json")))
     pool_cal = json.load(open(os.path.join(R, "d1_pool", "calibration.json")))
     # support: judge qualification (precomputed), the exact test rows it used, known formulas, a reference AMD set
     write_json(os.path.join(sup, "judge_qualification.json"), finite(pool_cal["judge_qualification"]))
@@ -370,19 +360,23 @@ def build_mp20(a, out: str) -> dict:
     rcal = json.load(open(os.path.join(R, "d1_relaxed", "calibration.json")))["per_candidate"]
     mlip = [r for f in sorted(glob.glob(os.path.join(R, "d1_consensus", "mlip_shard*.json"))) for r in json.load(open(f))]
     ml = {os.path.basename(r["file"]): r for r in mlip}
-    sun = pd.read_csv(os.path.join(R, "d1_relaxed_physical", "sun_relaxed_strict_per_candidate.csv"))
+    sun = pd.read_csv(os.path.join(R, "d1_relaxed_bulk", "sun_relaxed_strict_per_candidate.csv"))
     amd_by_formula = dict(zip(sun["formula"], sun["amd_nearest"]))
-    from meidnet_eval.d1_mlip_check import COLLAPSED, contact_ratio
-    accepted = []
+    from meidnet_eval.d1_mlip_check import COLLAPSED, bulk_problem, contact_ratio
+    from meidnet_eval.instrument_sheet import classify, same_formula_match
+    shutil.rmtree(os.path.join(sd, "files", "accepted"), ignore_errors=True)     # only this build's accepted cells
+    accepted, match_cache = [], {}
     for _, r in rel.iterrows():
         c = rcal.get(r["file"], {}); lab, jud = c.get("reencoded_gap"), c.get("independent_gap")
         if lab is None or jud is None or not (abs(lab - r["target"]) <= 0.5 and abs(jud - r["target"]) <= 0.5) or (r["target"] > 0 and jud < 0.1):
             continue
         base = os.path.basename(r["file"]); m = ml.get(base, {}); d = amd_by_formula.get(r["formula"])
-        if contact_ratio(Structure.from_file(os.path.join(R, "d1_consensus", "relaxed_tensornet", base))) < COLLAPSED:
-            continue                                          # collapsed on relaxation: not a crystal, not accepted
+        cell = Structure.from_file(os.path.join(R, "d1_consensus", "relaxed_tensornet", base))
+        if contact_ratio(cell) < COLLAPSED or bulk_problem(cell):
+            continue                                          # collapsed, a slab or a sparse cell: not a bulk crystal, not accepted
         d = None if d is None or d != d else float(d)
         is_known = r["formula"] in known
+        match = same_formula_match(cell, D, match_cache) if is_known else None     # every MP-20 entry of that formula
         from pymatgen.core import Composition
         try:
             balanced = bool(Composition(r["formula"]).oxi_state_guesses(max_sites=-1))
@@ -399,7 +393,8 @@ def build_mp20(a, out: str) -> dict:
             structure = None
         accepted.append({"requested": float(r["target"]), "formula": r["formula"], "label_structure_gap": round(float(lab), 3), "structure": structure,
                          "judge_gap": round(float(jud), 3), "amd_nearest": None if d is None else round(d, 3), "known_formula": is_known,
-                         "recorded_gaps": known.get(r["formula"], []), "class": classify(is_known, d), "charge_balanced": balanced,
+                         "recorded_gaps": known.get(r["formula"], []), "class": classify(is_known, match), "reference_id": match,
+                         "charge_balanced": balanced,
                          "relaxation_drop_eV_atom": m.get("tensornet_drop_per_atom"), "spacegroup_designed": m.get("spacegroup_designed"),
                          "spacegroup_relaxed": m.get("tensornet_spacegroup_relaxed"), "natoms": int(r["natoms"]), "file": f"accepted/{name}",
                          "flag": "judges disagree" if abs(lab - jud) > 0.5 else ""})
@@ -417,12 +412,15 @@ def build_mp20(a, out: str) -> dict:
     for f in sorted(glob.glob(os.path.join(R, "d1_pool", "cifs", "*.cif"))):
         copy_file(f, sd, f"pool/{os.path.basename(f)}", files, "chemical/x-cif")
     # verdicts through the central bands where measured values exist
-    f_ = inst["funnel"]; acc_ = inst["accuracy"]; n_col = int(f_.get("collapsed_on_relaxation", 0)); n_rel_all = int(f_["relaxed"]) + n_col
+    f_ = inst["funnel"]; acc_ = inst["accuracy"]; n_col = int(f_.get("collapsed_on_relaxation", 0)); n_nb = int(f_.get("not_bulk_on_relaxation", 0))
+    n_rel_all = int(f_["relaxed"]) + n_col + n_nb
     measured = dict(MP20_MEASURED, S6=dict(MP20_MEASURED["S6"], judge_mae_request=acc_["mae_relaxed_cells"]))
     notes = dict(MP20_VERDICT_NOTES)
-    notes["S6"] = (notes["S6"][0], f"independent judge against the request: {acc_['mae_generated_cells']:.2f} eV on generated cells, "
-                                   f"{acc_['mae_relaxed_cells']:.2f} eV on the {f_['relaxed']} relaxed cells that stayed physical; two-judge consensus yield {f_['both_judges'] / f_['generated']:.2f}")
-    notes["S7"] = (notes["S7"][0], f"two potentials relax all {n_rel_all} consensus cells; {n_col} collapse (closest atoms under 0.6 of their radii) and are set aside; "
+    notes["S6"] = (notes["S6"][0], f"judge against the request: {acc_['mae_generated_cells']:.2f} eV on all {f_['generated']} generated cells; on the same "
+                                   f"{acc_['same_cells']} cells {acc_['mae_same_cells_before_relaxation']:.2f} eV before relaxation and {acc_['mae_relaxed_cells']:.2f} eV after it; "
+                                   f"two-judge consensus yield {f_['both_judges'] / f_['generated']:.2f}")
+    notes["S7"] = (notes["S7"][0], f"two potentials relax all {n_rel_all} consensus cells; {n_col} collapse (closest atoms under 0.6 of their radii) and {n_nb} are "
+                                   f"slabs or sparse cells (an empty layer over 6 Å or a packing fraction under 0.12), all set aside; "
                                    f"novel {100 * inst['novelty']['novel_share']:.0f}% of the accepted-window cells; no hull energy computed")
     verdicts = {}
     for blk, (grade, note) in notes.items():
@@ -442,23 +440,34 @@ def build_mp20(a, out: str) -> dict:
                     "shared_profile_share": finite(audit.get("materials_sharing_profile_with_>=10")), "zero_share": 0.68,
                     "source": "Materials Project, structures of at most 20 atoms (the MP-20 benchmark split)", "properties": ["formation_energy_per_atom", "band_gap"]},
         "mode": "generation, family-free (symmetry decoder)",
-        "headline": (f"Requested band gap in, relaxed structures out: {len(accepted)} accepted from {len(pool)} generated, "
-                     f"{classes.get('new composition, new structure', 0)} new compositions, and known compounds returned at their recorded gaps; "
-                     f"{n_col} of the {n_rel_all} relaxed cells collapsed and were set aside."),
+        "headline": (f"Requested band gap in, relaxed structures out: {len(accepted)} accepted from {len(pool)} generated ("
+                     + ", ".join(f"{n} {word}{'s' if n != 1 else ''}{tail}" for n, word, tail in (
+                         (classes.get("new composition, new structure", 0), "new composition", ""),
+                         (classes.get("new polymorph of known formula", 0), "new polymorph", " of a known formula"),
+                         (classes.get("rediscovered known structure", 0), "known structure", " found again")) if n)
+                     + f"); of the {n_rel_all} relaxed cells, {n_col} collapsed and {n_nb} were slabs or sparse cells, all set aside."),
         "verdicts": verdicts,
         "calibration": inst,
         "accepted": accepted, "accepted_classes": classes,
         "pool": {"generated": int(len(pool)), "both_judges_generated": int(inst["funnel"]["both_judges"]), "relaxed": int(inst["funnel"]["relaxed"]),
-                 "collapsed_on_relaxation": n_col, "accepted": len(accepted)},
+                 "collapsed_on_relaxation": n_col, "not_bulk_on_relaxation": n_nb, "accepted": len(accepted)},
         "judge": finite(pool_cal["judge_qualification"]),
         "checkpoints": ["mp20-wyck", "mp20-main", "mp20-wyck-long", "mp20-wyck-bins"],
         "reproduce": [{"step": "one command", "command": "python -m meidnet_eval.generate_to_target --ckpt mp20_wyck.pt --intake <mp20 intake> --gap band_gap --targets 1.5 2.0 2.5 3.0 --per-target 25 --tag <tag>"},
                       {"step": "calibration", "command": "python -m meidnet_eval.instrument_sheet --pool <tag> --relaxed <tag>/relaxed --consensus <tag>/relax --out <tag>/instrument"}],
-        "limits": ["Serviceable range 1–3 eV; above 3 eV the generator saturates.", "Resolution about 1 eV; precision ±0.7 eV per structure.",
+        "limits": [f"Served {', '.join(f'{x:g}' for x in inst['range']['served'])} eV of the requested {', '.join(f'{x:g}' for x in inst['range']['requested'])} eV; "
+                   f"delivered = {inst['linearity']['intercept']:.2f} + {inst['linearity']['slope']:.2f} × requested (R² {inst['linearity']['r2']:.2f}).",
+                   f"Precision ±{inst['precision']['within_target_sd_median']:.1f} eV per structure (the median spread of the delivered gaps for one request).",
+                   "Both readings are machine-learning estimates of the PBE band gap MP-20 records; PBE gaps are usually smaller than measured ones.",
                    "The generated cell is a starting point: relaxation lowers the energy by 1.3–8.7 eV/atom and moves atoms 1.4–2.3 Å; the relaxed cell is the product.",
-                   f"{n_col} of the {n_rel_all} relaxed cells collapsed (closest atoms under 0.6 of their radii; a sound crystal is near 1) and are set aside: the accepted structures and every calibration number come from the {f_['relaxed']} that stayed physical.",
+                   f"Of the {n_rel_all} relaxed cells, {n_col} collapsed (closest atoms under 0.6 of their radii; a sound crystal is near 1) and {n_nb} are slabs or sparse cells "
+                   f"(an empty layer over 6 Å or a packing fraction under 0.12, lines that 98.7% of the 45,229 known MP-20 crystals meet): all are set aside, and the accepted "
+                   f"structures and every calibration number come from the {f_['relaxed']} that remain.",
+                   f"Relaxation moves the cells away from what the judge expected: on the same {acc_['same_cells']} cells its error against the request is "
+                   f"{acc_['mae_same_cells_before_relaxation']:.2f} eV before relaxation and {acc_['mae_relaxed_cells']:.2f} eV after.",
+                   "A known formula counts as rediscovered only when its relaxed cell matches an MP-20 entry of that formula (StructureMatcher, every entry compared).",
                    "No hull energy is computed: nothing here is called stable.", "Coordinate accuracy (RMSE 0.24) is the open defect; a Wyckoff-letter head is the identified fix."],
-        "files": files, "sources": ["eval/results/d1_pool", "eval/results/d1_consensus", "eval/results/d1_relaxed", "eval/results/d1_relaxed_physical", "eval/results/d1_instrument_physical", "journal entries 53–64, 70"],
+        "files": files, "sources": ["eval/results/d1_pool", "eval/results/d1_consensus", "eval/results/d1_relaxed", "eval/results/d1_relaxed_bulk", "eval/results/d1_instrument_bulk", "journal entries 53–64, 70, 71"],
     }
     write_json(os.path.join(sd, "study.json"), scrub_paths(finite(study)))
     return {"id": "mp20", "verdicts": {k: v["grade"] for k, v in verdicts.items()}}

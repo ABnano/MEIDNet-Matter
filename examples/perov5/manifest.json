@@ -1,14 +1,15 @@
 {
  "artefacts_version": 1,
  "built_with": {
-  "meidnet": "2.2.0",
-  "numpy": "2.5.1",
-  "torch": "2.12.1+cpu"
+  "meidnet": "2.4.0.dev3",
+  "numpy": "2.5.3",
+  "torch": "2.14.1+cpu"
  },
- "computed_at": "2026-10-06",
+ "computed_at": "2026-10-09",
  "dataset_fingerprint": "059d638f59d81c05f6e38ce2efb5db59bc6cdcbe2df8f4fd5bf85d1286f43e04",
  "limit": null,
  "models": {
+  "desc-full": "24059804ceae1fafbf4279c527fa9974f5576f9de6d27753a975cd77a4a54b83",
   "meidnet-2k": "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87"
  },
  "rows": {

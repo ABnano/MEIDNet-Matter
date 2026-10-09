@@ -39,7 +39,7 @@
   },
   "family": "perovskite_abx3",
   "max_elements": null,
-  "model_id": "meidnet-2k",
+  "model_id": "desc-full",
   "novelty": {
    "require_not_in_dataset": false
   },
@@ -62,9 +62,10 @@
   "rule_overrides": {},
   "variant": "oxide"
  },
- "default_model": "meidnet-2k",
- "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the formation energy, and the published MEIDNet model trained on them.",
+ "default_model": "desc-full",
+ "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the formation energy, and two MEIDNet models trained on them: desc-full (the default) and meidnet-2k. The readiness page shows how closely each one reads the properties of held-out materials.",
  "models": [
+  "desc-full",
   "meidnet-2k"
  ],
  "privacy": {
