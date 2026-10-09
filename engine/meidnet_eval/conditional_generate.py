@@ -121,13 +121,25 @@ def structure_label(lm, s):
 
 
 def plausible(s, min_d=0.7, max_vol_per_atom=200.0):
-    """Reject cells that cannot be a material at all, so the judges are not asked to score nonsense."""
+    """Reject cells that cannot be a material at all, so the judges are not asked to score nonsense: atoms on top of each
+    other, an implausible volume, or a slab or sparse cage (d1_mlip_check.bulk_problem), which relaxation does not turn
+    into a bulk crystal.  Atoms closer than 0.6 of their radii are not rejected here: relaxation repairs a third of such
+    cells, so that test is made on the relaxed cell."""
+    try:
+        from meidnet_eval.d1_mlip_check import MAX_EMPTY_LAYER, MIN_PACKING, empty_layer, packing_fraction
+    except ImportError:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from d1_mlip_check import MAX_EMPTY_LAYER, MIN_PACKING, empty_layer, packing_fraction
     try:
         if s.volume / len(s) > max_vol_per_atom or s.volume / len(s) < 2.0:
             return False, "implausible volume per atom"
         d = s.distance_matrix + np.eye(len(s)) * 99
         if len(s) > 1 and d.min() < min_d:
             return False, f"atoms {d.min():.2f} A apart"
+        if empty_layer(s) > MAX_EMPTY_LAYER:
+            return False, f"empty layer thicker than {MAX_EMPTY_LAYER:g} A (a slab, not a bulk crystal)"
+        if packing_fraction(s) < MIN_PACKING:
+            return False, f"packing fraction below {MIN_PACKING:g} (too little matter for a bulk crystal)"
         return True, ""
     except Exception as e:
         return False, type(e).__name__

@@ -3,11 +3,13 @@
 Stated the way a measuring device is specified: response curve, bias, precision, accuracy with a confidence interval,
 linearity, resolution between adjacent requests, serviceable range, yield per stage, plus the stability proxy and the
 novelty of the delivered cells.  Everything is read from the result folders a run leaves behind.  A relaxed cell that
-collapsed (closest atoms nearer than 0.6 of their radii) describes no material: it is counted in the funnel and listed,
-and its gap is left out of every number.
+collapsed (closest atoms nearer than 0.6 of their radii) describes no material, and one with an empty layer thicker than
+6 A or a packing fraction below 0.12 is a slab or a sparse cage, not a bulk crystal: each is counted in the funnel and
+listed, and its gap is left out of every number.  The judge's error before relaxation is also given on the same cells
+as after it, so the two can be compared.
 
 Usage: python instrument_sheet.py --pool DIR --relaxed DIR --consensus DIR --out DIR [--window 0.5] [--min-gap 0.1]
-       [--sun FILE] [--sun-per-candidate FILE] [--known-formulas FILE]
+       [--sun FILE] [--sun-per-candidate FILE] [--known-formulas FILE] [--reference-intake DIR]
 """
 import argparse, glob, json, os
 
@@ -30,11 +32,15 @@ def load(a):
         rel["contact_ratio"] = rel["file"].map(lambda f: _contact(a, f))
         collapsed = rel[rel["contact_ratio"] < _collapsed_line()]
         rel = rel.drop(collapsed.index)
+        # nor is a slab or a sparse cage a bulk crystal: left out the same way
+        rel["bulk_problem"] = rel["file"].map(lambda f: _bulk_problem(a, f))
+        not_bulk = rel[rel["bulk_problem"] != ""]
+        rel = rel.drop(not_bulk.index)
     else:                                   # no relaxed folder: the sheet describes the generated (unrelaxed) cells and says so
         rel = cons.copy()
         rel["label_structure"] = rel.get("label_gap", rel.get("label_structure_gap"))
         rel["judge"] = rel["file"].map(lambda f: pcal["per_candidate"].get(f, {}).get("independent_gap"))
-        collapsed = rel.iloc[0:0]
+        collapsed = not_bulk = rel.iloc[0:0]
     mlip = [r for f in glob.glob(f"{a.consensus}/mlip_shard*.json") for r in json.load(open(f))] if a.consensus else []
     drop = {os.path.basename(r["file"]): r.get("tensornet_drop_per_atom") for r in mlip}
     kept = {os.path.basename(r["file"]): r.get("tensornet_spacegroup_relaxed") == r.get("spacegroup_designed") for r in mlip}
@@ -45,7 +51,7 @@ def load(a):
         if os.path.exists(cand):
             sun = json.load(open(cand))
             break
-    return pool, pcal, cons, rel, sun, collapsed
+    return pool, pcal, cons, rel, sun, collapsed, not_bulk
 
 
 def _collapsed_line():
@@ -56,21 +62,37 @@ def _collapsed_line():
     return COLLAPSED
 
 
-def _contact(a, f):
-    """Contact ratio of the relaxed cell behind a candidates-table row (the relaxed folder's copy, else the relaxer's own)."""
-    try:
-        from meidnet_eval.d1_mlip_check import contact_ratio
-    except ImportError:
-        from d1_mlip_check import contact_ratio
+def _relaxed_cell(a, f):
+    """The relaxed cell behind a candidates-table row (the relaxed folder's copy, else the relaxer's own), or None."""
     from pymatgen.core import Structure
     for p in ([os.path.join(a.relaxed, f)] if a.relaxed else []) + \
              ([os.path.join(a.consensus, "relaxed_tensornet", os.path.basename(f))] if a.consensus else []):
         if os.path.exists(p):
             try:
-                return contact_ratio(Structure.from_file(p))
+                return Structure.from_file(p)
             except Exception:
-                return np.nan
-    return np.nan
+                return None
+    return None
+
+
+def _contact(a, f):
+    """Contact ratio of the relaxed cell behind a candidates-table row."""
+    try:
+        from meidnet_eval.d1_mlip_check import contact_ratio
+    except ImportError:
+        from d1_mlip_check import contact_ratio
+    s = _relaxed_cell(a, f)
+    return contact_ratio(s) if s is not None else np.nan
+
+
+def _bulk_problem(a, f):
+    """'' when the relaxed cell behind a row can be a bulk crystal, else why not (empty layer, packing)."""
+    try:
+        from meidnet_eval.d1_mlip_check import bulk_problem
+    except ImportError:
+        from d1_mlip_check import bulk_problem
+    s = _relaxed_cell(a, f)
+    return bulk_problem(s) if s is not None else ""
 
 
 def per_target(pool, cons, ok, final):
@@ -97,20 +119,51 @@ def per_target(pool, cons, ok, final):
     return rows
 
 
-def classify(known: bool, amd: float | None) -> str:
-    """What relaxation revealed: a known structure found again, a new polymorph of a known formula, or a new composition."""
-    if known and amd is not None and amd < 0.3:
-        return "rediscovered known structure"
-    if known and amd is not None and amd < 0.35:
-        return "rediscovered (borderline)"
-    if known:
-        return "new polymorph of known formula"
-    return "new composition, new structure"
+def classify(known: bool, match_id: str | None, compared: bool = True) -> str:
+    """What relaxation revealed: a known structure found again (its structure matches an entry of the same formula), a new
+    polymorph of a known formula, or a new composition.  Without a structure comparison a known formula is only that."""
+    if not known:
+        return "new composition, new structure"
+    if not compared:
+        return "known formula (structure not compared)"
+    return "rediscovered known structure" if match_id else "new polymorph of known formula"
+
+
+def same_formula_match(structure, intake: str, cache: dict) -> str | None:
+    """The id of the first entry of the intake (train/val/test CSVs with a cif column) with the same reduced formula whose
+    structure matches (pymatgen StructureMatcher, default tolerances, volumes scaled), else None.  Every entry of that
+    formula is compared, not a sample, and no entry of another composition can match."""
+    from pymatgen.analysis.structure_matcher import StructureMatcher
+    from pymatgen.core import Composition, Structure
+    if "by_formula" not in cache:
+        rows = {}
+        for split in ("train", "val", "test"):
+            p = os.path.join(intake, f"{split}.csv")
+            if not os.path.exists(p):
+                continue
+            t = pd.read_csv(p)
+            ids = t["material_id"].astype(str) if "material_id" in t.columns else pd.Series([f"{split}-{i}" for i in range(len(t))])
+            for mid, cif, fml in zip(ids, t["cif"], t["formula"] if "formula" in t.columns else [None] * len(t)):
+                try:
+                    key = Composition(fml).reduced_formula if isinstance(fml, str) else Structure.from_str(cif, fmt="cif").composition.reduced_formula
+                except Exception:
+                    continue
+                rows.setdefault(key, []).append((mid, cif))
+        cache["by_formula"] = rows
+    matcher = StructureMatcher()
+    for mid, cif in cache["by_formula"].get(structure.composition.reduced_formula, []):
+        try:
+            if matcher.fit(structure, Structure.from_str(cif, fmt="cif")):
+                return mid
+        except Exception:
+            continue
+    return None
 
 
 def accepted_table(final, a) -> pd.DataFrame:
     """One row per accepted material with the evidence a reader needs: both gaps on the relaxed cell, the AMD distance,
-    whether the formula exists in the training data (and at which recorded gaps), the class, and a charge-balance flag."""
+    whether the formula exists in the training data (and at which recorded gaps), the class (with the matching entry when the
+    structure was compared), and a charge-balance flag."""
     amd, by_file = {}, False
     if a.sun_per_candidate and os.path.exists(a.sun_per_candidate):
         t = pd.read_csv(a.sun_per_candidate)
@@ -123,11 +176,16 @@ def accepted_table(final, a) -> pd.DataFrame:
         import gzip
         opener = gzip.open if a.known_formulas.endswith(".gz") else open
         known = json.load(opener(a.known_formulas, "rt"))
-    rows = []
+    rows, cache = [], {}
+    compare = bool(getattr(a, "reference_intake", None))
     for _, r in final.sort_values(["target", "formula"]).iterrows():
         d = amd.get(os.path.basename(str(r["file"]))) if by_file else amd.get(r["formula"])
         d = None if d is None or d != d else float(d)
         is_known = r["formula"] in known if known else None
+        match = None
+        if is_known and compare:
+            s = _relaxed_cell(a, r["file"])
+            match = same_formula_match(s, a.reference_intake, cache) if s is not None else None
         try:
             from pymatgen.core import Composition
             balanced = bool(Composition(r["formula"]).oxi_state_guesses(max_sites=-1))
@@ -136,11 +194,18 @@ def accepted_table(final, a) -> pd.DataFrame:
         rows.append(dict(requested=float(r["target"]), formula=r["formula"], label_structure=round(float(r["label_structure"]), 3),
                          judge=round(float(r["judge"]), 3), amd_nearest=None if d is None else round(d, 3),
                          known_formula=is_known, recorded_gaps=",".join(f"{g:.2f}" for g in known.get(r["formula"], [])) if known else "",
-                         cls=classify(bool(is_known), d) if is_known is not None else "",
+                         cls=classify(bool(is_known), match, compare) if is_known is not None else "", reference_id=match or "",
                          charge_balanced=balanced, drop_eV_atom=r.get("drop"), spacegroup_kept=r.get("sg_kept"),
                          natoms=int(r["natoms"]) if "natoms" in r else None, file=r.get("file"),
                          flag="judges disagree" if abs(float(r["label_structure"]) - float(r["judge"])) > 0.5 else ""))
     return pd.DataFrame(rows).rename(columns={"cls": "class"})
+
+
+def _mae_before(pool, ok):
+    """The judge's error on the generated (unrelaxed) versions of the cells that make up the relaxed set."""
+    names = set(ok["file"].map(os.path.basename))
+    same = pool[pool["file"].map(os.path.basename).isin(names)].dropna(subset=["judge_generated"])
+    return float(np.abs(same["judge_generated"] - same["target"]).mean()) if len(same) else None
 
 
 def main():
@@ -156,9 +221,11 @@ def main():
     ap.add_argument("--sun", default=None, help="metrics_sun JSON for the novelty line (default: the relaxed folder's sun_relaxed_strict.json or sun.json)")
     ap.add_argument("--sun-per-candidate", default=None, help="metrics_sun per-candidate CSV (adds the AMD distance per material)")
     ap.add_argument("--known-formulas", default=None, help="JSON {reduced formula: [gaps]} of the training data (adds known/new and the recorded gaps)")
+    ap.add_argument("--reference-intake", default=None, help="the intake folder (train/val/test CSVs with a cif column): a known formula is called "
+                                                              "rediscovered only when its relaxed cell matches an entry of that formula (StructureMatcher)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    pool, pcal, cons, rel, sun, collapsed = load(a)
+    pool, pcal, cons, rel, sun, collapsed, not_bulk = load(a)
 
     ok = rel.dropna(subset=["label_structure", "judge"]).copy()
     in_window = (abs(ok["label_structure"] - ok["target"]) <= a.window) & (abs(ok["judge"] - ok["target"]) <= a.window)
@@ -184,12 +251,15 @@ def main():
     sheet = dict(
         window_eV=a.window, metal_floor_eV=a.min_gap,
         funnel=dict(generated=int(len(pool)), both_judges=int(len(cons)), collapsed_on_relaxation=int(len(collapsed)),
-                    relaxed=int(len(ok)), final=int(len(final))),
+                    not_bulk_on_relaxation=int(len(not_bulk)), relaxed=int(len(ok)), final=int(len(final))),
         collapsed_on_relaxation=[dict(formula=r["formula"], target=float(r["target"]), contact_ratio=round(float(r["contact_ratio"]), 2))
                                  for _, r in collapsed.iterrows()],
+        not_bulk_on_relaxation=[dict(formula=r["formula"], target=float(r["target"]), reason=r["bulk_problem"]) for _, r in not_bulk.iterrows()],
         judge=pcal.get("judge_qualification"),
         per_target=rows,
         accuracy=dict(mae_generated_cells=float(np.abs(pool["judge_generated"] - pool["target"]).mean()),
+                      # the same cells before relaxation, so that before and after compare like with like
+                      mae_same_cells_before_relaxation=_mae_before(pool, ok), same_cells=int(len(ok)),
                       mae_relaxed_cells=float(np.abs(y - x).mean()),
                       mae_relaxed_ci95=[float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5))],
                       within_window=int((np.abs(y - x) <= a.window).sum()), of=int(len(x))),
@@ -220,7 +290,10 @@ def main():
     acc, lin = sheet["accuracy"], sheet["linearity"]
     cells = sheet.get("cells", "relaxed")
     print(f"\ncells: {cells}")
-    print(f"accuracy: MAE generated {acc['mae_generated_cells']:.2f} -> {'relaxed' if cells == 'relaxed' else 'kept (unrelaxed)'} {acc['mae_relaxed_cells']:.2f} eV "
+    before = acc["mae_same_cells_before_relaxation"]
+    print(f"accuracy: MAE on all generated cells {acc['mae_generated_cells']:.2f} eV; on the same {acc['same_cells']} cells "
+          + (f"{before:.2f} before relaxation -> " if before is not None else "")
+          + f"{'relaxed' if cells == 'relaxed' else 'kept (unrelaxed)'} {acc['mae_relaxed_cells']:.2f} eV "
           f"(95% CI {acc['mae_relaxed_ci95'][0]:.2f}-{acc['mae_relaxed_ci95'][1]:.2f}); within {a.window} eV: {acc['within_window']} of {acc['of']}")
     if len(x) >= 3 and lin["slope"] == lin["slope"]:
         print(f"linearity: delivered = {lin['intercept']:.2f} + {lin['slope']:.2f} x requested (R2 {lin['r2']:.2f}, Spearman {lin['spearman']:.2f}); ideal 0 + 1.00 x")

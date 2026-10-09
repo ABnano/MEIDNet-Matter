@@ -173,6 +173,7 @@ def main():
     ap.add_argument("--family", default=None, help="family for the design-space checks of stage 0 (default: the Perov-5 demo "
                     "family); 'none' skips them, e.g. when discover.py checks the design space in its own stage")
     ap.add_argument("--variant", default="oxide")
+    ap.add_argument("--out-dir", default=None, help="where <tag>.json and <tag>.md go (default: results/checkups beside this file)")
     a = ap.parse_args()
     torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "4")))
     t0 = time.time()
@@ -288,7 +289,7 @@ def main():
                 def decode(self, Z, *x, **k):
                     pops.append(Z.clone()); return super().decode(Z, *x, **k)
             d = D(lm, fam_t, cfg.generation, device=torch.device("cpu"), log=lambda *x: None, reference_latents=ref)
-            res = d.run(os.path.join(HERE, "results", "checkups", f"{a.tag}_search", f"T{tgt:g}"), ranges=property_ranges(lm))
+            res = d.run(os.path.join(a.out_dir or os.path.join(HERE, "results", "checkups"), f"{a.tag}_search", f"T{tgt:g}"), ranges=property_ranges(lm))
             Zall.append(torch.cat(pops).numpy())
             for c in res.saved:
                 cand = build_candidate(fam_t, c.elements)
@@ -328,7 +329,7 @@ def main():
         else:
             add("6 end-to-end", "returned structures follow the target (DFT)", "FAIL", "no candidate returned for any target", value=None)
 
-    out_dir = os.path.join(HERE, "results", "checkups"); os.makedirs(out_dir, exist_ok=True)
+    out_dir = a.out_dir or os.path.join(HERE, "results", "checkups"); os.makedirs(out_dir, exist_ok=True)
     json.dump(dict(tag=a.tag, ckpt=a.ckpt, switches=dict(label_source=a.label_source, latent_space=a.latent_space,
                    manifold_weight=a.manifold_weight), thresholds=THRESHOLDS, checks=checks, data=data,
                    seconds=time.time() - t0), open(f"{out_dir}/{a.tag}.json", "w"), indent=1, default=float)

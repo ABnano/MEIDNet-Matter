@@ -31,10 +31,16 @@ FID = os.environ.get("MEIDNET_FIDELITY_DIR", "")   # the CGCNN judge checkout, w
 PY = sys.executable
 
 
-def run(cmd, env, log):
+def run(cmd, env, log, cwd):
+    """One component, from a work folder inside --out (never the package's own folder) by its absolute path; its exit
+    status is returned and recorded in the log."""
+    if cmd[1].endswith(".py") and not os.path.isabs(cmd[1]):
+        cmd = [cmd[0], os.path.join(HERE, cmd[1]), *cmd[2:]]
+    os.makedirs(cwd, exist_ok=True)
     with open(log, "a") as f:
         f.write(f"\n$ {' '.join(cmd)}\n"); f.flush()
-        r = subprocess.run(cmd, cwd=HERE, env=env, stdout=f, stderr=subprocess.STDOUT)
+        r = subprocess.run(cmd, cwd=cwd, env=env, stdout=f, stderr=subprocess.STDOUT)
+        f.write(f"[exit {r.returncode}]\n")
     return r.returncode
 
 
@@ -44,14 +50,26 @@ def collect(out, name, intake, ckpt, gap, cost, targets, env, skip):
     mj = os.path.join(out, f"metrics_{name}.json")
     dj = os.path.join(out, f"decoder_{name}.json")
     log = os.path.join(out, "diagnostics.log")
+    work = os.path.join(out, "_work")
+    failed = []
     if not skip:
-        run([PY, "pipeline_checkup.py", f"sc_{name}", ckpt, "--label-source", "structure", "--latent-space", "sphere",
-             "--skip-search", "--family", "none"], env, log)
-        src = os.path.join(HERE, "results", "checkups", f"sc_{name}.json")
-        if os.path.exists(src):
+        # results of an earlier run (another model, perhaps) must never stand in for this one: clear them first
+        src = os.path.join(work, "checkups", f"sc_{name}.json")
+        for stale in (cj, mj, dj, src):
+            if os.path.exists(stale):
+                os.remove(stale)
+        rc = run([PY, "pipeline_checkup.py", f"sc_{name}", ckpt, "--label-source", "structure", "--latent-space", "sphere",
+                  "--skip-search", "--family", "none", "--out-dir", os.path.join(work, "checkups")], env, log, work)
+        if rc == 0 and os.path.exists(src):
             json.dump(json.load(open(src)), open(cj, "w"), indent=1)
-        run([PY, "model_metrics.py", f"sc_{name}", ckpt, mj, intake], env, log)
-        run([PY, "decoder_autopsy.py", ckpt, "--data", intake, "--json", dj], env, log)
+        else:
+            failed.append(f"pipeline_checkup.py (exit {rc})")
+        rc = run([PY, "model_metrics.py", f"sc_{name}", ckpt, mj, intake], env, log, work)
+        if rc != 0 or not os.path.exists(mj):
+            failed.append(f"model_metrics.py (exit {rc})")
+        rc = run([PY, "decoder_autopsy.py", ckpt, "--data", intake, "--json", dj], env, log, work)
+        if rc != 0 or not os.path.exists(dj):
+            failed.append(f"decoder_autopsy.py (exit {rc})")
 
     v, raw = {}, {}
     if os.path.exists(mj):
@@ -87,6 +105,7 @@ def collect(out, name, intake, ckpt, gap, cost, targets, env, skip):
                 v["head_length_sensitivity"] = val
     if os.path.exists(dj):
         raw["decoder"] = json.load(open(dj))
+    raw["failed"] = failed
     return {k: x for k, x in v.items() if x is not None}, raw
 
 
@@ -101,8 +120,19 @@ def main():
     ap.add_argument("--judge-n", type=int, default=80)
     ap.add_argument("--out", required=True); ap.add_argument("--skip-run", action="store_true")
     a = ap.parse_args()
+    # absolute paths: the components run from a work folder, and a relative path must mean what the user meant
+    a.intake, a.out = os.path.abspath(a.intake), os.path.abspath(a.out)
     os.makedirs(a.out, exist_ok=True)
-    models = dict(m.split("=", 1) for m in a.models)
+    models = {k: os.path.abspath(v) for k, v in (m.split("=", 1) for m in a.models)}
+    if not a.cost:                                 # the second property, when the intake has an obvious one
+        try:
+            cols = [c for c in pd.read_csv(os.path.join(a.intake, "train.csv"), nrows=1).columns if c != a.gap]
+            cands = [c for c in cols if any(w in c.lower() for w in ("formation", "heat", "e_form", "dhf"))]
+            if len(cands) == 1:
+                a.cost = cands[0]
+                print(f"--cost not given: using the intake's {a.cost}", flush=True)
+        except Exception:
+            pass
     if "main" not in models:                       # the first model named is the one every block is computed for
         first = next(iter(models))
         print(f"no model is named 'main': treating '{first}' as the main model (control= and seed1= are the comparisons)", flush=True)
@@ -118,6 +148,8 @@ def main():
             print(f"  {name}: checkpoint missing ({ckpt}) — skipped", flush=True); continue
         print(f"running diagnostics for {name} ...", flush=True)
         measured[name], raws[name] = collect(a.out, name, a.intake, ckpt, a.gap, a.cost, a.targets, env, a.skip_run)
+    if "main" not in measured:
+        raise SystemExit(f"the main model's checkpoint was not found: {models['main']}")
 
     # block S9 needs the reliability map, which is a separate script
     rel = os.path.join(a.out, "reliability_map.csv")
@@ -126,7 +158,10 @@ def main():
                "--out", a.out]
         if a.targets:
             cmd += ["--targets"] + [str(t) for t in a.targets]
-        run(cmd, env, os.path.join(a.out, "diagnostics.log"))
+        if os.path.exists(rel):
+            os.remove(rel)
+        if run(cmd, env, os.path.join(a.out, "diagnostics.log"), os.path.join(a.out, "_work")) != 0 or not os.path.exists(rel):
+            raws.setdefault("main", {}).setdefault("failed", []).append("reliability_map.py")
     if os.path.exists(rel):
         R = pd.read_csv(rel)
         measured.setdefault("main", {})["servable_targets"] = int((R.verdict == "servable").sum())
@@ -195,11 +230,18 @@ def main():
             text += " In this configuration the structure losses are already on, so the limit is the data (block S0's density), not the losses."
         return text
     report = {}
+    failures = {name: (raws.get(name) or {}).get("failed", []) for name in measured}
     for name, vals in measured.items():
         blocks = {}
+        model_failed = [f for f in failures.get(name, []) if not f.startswith("reliability_map")]
         for sid in ("S1", "S2", "S3", "S4", "S8", "S9"):
             st = BY_ID[sid]
             sub = {m.id: vals[m.id] for m in st.metrics if m.id in vals}
+            if sid in ("S1", "S2", "S3", "S4") and model_failed:
+                # a block whose diagnostics failed is not graded: neither from partial values nor from an earlier run
+                blocks[sid] = dict(name=st.name, question=st.question, verdict="NOT COMPUTED", metrics=[],
+                                   reason="failed: " + ", ".join(model_failed) + " (see diagnostics.log)")
+                continue
             if not sub:
                 continue
             verdict, grades = st.verdict(sub, context=vals)
@@ -230,7 +272,7 @@ def main():
             if k in measured["main"] and k in measured["seed1"]}
 
     json.dump(dict(intake=a.intake, gap=a.gap, cost=a.cost, models=models, measured=measured, report=report,
-                   comparisons=comparisons, judge=judge), open(os.path.join(a.out, "scorecard.json"), "w"),
+                   comparisons=comparisons, judge=judge, failures=failures), open(os.path.join(a.out, "scorecard.json"), "w"),
               indent=1, default=float)
 
     # ── render ──
@@ -249,6 +291,9 @@ def main():
     for sid, b in main.items():
         L += [f"## {sid} — {b['name']}: **{b['verdict']}**", "",
               "| metric | value | band | grade |", "|---|---|---|---|"]
+        if b["verdict"] == "NOT COMPUTED":
+            L += [f"Not computed: {b['reason']}.", ""]
+            continue
         for r in b["metrics"]:
             L.append(f"| {r['metric']} ({r['unit']}) | {r['value']:.4g} | {r['band']} | **{r['grade']}** |")
         L.append("")
@@ -275,6 +320,10 @@ def main():
     open(os.path.join(a.out, "scorecard.md"), "w").write("\n".join(L))
     print("\n".join(L))
     print(f"\nwrote {a.out}/scorecard.md and scorecard.json")
+    failed = {k: v for k, v in failures.items() if v}
+    if failed:
+        print("\nNOT COMPUTED: " + "; ".join(f"{k}: {', '.join(v)}" for k, v in failed.items()) + f" (log: {a.out}/diagnostics.log)", flush=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

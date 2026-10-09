@@ -4,7 +4,8 @@ Two potentials of different architecture (TensorNet and CHGNet, both trained on 
 agreeing with itself is not evidence.  Per candidate: whether each relaxed at all, the energy per atom, how far the
 energy fell on relaxation (a sound structure falls by less than 0.1 eV/atom), how far atoms moved, whether the designed
 space group survived, the shortest interatomic distance afterwards, that distance as a share of the two atoms' radii (below
-0.6 the cell collapsed: COLLAPSED, contact_ratio) and whether the optimiser converged before the step limit.  The relaxed cells are kept, because a band gap
+0.6 the cell collapsed: COLLAPSED, contact_ratio), the thickest empty layer and the packing fraction (a slab or a sparse cell
+is not a bulk crystal: bulk_problem) and whether the optimiser converged before the step limit.  The relaxed cells are kept, because a band gap
 judged on a cell that then moves by an angstrom describes no material: the judges must be re-run on the relaxed cell.
 
 Usage: python d1_mlip_check.py RESULTS_DIR [--cifs-dir DIR] [--steps 300] [--shard 0 --nshards 1] [--subset N]
@@ -68,9 +69,8 @@ def spacegroup(s):
 COLLAPSED = 0.6
 
 
-def contact_ratio(s):
-    """The shortest interatomic distance divided by the sum of the two atoms' radii (pymatgen's atomic radii), images of an
-    atom included: about 1 in a sound crystal, below COLLAPSED when atoms were pushed into each other."""
+def _radii(s):
+    """pymatgen's atomic radius of every site (1.5 A when the element has none)."""
     from pymatgen.core import Element
     rad = []
     for site in s:
@@ -83,12 +83,56 @@ def contact_ratio(s):
         except Exception:
             r = None
         rad.append(float(r) if r else 1.5)
-    rad = np.array(rad)
+    return np.array(rad)
+
+
+def contact_ratio(s):
+    """The shortest interatomic distance divided by the sum of the two atoms' radii (pymatgen's atomic radii), images of an
+    atom included: about 1 in a sound crystal, below COLLAPSED when atoms were pushed into each other."""
+    rad = _radii(s)
     ratio = float(min(s.lattice.get_lll_reduced_lattice().abc) / (2 * rad.max()))
     if len(s) > 1:
         d = s.distance_matrix + np.eye(len(s)) * 99
         ratio = min(ratio, float((d / (rad[:, None] + rad[None, :])).min()))
     return ratio
+
+
+# A cell with a thick empty layer is a slab, and one with little matter in it a sparse cage: the band gap of either is not
+# that of a bulk crystal.  Calibrated on all 45,229 known MP-20 crystals (meidnet_journey/gate_calibration): 99% have no
+# empty layer thicker than 4.25 A, 0.84% have one above 6 A (nearly all layered sulfides and selenides whose layers a PBE
+# relaxation pushed apart), and 0.48% have a packing fraction below 0.12 (molecular solids such as PCl5).  Relaxation does not
+# remove either: in the MP-20 study every generated cell beyond these lines was still beyond them after relaxation.
+MAX_EMPTY_LAYER = 6.0
+MIN_PACKING = 0.12
+
+
+def empty_layer(s):
+    """The thickest empty layer between atomic planes, in A: along each lattice direction of the LLL-reduced cell, the widest
+    gap between consecutive fractional coordinates times the spacing of those planes."""
+    s = s.get_reduced_structure()
+    spacing = 1.0 / np.array(s.lattice.reciprocal_lattice_crystallographic.abc)
+    widest = 0.0
+    for i in range(3):
+        f = np.sort(np.mod(s.frac_coords[:, i], 1.0))
+        widest = max(widest, float(np.diff(np.concatenate([f, [f[0] + 1.0]])).max() * spacing[i]))
+    return widest
+
+
+def packing_fraction(s):
+    """The volume of the atoms' spheres (pymatgen's atomic radii) over the volume of the cell."""
+    return float((4.0 / 3.0 * np.pi * _radii(s) ** 3).sum() / s.volume)
+
+
+def bulk_problem(s):
+    """'' for a cell that can be a bulk crystal, else why not: an empty layer thicker than MAX_EMPTY_LAYER or a packing
+    fraction below MIN_PACKING."""
+    layer = empty_layer(s)
+    if layer > MAX_EMPTY_LAYER:
+        return f"empty layer {layer:.1f} A (a slab, not a bulk crystal)"
+    pack = packing_fraction(s)
+    if pack < MIN_PACKING:
+        return f"packing fraction {pack:.2f} (too little matter for a bulk crystal)"
+    return ""
 
 
 def relax_one(s0, name, steps, fmax=0.05):
@@ -103,6 +147,7 @@ def relax_one(s0, name, steps, fmax=0.05):
            # matgl records the start, every step and the end: a run stopped by the step limit holds steps + 2 frames
            f"{name}_converged": bool(len(traj.energies) < steps + 1),
            f"{name}_contact_ratio": round(contact_ratio(s1), 3),
+           f"{name}_empty_layer": round(empty_layer(s1), 2), f"{name}_packing": round(packing_fraction(s1), 3),
            f"{name}_ok": True}
     return s1, rec
 

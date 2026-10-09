@@ -6,7 +6,8 @@ table of structures and the band gap each was asked for.  This command gives eve
   1 label     the model's own label, read from each returned cell (re-encoded), never from the search
   2 judge     the independent judge (MEGNet), qualified on the held-out split first; two-model consensus in the window
   3 relax     the consensus cells relaxed by two potentials of different architecture (TensorNet, CHGNet); a relaxed cell
-              whose closest atoms sit nearer than 0.6 of their radii is collapsed, not a crystal, and goes no further
+              whose closest atoms sit nearer than 0.6 of their radii is collapsed, not a crystal, and goes no further;
+              nor does one with an empty layer thicker than 6 A or a packing fraction below 0.12 (a slab or a sparse cell)
   4 re-judge  both readings again on the relaxed cells; the consensus on those is the deliverable
   5 stable    optional: energy above the convex hull, one potential for every phase (hull_mlip.py --reference ...)
   6 novel     AMD distance to the nearest structure of the data; known compositions carry the data's own values
@@ -140,19 +141,26 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
         rel = os.path.join(out, "relaxed"); os.makedirs(os.path.join(rel, "cifs"), exist_ok=True)
         from pymatgen.core import Structure
         try:
-            from meidnet_eval.d1_mlip_check import COLLAPSED, contact_ratio
+            from meidnet_eval.d1_mlip_check import COLLAPSED, bulk_problem, contact_ratio, empty_layer, packing_fraction
         except ImportError:
             sys.path.insert(0, HERE)
-            from d1_mlip_check import COLLAPSED, contact_ratio
-        kept, collapsed = [], []
+            from d1_mlip_check import COLLAPSED, bulk_problem, contact_ratio, empty_layer, packing_fraction
+        kept, collapsed, not_bulk = [], [], []
         for _, r in c0.iterrows():
             src = os.path.join(rdir, "relaxed_tensornet", os.path.basename(r["file"]))
             if os.path.exists(src):
                 # a potential can drive atoms into each other and still report a low energy: such a cell is not judged again
-                ratio = contact_ratio(Structure.from_file(src))
+                s_rel = Structure.from_file(src)
+                ratio = contact_ratio(s_rel)
                 if ratio < COLLAPSED:
                     collapsed.append({"file": os.path.basename(r["file"]), "formula": r.get("formula"), "target": float(r["target"]),
                                       "contact_ratio": round(ratio, 2)})
+                    continue
+                # nor is a slab or a sparse cage a bulk crystal: its band gap is not one
+                why = bulk_problem(s_rel)
+                if why:
+                    not_bulk.append({"file": os.path.basename(r["file"]), "formula": r.get("formula"), "target": float(r["target"]),
+                                     "reason": why, "empty_layer": round(empty_layer(s_rel), 2), "packing": round(packing_fraction(s_rel), 3)})
                     continue
                 shutil.copyfile(src, os.path.join(rel, "cifs", os.path.basename(r["file"])))
                 r = dict(r); r["file"] = "cifs/" + os.path.basename(r["file"]); kept.append(r)
@@ -160,6 +168,7 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
         c1.to_csv(os.path.join(rel, "candidates.csv"), index=False)
         report["stages"]["3_relaxed"] = int(len(c1))
         report["collapsed_on_relaxation"] = collapsed
+        report["not_bulk_on_relaxation"] = not_bulk
         if len(c1):
             run(py_model, "target_calibration.py", rel, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, log=log)
             run(py_judge, "target_calibration.py", rel, "--test-csv", test_csv, "--gap-col", gap, "--judge", "megnet",
@@ -239,6 +248,9 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
     if report.get("collapsed_on_relaxation"):
         L += ["", "Collapsed on relaxation, not judged again (closest atoms as a share of their two radii; a sound crystal is near 1): "
               + ", ".join(f"{c['formula']} at {c['target']:g} eV ({c['contact_ratio']:.2f})" for c in report["collapsed_on_relaxation"]) + "."]
+    if report.get("not_bulk_on_relaxation"):
+        L += ["", "Not a bulk crystal after relaxation, not judged again: "
+              + ", ".join(f"{c['formula']} at {c['target']:g} eV ({c['reason']})" for c in report["not_bulk_on_relaxation"]) + "."]
     q = report.get("judge") or {}
     if q:
         L += ["", f"Judge: MEGNet fidelity {q.get('fidelity')}, qualified on {q.get('split')}: MAE {q.get('mae', float('nan')):.2f} eV, "
