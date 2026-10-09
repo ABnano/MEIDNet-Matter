@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from './endpoints';
-import { ApiError } from './client';
+import { ApiError, isGone } from './client';
 import type { RunStatus } from './types';
 
 const cache = new Map<string, unknown>();
@@ -56,6 +56,7 @@ export function useRunPolling(runId: string | null) {
         if (s.status === 'queued' || s.status === 'running') schedule(delay());
       } catch (e) {
         if (cancelled || (e as Error).name === 'AbortError') return;
+        if (isGone(e)) { setError(e); return; }                     // expired or unknown: no retry can bring it back
         consecutive += 1; setFailures(consecutive);
         if (consecutive >= 6) { setError(e as Error); return; }
         schedule(Math.min(15_000, 1000 * 2 ** consecutive));

@@ -12,6 +12,9 @@ export class ApiError extends Error {
   }
 }
 
+/** The server no longer has a run or a job (removed after an hour idle, or a restart): terminal, not worth retrying. */
+export const isGone = (e: unknown): e is ApiError => e instanceof ApiError && (e.code === 'run_not_found' || e.code === 'gone');
+
 /** In the static mirror nothing is computed: a read is a file, anything else needs the live server. */
 const LIVE_ONLY = 'This needs the live server: open MEIDNet Matter on Hugging Face (Babu09/MEIDNet-Matter).';
 

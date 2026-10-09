@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { isGone } from '@/api/client';
 import { api } from '@/api/endpoints';
 import { useResource, useRunPolling } from '@/api/hooks';
 import type { DomainStatus, Run } from '@/api/types';
@@ -7,7 +8,9 @@ import { ErrorNote, Segmented, Spinner } from '@/components/ui';
 import { CandidateDetail } from '@/features/candidates/CandidateDetail';
 import { CandidateCard, CandidateMap, CandidateTable, COLUMNS, DEFAULT_COLS, ExportMenu, groupByCluster, SearchFunnel } from '@/features/candidates/components';
 import { chips, DEFAULTS, filterCandidates, parseQuery, serializeQuery, sortCandidates, SORTS, type ExplorerQuery } from '@/features/candidates/explorerQuery';
+import { RunGone } from '@/features/lifecycle/Gone';
 import { useProject } from '@/features/project/useProject';
+import { rememberRunGoal } from '@/lib/goalStore';
 import { fmt, seconds, shortLabel } from '@/lib/format';
 
 const DOMAINS: Array<{ value: DomainStatus; label: string }> = [
@@ -27,9 +30,10 @@ export default function Explorer() {
   const { data: dataset } = useResource(q.view === 'map' ? `dataset:${projectId}` : null, () => api.dataset(projectId));
   const [stopping, setStopping] = useState(false);
   const [stopError, setStopError] = useState<string | null>(null);
+  useEffect(() => { const g = (full as Run | null)?.goal; if (g) rememberRunGoal(runId, g); }, [full, runId]);
   useEffect(() => { if (window.innerWidth < 900 && q.view === 'table' && !sp.has('view')) setQ((x) => ({ ...x, view: 'cards' })); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
 
-  if (error) return <ErrorNote error={error} retry={retry} />;
+  if (error) return isGone(error) ? <RunGone projectId={projectId} runId={runId} error={error} /> : <ErrorNote error={error} retry={retry} />;
   if (!status || !project) return <Spinner label="Loading the run" />;
   const all = status.candidates;
   const labels = Object.fromEntries(Object.entries(project.dataset.properties).map(([k, p]) => [k, shortLabel(p.label)]));

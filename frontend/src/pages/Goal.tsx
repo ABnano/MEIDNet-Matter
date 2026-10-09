@@ -15,7 +15,7 @@ export default function Goal() {
         <h1>Define the design goal</h1>
         <p>{project.title}: {project.description}</p>
       </div>
-      <GoalEditor project={project} initial={loadGoal(project.project_id, project.default_goal)} />
+      <GoalEditor project={project} initial={loadGoal(project.project_id, project.default_goal, project.models.map((m) => m.model_id))} />
     </>
   );
 }

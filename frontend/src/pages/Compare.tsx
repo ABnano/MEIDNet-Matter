@@ -1,4 +1,5 @@
 import { Link, useParams, useSearchParams } from 'react-router';
+import { isGone } from '@/api/client';
 import { api } from '@/api/endpoints';
 import { useResource } from '@/api/hooks';
 import { shownDifference, shownDomain, shownValue, type Candidate } from '@/api/types';
@@ -6,6 +7,7 @@ import { CellViewer } from '@/components/structure/CellViewer';
 import { DomainBadge, ErrorNote, Spinner } from '@/components/ui';
 import { candidateStructure } from '@/features/candidates/components';
 import { fmt, signed } from '@/lib/format';
+import { RunGone } from '@/features/lifecycle/Gone';
 
 export default function Compare() {
   const { projectId = 'perov5-demo', runId = '' } = useParams();
@@ -14,6 +16,7 @@ export default function Compare() {
   const { data, error, loading } = useResource(ids.length >= 2 ? `compare:${runId}:${ids.join(',')}` : null, () => api.compare(runId, ids));
   if (ids.length < 2) return <div className="card"><p>Choose two to six candidates in the explorer to compare them.</p><Link to={`/p/${projectId}/runs/${runId}`} className="btn">Back to the candidates</Link></div>;
   if (loading) return <Spinner label="Comparing" />;
+  if (isGone(error)) return <RunGone projectId={projectId} runId={runId} error={error} />;
   if (error || !data) return <ErrorNote error={error} />;
   const cs = data.candidates;
   const best = (vals: Array<number | null>, lowerIsBetter = true) => { const v = vals.filter((x): x is number => x != null); if (!v.length) return null; return lowerIsBetter ? Math.min(...v) : Math.max(...v); };

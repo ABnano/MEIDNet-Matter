@@ -40,9 +40,12 @@ def now_iso() -> str:
 
 
 class RunStore:
+    noun = "run"
+
     def __init__(self, root: str, public: bool):
         self.root = root
         self.public = public
+        self.expired: dict[str, str] = {}   # run id -> when the idle cleanup removed it (this server's lifetime only)
         self.runs: dict[str, dict] = {}
         self.locks: dict[str, threading.Lock] = {}
         self.lock = threading.Lock()
@@ -84,7 +87,13 @@ class RunStore:
     def get(self, run_id: str) -> dict:
         run = self.runs.get(run_id)
         if run is None:
-            raise ApiError("not_found", f"no run {run_id}", status=404)
+            when = self.expired.get(run_id)
+            if when:
+                raise ApiError("gone", f"the {self.noun} {run_id} was removed at {when}: on this shared server a "
+                               f"finished {self.noun} is kept for {SESSION_TTL // 3600} hour after its last use", status=410)
+            raise ApiError("run_not_found", f"no {self.noun} {run_id} on this server" + (
+                f": on this shared server a finished {self.noun} is kept for {SESSION_TTL // 3600} hour after its last use, and "
+                "every restart starts empty" if self.public else ""), status=404)
         run["last_access"] = time.time()
         return run
 
@@ -109,6 +118,10 @@ class RunStore:
             if run.get("status") in ("queued", "running"):
                 continue
             if run.get("last_access", run.get("created_ts", 0)) < cutoff:
+                with self.lock:                             # concurrent cleanups (one per new search) share this record
+                    self.expired[run_id] = now_iso()
+                    while len(self.expired) > 10000:        # bounded: the oldest are forgotten first
+                        self.expired.pop(next(iter(self.expired)), None)
                 self.remove(run_id)
                 gone += 1
         return gone

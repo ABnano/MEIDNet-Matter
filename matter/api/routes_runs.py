@@ -59,7 +59,11 @@ def create_run(body: RunCreate, request: Request, x_matter_session: str | None =
         v.notes.append("one-to-many target: at least 3 candidates per target, kept apart in the latent space")
         v.estimated_seconds = G.estimated_seconds(v.generation)
     run = s.runs.create(sid, v, readiness, model_id, mode, G.summary_text(body.goal, s.artefacts))
-    s.jobs.start(run["run_id"], sid, RUNS.execute_search, run, s)
+    try:
+        s.jobs.start(run["run_id"], sid, RUNS.execute_search, run, s)
+    except ApiError:                        # refused (busy, host full): no queued record is left behind
+        s.runs.remove(run["run_id"])
+        raise
     return RUNS.summary(run)
 
 

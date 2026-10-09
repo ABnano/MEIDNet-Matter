@@ -1,9 +1,11 @@
 import { Link, useParams } from 'react-router';
+import { isGone } from '@/api/client';
 import { api } from '@/api/endpoints';
 import { useResource, useRunPolling } from '@/api/hooks';
 import { ExternalLink, PRISM_SCORE } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { seconds } from '@/lib/format';
+import { RunGone } from '@/features/lifecycle/Gone';
 
 /** The six-stage validation ladder. Stages 0 and 1 are recorded by this version; the others are the user's own steps,
  * and their records have their place in the candidate record (`stability.records`). */
@@ -18,9 +20,10 @@ const LADDER: Array<[string, string, 'here' | 'yours']> = [
 
 export default function Validate() {
   const { projectId = 'perov5-demo', runId = '' } = useParams();
-  const { status } = useRunPolling(runId);
+  const { status, error: runError } = useRunPolling(runId);
   const finished = status && status.status !== 'queued' && status.status !== 'running';
   const { data: manifest, error } = useResource(finished ? `manifest:${runId}` : null, () => api.manifest(runId));
+  if (runError) return isGone(runError) ? <RunGone projectId={projectId} runId={runId} error={runError} /> : <ErrorNote error={runError} />;
   if (!status) return <Spinner label="Loading the run" />;
   const cands = status.candidates;
   const n = cands.length;

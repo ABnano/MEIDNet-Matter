@@ -45,7 +45,7 @@ async function connect() {
     const p = m.params || {};
     if (m.method === 'Runtime.exceptionThrown') errors.push('exception: ' + (p.exceptionDetails.exception?.description || p.exceptionDetails.text).slice(0, 300));
     if (m.method === 'Runtime.consoleAPICalled' && p.type === 'error') errors.push('console.error: ' + p.args.map((a) => a.value ?? a.description).join(' ').slice(0, 300));
-    if (m.method === 'Network.responseReceived' && p.response.status >= 400 && !/\/api\/runs\/.*\/(manifest|export)/.test(p.response.url)) errors.push(`${p.response.status} ${p.response.url}`);
+    if (m.method === 'Network.responseReceived' && p.response.status >= 400 && !/\/api\/runs\/.*\/(manifest|export)/.test(p.response.url) && !/run-smoke-gone/.test(p.response.url)) errors.push(`${p.response.status} ${p.response.url}`);
   });
   for (const d of ['Runtime', 'Page', 'Network', 'Log']) await send(`${d}.enable`);
 }
@@ -118,6 +118,11 @@ try {
   await goto(`${BASE}/pipeline/S6`);
   check('pipeline: workflow diagram', await waitFor(`document.querySelectorAll('.flow-node').length >= 5`, 20000));
   check('pipeline: code viewer renders', (await click('.flow-node.kind-code')) && await waitFor(`!!document.querySelector('.code-viewer pre code')`, 20000));
+
+  // 6c. 0.9.0: a run the server no longer has explains itself at once, with the way back; every page has its own title
+  await goto(`${BASE}/p/perov5-demo/runs/run-smoke-gone`);
+  check('lifecycle: a gone run explains itself', await waitFor(`!!document.querySelector('[data-testid="run-gone"]')`, 8000));
+  check('shell: the page has its own title', /Candidates · Perov-5 demo/.test(await ev('document.title')), await ev('document.title'));
 
   // 7. the direct-app link is hidden outside a frame; no page errors
   check('shell: direct-app link hidden outside a frame', !(await ev(`!!document.querySelector('a[title*="outside the Hugging Face frame"]')`)));

@@ -11,7 +11,7 @@ export default function Runs() {
   return (
     <>
       <div className="page-head"><h1>Runs</h1><p>The searches of this tab. A run keeps its candidates, funnel, manifest and exports.</p></div>
-      {!data?.length ? <div className="card"><p>No search has run in this tab yet.</p><Link to={`/p/${projectId}/goal`} className="btn btn-primary">Define a goal</Link></div> : (
+      {!data?.length ? <div className="card"><p>No search of this tab is on the server. On the shared site a finished search is kept for one hour after it was last opened, and a restart of the server clears every search.</p><Link to={`/p/${projectId}/goal`} className="btn btn-primary">Define a goal</Link></div> : (
         <table className="table card" style={{ padding: 0 }}>
           <thead><tr><th>Run</th><th>Request</th><th>Status</th><th className="num">Candidates</th><th>Readiness</th><th>Started</th></tr></thead>
           <tbody>{data.map((r) => (

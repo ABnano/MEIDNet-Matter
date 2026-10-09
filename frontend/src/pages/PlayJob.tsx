@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { isGone } from '@/api/client';
 import { research, type GenCandidate, type GenJob } from '@/api/research';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { CellViewer } from '@/components/structure/CellViewer';
 import { ErrorNote, Meter, Segmented, Spinner } from '@/components/ui';
 import { Num } from '@/components/research';
+import { JobGone } from '@/features/lifecycle/Gone';
 import { explicitStructure } from '@/lib/lattice';
 
 /** Polls a generation job while it runs (1.5 s), backing off on failures and pausing when the tab is hidden. */
@@ -28,6 +30,7 @@ function useJob(id: string | null) {
         if (j.status === 'queued' || j.status === 'running') schedule(1500);
       } catch (e) {
         if (cancelled || (e as Error).name === 'AbortError') return;
+        if (isGone(e)) { setJob(null); setError(e); return; }       // expired or unknown: no retry can bring it back
         failures += 1;
         if (failures >= 6) { setError(e as Error); return; }
         schedule(Math.min(15000, 1000 * 2 ** failures));
@@ -138,7 +141,7 @@ export default function PlayJob() {
           <h1>{job ? `${job.request.targets.join(', ')} eV` : 'Generation job'}</h1>
           {job && <p>{job.request.per_target} structures per target · window {job.request.window_eV} eV · {job.request.require_anion ? 'anion required' : 'no anion requirement'} · excluded {job.request.exclude_elements.join(' ') || 'none'} · seed {job.request.seed} · model {job.request.model_id}</p>}
         </div>
-        {error && <ErrorNote error={error} retry={retry} />}
+        {error && (isGone(error) ? <JobGone error={error} /> : <ErrorNote error={error} retry={retry} />)}
         {!job && !error && <Spinner label="Loading the job" />}
         {job && (
           <>
@@ -217,7 +220,7 @@ export default function PlayJob() {
                           const st = statusesOf(c);
                           return (
                             <tr key={c.candidate_id} aria-selected={open?.candidate_id === c.candidate_id} onClick={() => setOpen(open?.candidate_id === c.candidate_id ? null : c)} style={{ cursor: 'pointer' }}>
-                              <td className="num">{c.target_eV.toFixed(1)}</td><td><b>{c.formula}</b></td>
+                              <td className="num">{c.target_eV.toFixed(1)}</td><td><button type="button" className="linklike" onClick={(e) => { e.stopPropagation(); setOpen(open?.candidate_id === c.candidate_id ? null : c); }} aria-label={`Open ${c.formula}`}><b>{c.formula}</b></button></td>
                               <td className="num"><Num v={c.label_structure_eV} /></td><td className="num"><Num v={c.judge_eV} />{c.metal_by_judge ? <span className="small faint"> metal</span> : null}</td>
                               <td>{st.gap_window}</td><td>{st.charge_balance}</td><td className="small">{st.relaxed}</td>
                               <td className="num">{c.spacegroup}</td><td className="num">{c.natoms}</td>

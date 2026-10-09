@@ -74,6 +74,7 @@ def validate_request(body: GenerateRequest, public: bool, catalog) -> tuple[dict
 
 class GenerationStore(RunStore):
     """The RunStore's persistence (atomic saves, scan, cleanup, locks) with generation records."""
+    noun = "generation job"
 
     def create(self, session_id: str, request: dict, notes: list[str], model_info: dict, judge_info: dict, estimated_seconds: int) -> dict:  # type: ignore[override]
         job_id = "gen-" + secrets.token_urlsafe(9)

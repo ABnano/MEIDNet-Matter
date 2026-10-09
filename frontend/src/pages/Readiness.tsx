@@ -7,7 +7,7 @@ import { ErrorNote, Spinner } from '@/components/ui';
 import { useProject } from '@/features/project/useProject';
 import { AmbiguityPanel, IndicatorCard, TargetPosition, Verdict } from '@/features/readiness/ReadinessReport';
 import { invalidate } from '@/api/hooks';
-import { loadGoal } from '@/lib/goalStore';
+import { loadGoal, rememberRunGoal } from '@/lib/goalStore';
 
 export default function Readiness() {
   const { projectId = 'perov5-demo' } = useParams();
@@ -18,7 +18,7 @@ export default function Readiness() {
   const [error, setError] = useState<Error | null>(null);
   const [starting, setStarting] = useState(false);
 
-  useEffect(() => { if (project) setGoal(loadGoal(project.project_id, project.default_goal)); }, [project]);
+  useEffect(() => { if (project) setGoal(loadGoal(project.project_id, project.default_goal, project.models.map((m) => m.model_id))); }, [project]);
   useEffect(() => {
     if (!goal) return;
     const ctrl = new AbortController();
@@ -38,6 +38,7 @@ export default function Readiness() {
     setStarting(true);
     try {
       const run = await api.startRun(goal, report.exploratory_required);
+      rememberRunGoal(run.run_id, goal);
       invalidate('runs');
       navigate(`/p/${projectId}/runs/${run.run_id}`);
     } catch (e) { setError(e as Error); setStarting(false); }
