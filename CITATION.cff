@@ -3,7 +3,7 @@ message: "If you use MEIDNet Matter, please cite the MEIDNet paper and the softw
 title: "MEIDNet Matter: crystal structures for a requested band gap, each with the evidence for it"
 abstract: "A multimodal inverse-design workbench for crystalline materials. Ask for a band gap and get crystal structures back, each with two machine-learning readings of the PBE gap, its checks and its limits; the Design Readiness report says what the data and the model support, and the same staged pipeline runs on your own data locally. MEIDNet is the scientific engine."
 type: software
-version: "0.9.0"
+version: "0.9.1"
 date-released: "2026-10-09"
 license: MIT
 repository-code: "https://github.com/ABnano/MEIDNet-Matter"

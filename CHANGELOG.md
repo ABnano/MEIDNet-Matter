@@ -4,6 +4,16 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-09
+
+### Changed
+- Grades read as measurements against a reference band, not as verdicts on the data: "Meets", "Borderline", "Not met",
+  "Context" and "Partly met" in place of PASS, WARN, FAIL, INFO and PARTIAL (the API keeps the codes). S0, the gate
+  before training, shows the route each dataset supports in place of its grade: generation, screening, or a set of
+  candidates per target (`dataset_routes` in the blocks payload).
+- The home page no longer carries the table of block grades per dataset; the pipeline page and each study keep them,
+  with the bands, the meaning of each value and the remedies beside them.
+
 ## [0.9.0] - 2026-10-09
 
 What a new visitor meets first: the demo search, the links that outlive a run, the page head, and small fixes.
