@@ -1591,6 +1591,13 @@
    ]
   }
  ],
+ "dataset_routes": {
+  "jarvis-dp": "screening",
+  "mp-perovskites": "screening",
+  "mp20": "generation",
+  "perov5": "candidate sets",
+  "user-246": "screening"
+ },
  "dataset_verdicts": {
   "jarvis-dp": {
    "S0": "FAIL",

@@ -31,7 +31,7 @@ const INPUT_BY_WHEN: Record<string, string> = {
 };
 
 /** The flow of one block: its input, the programs that compute it (click one to read the code), its metrics, its verdict. */
-export function BlockFlow({ b, verdicts, open, onOpen }: { b: BlockDef; verdicts: Record<string, Record<string, Grade>> | undefined; open: string | null; onOpen: (file: string | null) => void }) {
+export function BlockFlow({ b, verdicts, routes, open, onOpen }: { b: BlockDef; verdicts: Record<string, Record<string, Grade>> | undefined; routes?: Record<string, string>; open: string | null; onOpen: (file: string | null) => void }) {
   const nodes: FlowNode[] = [
     { id: 'in', kind: 'input', label: INPUT_BY_WHEN[b.when] ?? b.when, sub: `runs ${b.when}` },
     ...b.components.map((c) => ({
@@ -39,8 +39,8 @@ export function BlockFlow({ b, verdicts, open, onOpen }: { b: BlockDef; verdicts
       onClick: c.viewable ? () => onOpen(open === c.file ? null : c.file) : undefined, active: open === c.file, muted: !c.viewable,
       title: c.viewable ? `${c.note} — click to read the code` : `${c.note} — source not served`,
     })),
-    ...b.metrics.filter((m) => !m.info_only).map((m) => ({ id: m.id, kind: 'metric' as const, label: m.name, sub: `pass ${m.band.pass}`, href: `#m-${m.id}`, title: m.definition })),
-    { id: 'verdict', kind: 'verdict', label: 'verdict', sub: <>{STUDY_DATASETS.map(([id, l]) => <span key={id} className="flow-grade">{l} <VerdictText grade={verdicts?.[id]?.[b.id] ?? '—'} /></span>)}</>, title: b.verdict_rule },
+    ...b.metrics.filter((m) => !m.info_only).map((m) => ({ id: m.id, kind: 'metric' as const, label: m.name, sub: `meets ${m.band.pass}`, href: `#m-${m.id}`, title: m.definition })),
+    { id: 'verdict', kind: 'verdict', label: 'verdict', sub: <>{STUDY_DATASETS.map(([id, l]) => <span key={id} className="flow-grade">{l} <VerdictText grade={verdicts?.[id]?.[b.id] ?? '—'} route={b.id === 'S0' ? routes?.[id] : null} /></span>)}</>, title: b.verdict_rule },
   ];
   return <Flow nodes={nodes} ariaLabel={`Workflow of block ${b.id}`} />;
 }
@@ -57,7 +57,7 @@ export function PipelineOverview({ blocks, verdicts }: { blocks: BlockDef[]; ver
           <div className="overview-blocks">
             {blocks.filter((b) => b.when === when).map((b) => {
               const w = worst(b.id);
-              return <Link key={b.id} to={`/pipeline/${b.id}`} className="overview-block" title={b.question}><span className="mono">{b.id}</span><span>{b.name}</span>{w && <span className="small faint">worst across datasets: <VerdictText grade={w} /></span>}</Link>;
+              return <Link key={b.id} to={`/pipeline/${b.id}`} className="overview-block" title={b.question}><span className="mono">{b.id}</span><span>{b.name}</span>{b.id === 'S0' ? <span className="small faint">decides the route the data supports: generation, screening or candidate sets</span> : w && <span className="small faint">weakest across datasets: <VerdictText grade={w} /></span>}</Link>;
             })}
           </div>
           {i < phases.length - 1 && <span className="overview-arrow" aria-hidden="true" />}

@@ -19,6 +19,8 @@ export interface BlocksPayload {
   schema: string; grades: Grade[]; configs: Record<string, { label?: string; known?: string }>; blocks: BlockDef[];
   dataset_history: Array<{ dataset: string; description: string; items: Array<{ blocks: string; text: string }> }>;
   validation_table: Record<string, Record<string, Grade>>; dataset_verdicts: Record<string, Record<string, Grade>>;
+  /** What S0 decided for each dataset: generation, screening or candidate sets (shown in place of S0's grade). */
+  dataset_routes?: Record<string, string>;
 }
 export interface ComponentInfo { file: string; bytes: number; sha256: string; blocks: string[]; runnable: string; needs: string[] }
 

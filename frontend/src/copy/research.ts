@@ -32,17 +32,18 @@ export const home = {
     ['Relax and re-judge', 'Two machine-learning potentials relax the cell; both judges are run again on the relaxed structure. That is the structure a user receives.'],
   ],
   pipelineTitle: 'Ten blocks, each with a question and a reference band',
-  pipelineLead: 'The staged evaluation grades a dataset and a model block by block, against bands validated on configurations of known quality. Open a block to read its metrics, what each value means, the remedy when it fails, and the code that computes it.',
+  pipelineLead: 'The staged evaluation reads a dataset and a model block by block, against bands validated on configurations of known quality. Open a block to read its metrics, what each value means, the remedy when a measurement falls outside its band, and the code that computes it; each study shows how its dataset went through the blocks.',
   studiesTitle: 'The studies',
-  studiesLead: 'Four datasets, from a complete 11,356-structure grid to 45,229 structures of general inorganic chemistry. Each study lists its block verdicts, its target-following result and the checkpoints to download.',
+  studiesLead: 'Datasets from a complete 11,356-structure grid to 45,229 structures of general inorganic chemistry, and an independent user\'s double perovskites. Each study shows how its dataset went through the blocks, its target-following result and the checkpoints to download.',
   tryTitle: 'Try it',
   tryLead: 'Generate structures for a band gap with the MP-20 model, judged twice, in a few minutes. Or walk through the Perov-5 demo project: goal, readiness, candidates, export.',
 };
 
 export const pipeline = {
+  gradeLegend: 'Meets: inside the reference band · Borderline: near its edge · Not met: outside it · Context: measured, not graded. S0 shows the route each dataset supports: generation, screening, or a set of candidates per target; a measurement outside a band is a finding about the data or the model, with its remedy on the block\'s page.',
   h1: 'The staged pipeline',
-  lead: 'Ten blocks, S0 to S9. Each asks one question of a dataset and a model and answers PASS, WARN or FAIL against a band validated on configurations of known quality. A block\'s verdict is the worst grade of its graded metrics; a metric that only predicts a quantity becomes context once that quantity is measured.',
-  howToRead: 'How to read a band: PASS and WARN are thresholds on the metric; the reference columns give the value each known configuration reached, with its grade. "control" is the recipe without the structure losses, "fixed" the repaired model and search, "final" the best configuration, "mp" the Materials Project perovskites.',
+  lead: 'Ten blocks, S0 to S9. Each asks one question of a dataset and a model and reads the answer against a reference band validated on configurations of known quality: meets, borderline or not met. S0, the gate before training, answers with the route the data supports instead: generation, screening, or a set of candidates per target. A block\'s verdict is the weakest grade of its graded metrics; a metric that only predicts a quantity becomes context once that quantity is measured.',
+  howToRead: 'How to read a band: the meets and borderline columns are thresholds on the metric; the reference columns give the value each known configuration reached, with its grade. "control" is the recipe without the structure losses, "fixed" the repaired model and search, "final" the best configuration, "mp" the Materials Project perovskites.',
   flowLead: 'Left to right: what the block receives, the programs that compute it (click one to read its code), the metrics it grades, and its verdict on each dataset. Metric boxes jump to their definition below.',
   codeLead: 'The code behind each block is served read-only from the installed engine. Download a component, change the column names or thresholds for your data, and run it with the command in its docstring.',
   historyTitle: 'What each dataset changed',
@@ -52,7 +53,7 @@ export const pipeline = {
 export const studies = {
   h1: 'Executed studies',
   lead: 'Four datasets, in the order they were run. Each page gives the facts of the dataset, the verdict of every block, how target following was measured and what it returned, the checkpoints to download and the commands that reproduce the result.',
-  verdictNote: 'Verdicts are results against the reference bands, written as text. "documented" marks a FAIL that is the finding itself, with its reason recorded.',
+  verdictNote: 'Verdicts are results against the reference bands, written as text. "documented" marks a "not met" that is the finding itself, with its reason recorded.',
   checkpointsTitle: 'Checkpoints',
   checkpointsLead: 'Trained models you can download and run with the engine. Each entry carries its checksum, size and training configuration; the download verifies the checksum.',
 };

@@ -35,7 +35,7 @@ export default function PipelineBlock() {
 
             <h2>How this block works</h2>
             <p className="muted small">{P.flowLead}</p>
-            <BlockFlow b={b} verdicts={data?.dataset_verdicts} open={open} onOpen={setOpen} />
+            <BlockFlow b={b} verdicts={data?.dataset_verdicts} routes={data?.dataset_routes} open={open} onOpen={setOpen} />
             {b.components.filter((c) => c.file === open).map((c) => (
               <div key={c.file} style={{ marginTop: 12 }}>
                 <p className="small muted">{c.note}{c.needs.length ? ` · needs ${c.needs.join(', ')}` : ''}</p>
@@ -47,7 +47,7 @@ export default function PipelineBlock() {
             <div className="table-wrap">
               <table className="table">
                 <caption className="sr-only">Metrics of block {b.id}</caption>
-                <thead><tr><th scope="col">metric</th><th scope="col">unit</th><th scope="col">PASS</th><th scope="col">WARN</th><th scope="col">FAIL</th>{configs.map((c) => <th scope="col" key={c}>{c}</th>)}</tr></thead>
+                <thead><tr><th scope="col">metric</th><th scope="col">unit</th><th scope="col">meets</th><th scope="col">borderline</th><th scope="col">not met</th>{configs.map((c) => <th scope="col" key={c}>{c}</th>)}</tr></thead>
                 <tbody>
                   {b.metrics.map((m) => (
                     <tr key={m.id}>

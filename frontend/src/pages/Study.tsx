@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router';
-import { research, type Calibration, type CheckpointInfo, type Study as StudyT, type StudyRoute, type StudyStability } from '@/api/research';
+import { research, type BlocksPayload, type Calibration, type CheckpointInfo, type Study as StudyT, type StudyRoute, type StudyStability } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
@@ -89,6 +89,7 @@ export default function Study() {
   const { id = 'mp20' } = useParams();
   const { data: s, error, loading, reload } = useResource<StudyT>(`studies/${id}`, (sig) => research.study(id, sig));
   const ck = useResource<{ checkpoints: CheckpointInfo[] }>('checkpoints', (sig) => research.checkpoints(sig));
+  const blocks = useResource<BlocksPayload>('pipeline/blocks', (sig) => research.blocks(sig));
   const mine = ck.data?.checkpoints.filter((c) => s?.checkpoints.includes(c.id)) ?? [];
   const tf = (s?.target_following ?? {}) as Record<string, unknown>;
   return (
@@ -120,7 +121,7 @@ export default function Study() {
                     <thead><tr><th scope="col">block</th><th scope="col">verdict</th><th scope="col">the deciding number</th></tr></thead>
                     <tbody>
                       {BLOCKS.filter((b) => s.verdicts[b]).map((b) => (
-                        <tr key={b}><td className="mono"><Link to={`/pipeline/${b}`}>{b}</Link> <span className="small muted">{BLOCK_NAMES[b]}</span></td><td><VerdictText grade={s.verdicts[b].grade} /></td><td className="small">{s.verdicts[b].note}</td></tr>
+                        <tr key={b}><td className="mono"><Link to={`/pipeline/${b}`}>{b}</Link> <span className="small muted">{BLOCK_NAMES[b]}</span></td><td><VerdictText grade={s.verdicts[b].grade} route={b === 'S0' ? blocks.data?.dataset_routes?.[s.id] : null} /></td><td className="small">{s.verdicts[b].note}</td></tr>
                       ))}
                     </tbody>
                   </table>

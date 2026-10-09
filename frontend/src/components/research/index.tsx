@@ -4,8 +4,16 @@ import { research } from '@/api/research';
 import { Spinner } from '@/components/ui';
 
 /** A block verdict as plain text. Verdicts are results, not status badges, so they are never rendered as coloured pills. */
-export function VerdictText({ grade, title }: { grade: Grade | string; title?: string }) {
-  return <span className="mono verdict-text" title={title}>{grade}</span>;
+/** The grades in words: a measurement read against a reference band, not a judgement of the data or of whoever brought it. */
+export const GRADE_WORD: Record<string, string> = { PASS: 'Meets', WARN: 'Borderline', FAIL: 'Not met', INFO: 'Context', PARTIAL: 'Partly met' };
+/** S0 is the gate before training: its outcome is the route the data supports, shown in place of a grade. */
+export const ROUTE_WORD: Record<string, string> = { generation: 'Generation', screening: 'Screening', 'candidate sets': 'Candidate sets' };
+
+export const verdictWord = (grade: string, route?: string | null): string => (route ? ROUTE_WORD[route] ?? route : GRADE_WORD[grade] ?? grade);
+
+export function VerdictText({ grade, title, route }: { grade: Grade | string; title?: string; route?: string | null }) {
+  const tip = title ?? (route ? 'the route this dataset supports, decided by S0 before any training' : GRADE_WORD[grade] ? `read against the reference band (${grade})` : undefined);
+  return <span className="mono verdict-text" title={tip}>{verdictWord(grade, route)}</span>;
 }
 
 export function Num({ v, d = 2, unit }: { v: number | null | undefined; d?: number; unit?: string }) {

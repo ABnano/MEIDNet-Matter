@@ -168,10 +168,21 @@ def formula_of_cif(cif: str):
 
 
 # ───────────────────────── pipeline blocks ─────────────────────────
+# What S0 decided for each study. S0 is a gate before training, not a score: a dataset with too few compositions per element
+# to teach a decoder goes to screening, one whose materials mostly share their property values returns a set of candidates
+# per target, and one that meets both rules goes to generation. The site shows this route in S0's place.
+S0_ROUTES = {"perov5": "candidate sets", "mp-perovskites": "screening", "user-246": "screening", "mp20": "generation",
+             "jarvis-dp": "screening"}
+
+
 def build_blocks(a, out: str, verdicts: dict) -> None:
     from meidnet_eval import stages
     payload = stages.export_blocks()
     payload["dataset_verdicts"] = verdicts
+    assert set(verdicts) <= set(S0_ROUTES), f"no S0 route for {set(verdicts) - set(S0_ROUTES)}"
+    for d, v in verdicts.items():                      # only a dataset that meets S0 goes to generation
+        assert (v.get("S0") == "PASS") == (S0_ROUTES[d] == "generation"), d
+    payload["dataset_routes"] = {d: S0_ROUTES[d] for d in verdicts}
     payload["generated_from"] = {"module": "meidnet_eval.stages", "sha256": sha256_file(stages.__file__)}
     text = json.dumps(payload)
     assert not re.search(r"honest", text, re.I), "a forbidden word reached the blocks payload"

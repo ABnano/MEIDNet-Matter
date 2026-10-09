@@ -3,11 +3,11 @@ import { research, type Accepted, type BlocksPayload, type Study, type StudyInde
 import { useResource } from '@/api/hooks';
 import { ExternalLink, GITHUB, MarketingHeader, PRISM_SPACE, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
-import { Funnel, Num, VerdictText } from '@/components/research';
+import { Funnel, Num } from '@/components/research';
 import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
 import { HeroExample } from '@/components/home/HeroExample';
 import { Explainer } from '@/components/home/Explainer';
-import { STUDY_DATASETS, home as H } from '@/copy/research';
+import { home as H } from '@/copy/research';
 import { landing as L } from '@/copy/landing';
 
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
@@ -99,25 +99,7 @@ export default function Home() {
         <section className="section" id="pipeline">
           <h2>{H.pipelineTitle}</h2>
           <p className="muted">{H.pipelineLead}</p>
-          {blocks.data && (
-            <>
-              <div className="block-strip">{blocks.data.blocks.map((b) => <Link key={b.id} to={`/pipeline/${b.id}`} title={b.question}>{b.id}</Link>)}</div>
-              <div className="table-wrap" style={{ marginTop: 16 }}>
-                <table className="table">
-                  <caption className="sr-only">Block verdicts per dataset</caption>
-                  <thead><tr><th scope="col">block</th><th scope="col">question</th>{STUDY_DATASETS.map(([d, l]) => <th scope="col" key={d}>{l}</th>)}</tr></thead>
-                  <tbody>
-                    {blocks.data.blocks.map((b) => (
-                      <tr key={b.id}>
-                        <td className="mono"><Link to={`/pipeline/${b.id}`}>{b.id}</Link></td><td className="small">{b.question}</td>
-                        {STUDY_DATASETS.map(([d]) => <td key={d}><VerdictText grade={blocks.data!.dataset_verdicts?.[d]?.[b.id] ?? '—'} /></td>)}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
+          {blocks.data && <div className="block-strip">{blocks.data.blocks.map((b) => <Link key={b.id} to={`/pipeline/${b.id}`} title={b.question}>{b.id}</Link>)}</div>}
           <p style={{ marginTop: 12 }}><Link to="/pipeline">Open the pipeline →</Link></p>
         </section>
 

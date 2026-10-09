@@ -28,12 +28,15 @@ def blocks_payload(research_file: str | None = None) -> dict:
     from meidnet_eval import COMPONENTS, stages
     payload = stages.export_blocks()
     payload["dataset_verdicts"] = {}
+    payload["dataset_routes"] = {}                       # what S0 decided per study: generation, screening or candidate sets
     if research_file:
         try:
             with open(research_file, encoding="utf-8") as f:
                 built = json.load(f)
             verdicts = built.get("dataset_verdicts") or {}
             payload["dataset_verdicts"] = {k: v for k, v in verdicts.items() if isinstance(v, dict)}
+            routes = built.get("dataset_routes") or {}
+            payload["dataset_routes"] = {k: v for k, v in routes.items() if isinstance(v, str)}
             payload["generated_from"] = built.get("generated_from")
         except (OSError, ValueError):
             pass

@@ -32,6 +32,9 @@ def test_blocks_payload_has_ten_blocks_and_no_published_column(client):
     assert sum(len(b["metrics"]) for b in d["blocks"]) >= 37
     # the home page's block x dataset matrix: every executed study has a verdict for every block it ran
     assert set(d["dataset_verdicts"]) == {"perov5", "mp-perovskites", "user-246", "mp20", "jarvis-dp"}
+    routes = d["dataset_routes"]                       # what S0 decided, shown in place of its grade
+    assert set(routes) == set(d["dataset_verdicts"]) and set(routes.values()) <= {"generation", "screening", "candidate sets"}
+    assert all((d["dataset_verdicts"][k]["S0"] == "PASS") == (r == "generation") for k, r in routes.items())
     assert all(d["dataset_verdicts"][k].get("S1") for k in d["dataset_verdicts"]), d["dataset_verdicts"]
     assert "published" not in d["configs"]
     assert not FORBIDDEN.search(json.dumps(d))

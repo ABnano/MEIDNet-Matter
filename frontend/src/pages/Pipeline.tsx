@@ -38,13 +38,14 @@ export default function Pipeline() {
                   <div className="small block-verdicts">
                     <div className="micro muted">verdict on each dataset</div>
                     {DATASETS.map(([id, label]) => (
-                      <div key={id} className="block-verdict">{label} <VerdictText grade={data.dataset_verdicts?.[id]?.[b.id] ?? '—'} /></div>
+                      <div key={id} className="block-verdict">{label} <VerdictText grade={data.dataset_verdicts?.[id]?.[b.id] ?? '—'} route={b.id === 'S0' ? data.dataset_routes?.[id] : null} /></div>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
             <p className="note" style={{ marginTop: 20 }}>{P.howToRead}</p>
+            <p className="small muted" style={{ marginTop: 8 }}>{P.gradeLegend}</p>
 
             <section className="section" id="history">
               <h2>{P.historyTitle}</h2>
