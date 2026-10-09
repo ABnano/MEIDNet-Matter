@@ -141,6 +141,7 @@ def execute_generation(job_obj, job: dict, services) -> None:
     from meidnet.chem import ELEMENT_INDEX, ELEMENTS
     from meidnet.data import ANION_ELEMENTS
     from meidnet_eval.conditional_generate import generate_pool
+    from meidnet_eval.d1_mlip_check import contact_ratio, empty_layer, packing_fraction
     from meidnet_eval.metrics_sun import amd as amd_vector
 
     store = services.generations
@@ -207,6 +208,11 @@ def execute_generation(job_obj, job: dict, services) -> None:
             with open(os.path.join(job_dir, r["file"]), "rb") as f:
                 digest = hashlib.sha256(f.read()).hexdigest()
             known = (r["formula"] in ref.known) if ref.known else None
+            try:            # the generated cell is unrelaxed: closest atoms under 0.6 of their radii need relaxation before any use
+                geometry = {"contact_ratio": round(contact_ratio(s), 2), "empty_layer_A": round(empty_layer(s), 2),
+                            "packing": round(packing_fraction(s), 3)}
+            except Exception:
+                geometry = None
             cands.append({"candidate_id": f"{job['job_id']}-{i:03d}", "target_eV": t, "formula": r["formula"], "natoms": int(r["natoms"]),
                           "n_orbits": int(r.get("n_orbits") or 0), "spacegroup": sg,
                           "label_structure_eV": None if label is None else round(label, 3),
@@ -222,10 +228,10 @@ def execute_generation(job_obj, job: dict, services) -> None:
                           "statuses": {"gap_window": ("both models" if (in_label and in_judge) else "label only" if in_label else "judge only" if in_judge else "neither"),
                                        "charge_balance": ("yes" if balanced else "no" if balanced is False else "unknown"),
                                        "relaxed": "not in the live run"},
-                          "volume_per_atom": round(float(s.volume / len(s)), 2), "file": r["file"], "sha256": digest,
+                          "volume_per_atom": round(float(s.volume / len(s)), 2), "geometry": geometry, "file": r["file"], "sha256": digest,
                           "evidence": {"label": "read from the returned structure by the model's own property head",
-                                       "judge": services.judge.describe()["name"] if g is not None else "independent judge unavailable",
-                                       "novelty": "AMD distance to the nearest of the reference training structures; new above 0.3",
+                                       "judge": services.judge.describe()["name"] if g is not None else "judge unavailable",
+                                       "novelty": "AMD distance to the nearest of a sample of MP-20 structures of any composition; new above 0.3",
                                        "stability": "not assessed on this server"},
                           "stability": {"status": "not assessed", "note": "relax locally with the command in relax_command"}})
         per_target = []

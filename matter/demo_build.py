@@ -52,12 +52,14 @@ def write_json(path: str, obj) -> None:
 
 
 # ───────────────────────── materials ─────────────────────────
-def read_materials(data_dir: str, columns: list[str], max_sites: int, limit: int | None, log=print) -> tuple[list, dict]:
-    """Every material of every split, parsed once: a meidnet Record plus the facts Matter indexes (site key, elements)."""
+def read_materials(data_dir: str, columns: list[str], max_sites: int | list[int], limit: int | None, log=print) -> tuple[list, dict]:
+    """Every material of every split, parsed once: a meidnet Record per model size (max_sites) plus the facts Matter
+    indexes (site key, elements).  A material that does not fit every size is skipped, so every model sees the same rows."""
     import pandas as pd
     from meidnet.benchmark import _structure_site_key, formula_key
     from meidnet.data import Record, featurize, parse_structure
 
+    sizes = list(dict.fromkeys([max_sites] if isinstance(max_sites, int) else max_sites))
     rows, skipped = [], Counter()
     for split in SPLITS:
         path = os.path.join(data_dir, f"{split}.csv")
@@ -73,7 +75,7 @@ def read_materials(data_dir: str, columns: list[str], max_sites: int, limit: int
                 continue
             try:
                 s = parse_structure(cif_text=cif)
-                dense = featurize(s, max_sites)
+                dense = {ms: featurize(s, ms) for ms in sizes}
             except Exception as e:
                 skipped[f"structure could not be processed ({type(e).__name__})"] += 1
                 continue
@@ -84,7 +86,7 @@ def read_materials(data_dir: str, columns: list[str], max_sites: int, limit: int
             rows.append({"material_id": str(mid), "split": split, "formula": str(formula),
                          "reduced_formula": formula_key(formula), "site_key": key or "",
                          "elements": sorted(str(e) for e in s.composition.elements),
-                         "record": Record(str(mid), dense, props, s.composition.reduced_formula),
+                         "records": {ms: Record(str(mid), d, props, s.composition.reduced_formula) for ms, d in dense.items()},
                          **{c: float(v) for c, v in zip(columns, props)}})
         log(f"  {split}: {sum(r['split'] == split for r in rows):,} materials read")
     rows.sort(key=lambda r: (int(r["material_id"]) if r["material_id"].isdigit() else 1 << 40, r["material_id"]))
@@ -269,15 +271,13 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
         loaded[mid] = load_checkpoint(path, device="cpu")
     first = next(iter(loaded.values()))
     columns = list(first.stats.columns)
-    max_sites = first.model.max_sites
     for mid, lm in loaded.items():
-        if list(lm.stats.columns) != columns or lm.model.max_sites != max_sites:
-            raise SystemExit(f"model {mid} predicts {list(lm.stats.columns)} with max_sites {lm.model.max_sites}; the demo needs {columns} / {max_sites}")
+        if list(lm.stats.columns) != columns:
+            raise SystemExit(f"model {mid} predicts {list(lm.stats.columns)}; the demo needs {columns}")
 
     log(f"reading {data_dir} ...")
-    rows, skipped = read_materials(data_dir, columns, max_sites, limit, log)
+    rows, skipped = read_materials(data_dir, columns, [lm.model.max_sites for lm in loaded.values()], limit, log)
     by_split = {s: [r for r in rows if r["split"] == s] for s in SPLITS}
-    train, test = [r["record"] for r in by_split["train"]], [r["record"] for r in by_split["test"]]
     Y_tr = np.array([[r[c] for c in columns] for r in by_split["train"]], dtype=float)
     Y_all = np.array([[r[c] for c in columns] for r in rows], dtype=float)
     labels = {c: (first.stats.labels[i] if first.stats.labels and first.stats.labels[i] != c else LABELS.get(c, (c, ""))[0],
@@ -322,6 +322,8 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
     model_entries, project_models = [], []
     for mid, lm in loaded.items():
         path = models[mid]
+        train = [r["records"][lm.model.max_sites] for r in by_split["train"]]          # featurised at this model's size
+        test = [r["records"][lm.model.max_sites] for r in by_split["test"]]
         log(f"model {mid}: evaluating on {len(test):,} held-out materials ...")
         ev = evaluate_split(lm, train, test, columns)
         Zc_tr, Zc, Zp, P = ev.pop("_latents")
@@ -347,6 +349,8 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
                  "note": lm.meta.get("note", ""),
                  "description": ("The published Perov-5 model of the MEIDNet paper (MEIDNet v1 checkpoint)." if mid == "meidnet-2k" else
                                  "A re-run of the paper's alignment training with seed 3 (MEIDNet v1 checkpoint)." if "seed3" in mid else
+                                 "MEIDNet retrained on the Perov-5 training split with element descriptors: the final Perov-5 "
+                                 "configuration of the research pipeline (MEIDNet 2 checkpoint)." if mid == "desc-full" else
                                  lm.meta.get("note") or "MEIDNet checkpoint"),
                  "latents_file": f"latents_train.{mid}.npz"}
         model_entries.append(entry)
@@ -359,7 +363,7 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
     project = {
         "project_id": "perov5-demo", "title": "Perov-5 example", "dataset_id": "perov5",
         "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the "
-                       "formation energy, and the published MEIDNet model trained on them.",
+                       "formation energy, and " + _models_sentence(model_entries),
         "models": project_models, "default_model": default_model,
         "default_goal": {
             "project_id": "perov5-demo", "model_id": default_model, "family": "perovskite_abx3", "variant": "oxide",
@@ -393,6 +397,17 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
     write_json(os.path.join(out, "manifest.json"), manifest)
     log(f"wrote {out}")
     return manifest
+
+
+def _models_sentence(entries: list[dict]) -> str:
+    """The end of the project description: which models the demo carries, the default first."""
+    if len(entries) == 1:
+        return "the published MEIDNet model trained on them." if entries[0]["model_id"] == "meidnet-2k" else \
+            f"the MEIDNet model {entries[0]['model_id']} trained on them."
+    words = {2: "two", 3: "three", 4: "four"}
+    names = [f"{e['model_id']}{' (the default)' if i == 0 else ''}" for i, e in enumerate(entries)]
+    return (f"{words.get(len(entries), len(entries))} MEIDNet models trained on them: {', '.join(names[:-1]) + ' and ' + names[-1] if len(names) > 1 else names[0]}. "
+            "The readiness page shows how closely each one reads the properties of held-out materials.")
 
 
 def _torch_version() -> str:

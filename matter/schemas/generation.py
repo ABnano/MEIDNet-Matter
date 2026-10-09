@@ -45,11 +45,14 @@ def result_schema() -> dict:
                 "natoms": {"type": "integer"}, "spacegroup": {"type": "integer"},
                 "label_structure_eV": {"type": ["number", "null"], "description": "the model's label read from the returned structure"},
                 "label_formation_energy_eV_atom": {"type": ["number", "null"]},
-                "judge_eV": {"type": ["number", "null"], "description": "the independent judge on the returned structure"},
+                "judge_eV": {"type": ["number", "null"], "description": "a second model's reading of the returned structure (MEGNet, no part in generation); like the label, an estimate of the PBE gap"},
                 "consensus": {"type": "boolean"}, "metal_by_judge": {"type": ["boolean", "null"]},
                 "charge_balanced": {"type": ["boolean", "null"]}, "known_formula": {"type": ["boolean", "null"]},
                 "recorded_gaps_eV": {"type": "array"}, "amd_nearest_reference": {"type": ["number", "null"]},
                 "novel_by_amd": {"type": ["boolean", "null"]}, "lattice": {"type": "object"}, "volume_per_atom": {"type": "number"},
+                "geometry": {"type": ["object", "null"], "description": "contact_ratio (closest atoms over the sum of their radii; "
+                             "under 0.6 the cell needs relaxation before any use), empty_layer_A and packing (generated cells with an "
+                             "empty layer over 6 A or a packing fraction under 0.12 are not kept)"},
                 "file": {"type": "string"}, "sha256": {"type": "string"},
                 "stability": {"type": "object", "description": "always 'not assessed' on this server; relax locally"}}}},
             "relax_command": {"type": "string"}, "provenance": {"type": "object"},

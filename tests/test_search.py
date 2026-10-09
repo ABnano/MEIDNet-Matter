@@ -109,6 +109,8 @@ def test_search_candidates_evidence_and_exports(client, checkpoint):
     csv_text = client.get(f"/api/runs/{run_id}/export/candidates.csv").text
     head = csv_text.splitlines()[0]
     assert "domain_dir_gap" in head and "flags" in head and "why" in head and len(csv_text.splitlines()) == len(cands) + 1
+    cols = head.split(",")                       # each value under the name of what it is: the structure's reading, the search value
+    assert "structure_dir_gap" in cols and "search_dir_gap" in cols and "predicted_dir_gap" not in cols
     # compare (needs 2 ids: compare a candidate with itself when only one was found)
     ids = [c["candidate_id"] for c in cands[:2]] if len(cands) >= 2 else [cid, cid]
     cmp = client.post(f"/api/runs/{run_id}/compare", json={"candidate_ids": ids}).json()
@@ -119,6 +121,7 @@ def test_search_candidates_evidence_and_exports(client, checkpoint):
     assert {"run.json", "config.yaml", "metrics.json", "readiness.json", "candidates.csv", "targets.csv", "candidate-record.schema.json",
             "manifest.json", "environment.json", "hashes.json", "validation/README.txt"} <= set(names)
     assert any(n.startswith("cifs/") for n in names) and any(n.startswith("generation/cifs/") for n in names)
+    assert "session_id" not in json.loads(z.read("run.json"))
     targets = list(csv.DictReader(io.StringIO(z.read("targets.csv").decode("utf-8"))))
     assert len(targets) == len(cands) and all(f"cifs/{t['file']}" in names for t in targets)
     assert targets[0]["dir_gap_target"] == "2.0" and targets[0]["source"].startswith("structure-based prediction (") and targets[0]["validation_stage"] in ("0", "1")

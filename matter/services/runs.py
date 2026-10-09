@@ -142,6 +142,14 @@ class RunStore:
         return run
 
 
+PRIVATE_KEYS = ("session_id",)          # kept on disk for the shared host's bookkeeping, never served or exported
+
+
+def public_record(run: dict) -> dict:
+    """A run or generation record as it is served and exported: without the session that started it."""
+    return {k: v for k, v in run.items() if k not in PRIVATE_KEYS}
+
+
 def summary(run: dict) -> dict:
     return {k: run.get(k) for k in ("run_id", "project_id", "model_id", "status", "mode", "created", "started", "finished", "error", "summary",
                                     "estimated_seconds", "family", "progress")} | \

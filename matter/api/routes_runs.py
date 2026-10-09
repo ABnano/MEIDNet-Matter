@@ -8,7 +8,7 @@ from fastapi import APIRouter, Header, Request, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from matter.api.deps import get_services, session_id
+from matter.api.deps import get_services, require_owner, session_id
 from matter.api.errors import ApiError
 from matter.schemas.goal import Goal
 from matter.services import goals as G
@@ -75,14 +75,15 @@ def get_run(run_id: str, request: Request, view: str = "status") -> dict:
     s = get_services(request)
     run = _run(s, run_id)
     if view == "full":
-        return run
+        return RUNS.public_record(run)
     return RUNS.status_view(run)
 
 
 @router.post("/runs/{run_id}/stop", summary="Stop a running search; what was found is kept")
-def stop_run(run_id: str, request: Request) -> dict:
+def stop_run(run_id: str, request: Request, x_matter_session: str | None = Header(default=None)) -> dict:
     s = get_services(request)
     run = _run(s, run_id)
+    require_owner(request, x_matter_session, run, "search")
     stopped = s.jobs.stop(run_id)
     return {"ok": True, "stopping": stopped, "status": run["status"]}
 

@@ -32,3 +32,9 @@ def session_id(request: Request, x_matter_session: str | None = Header(default=N
     if settings.public and sid in RESERVED_SESSIONS:
         raise ApiError("validation_error", f"'{sid}' is a reserved session id", status=400)
     return sid
+
+
+def require_owner(request: Request, x_matter_session: str | None, record: dict, what: str) -> None:
+    """On a shared host only the session that started a job or run may stop it; locally there is one user."""
+    if request.app.state.settings.public and session_id(request, x_matter_session, mutating=True) != record.get("session_id"):
+        raise ApiError("forbidden", f"this {what} was started in another browser tab or session; only that one can stop it", status=403)

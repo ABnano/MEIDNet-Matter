@@ -42,7 +42,7 @@ DEFAULT = {"objectives": [{"property": "dir_gap", "kind": "value", "value": 2.0,
 
 @pytest.mark.slow
 def test_report_on_the_demo_project(client, checkpoint):
-    r = client.post("/api/readiness", json=DEFAULT)
+    r = client.post("/api/readiness", json=dict(DEFAULT, model_id="meidnet-2k"))
     assert r.status_code == 200, r.text
     rep = r.json()
     assert rep["verdict"] in ("SUPPORTED", "CAUTION", "NOT_RECOMMENDED")
@@ -62,6 +62,20 @@ def test_report_on_the_demo_project(client, checkpoint):
     fam = rep["indicators"]["family_support"]
     assert fam["groups"]["X"]["absent"] == [] and fam["space"]["rule_passing"] > 0
     assert rep["summary"] and rep["goal_hash"] and rep["computed_in_ms"] < 60000
+
+
+@pytest.mark.slow
+def test_the_default_model_reads_held_out_materials(client, checkpoint):
+    """The demo's default (desc-full, trained on the training split only): formation enthalpy good; the band gap,
+    graded on the materials with a non-zero gap, still weak by the engine's thresholds, so a gap target is exploratory."""
+    project = client.get("/api/projects/perov5-demo").json()
+    assert project["default_model"] == "desc-full" and "meidnet-2k" in [m["model_id"] for m in project["models"]]
+    rep = client.post("/api/readiness", json=DEFAULT).json()
+    fid = rep["indicators"]["fidelity"]["per_property"]
+    assert fid["heat_all"]["word"] == "good"
+    assert fid["dir_gap"]["basis"] == "nonzero" and fid["dir_gap"]["word"] == "weak"
+    assert not any("optimistic" in s for s in rep["indicators"]["fidelity"]["sentences"])     # no test-split caveat
+    assert rep["exploratory_required"]
 
 
 @pytest.mark.slow

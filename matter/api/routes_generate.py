@@ -2,16 +2,18 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 import zipfile
 
 from fastapi import APIRouter, Depends, Header, Request
 from fastapi.responses import FileResponse, StreamingResponse
 
-from matter.api.deps import get_services, session_id
+from matter.api.deps import get_services, require_owner, session_id
 from matter.api.errors import ApiError
 from matter.schemas.generation import GENERATION_SCHEMA_ID, GenerateRequest, result_schema
 from matter.services import generation as GEN
+from matter.services.runs import public_record
 
 router = APIRouter(tags=["generate"])
 
@@ -45,13 +47,14 @@ def list_jobs(request: Request, x_matter_session: str | None = Header(default=No
 def get_job(job_id: str, view: str = "status", services=Depends(get_services)) -> dict:
     job = services.generations.get(job_id)
     if view == "full":
-        return {k: v for k, v in job.items() if not k.startswith("_")}
+        return {k: v for k, v in public_record(job).items() if not k.startswith("_")}
     return GEN.status_view(job)
 
 
 @router.post("/generate/{job_id}/stop", summary="Ask a running job to stop after the current draw")
-def stop(job_id: str, services=Depends(get_services)) -> dict:
+def stop(job_id: str, request: Request, x_matter_session: str | None = Header(default=None), services=Depends(get_services)) -> dict:
     job = services.generations.get(job_id)
+    require_owner(request, x_matter_session, job, "job")
     stopping = services.jobs.stop(job_id)
     return {"ok": True, "stopping": stopping, "status": job["status"]}
 
@@ -78,7 +81,12 @@ def export_zip(job_id: str, services=Depends(get_services)):
         for root, _dirs, files in os.walk(folder):
             for name in files:
                 p = os.path.join(root, name)
-                z.write(p, os.path.relpath(p, folder))
+                rel = os.path.relpath(p, folder)
+                if rel in ("job.json", "run.json"):          # the records, without the session that started the job
+                    with open(p, encoding="utf-8") as f:
+                        z.writestr(rel, json.dumps(public_record(json.load(f)), indent=1, ensure_ascii=False))
+                else:
+                    z.write(p, rel)
     buf.seek(0)
     return StreamingResponse(buf, media_type="application/zip", headers={"Content-Disposition": f'attachment; filename="{job_id}.zip"'})
 

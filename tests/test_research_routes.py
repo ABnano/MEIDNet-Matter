@@ -65,17 +65,22 @@ def test_studies_are_served_and_the_upload_study_carries_aggregates_only(client)
     for forbidden in ('"cif"', '"formula"', '"candidates"'):
         assert forbidden not in u
     mp20 = client.get("/api/studies/mp20").json()
-    assert len(mp20["accepted"]) == mp20["calibration"]["funnel"]["final"] == 7
-    from pymatgen.core import Structure                           # every accepted cell is still a crystal (contact test)
-    from meidnet_eval.d1_mlip_check import COLLAPSED, contact_ratio
+    assert len(mp20["accepted"]) == mp20["calibration"]["funnel"]["final"] == 4
+    from pymatgen.core import Structure          # every accepted cell is a bulk crystal: not collapsed, not a slab, not sparse
+    from meidnet_eval.d1_mlip_check import COLLAPSED, bulk_problem, contact_ratio
     for a in mp20["accepted"]:
-        cif = client.get(f"/api/studies/mp20/files/{a['file']}").text
-        assert contact_ratio(Structure.from_str(cif, fmt="cif")) >= COLLAPSED, a["formula"]
+        cell = Structure.from_str(client.get(f"/api/studies/mp20/files/{a['file']}").text, fmt="cif")
+        assert contact_ratio(cell) >= COLLAPSED and not bulk_problem(cell), a["formula"]
+        assert a["class"] != "rediscovered known structure" or a["reference_id"], a["formula"]        # a rediscovery names its match
+    acc = mp20["calibration"]["accuracy"]                         # before and after relaxation on the same cells
+    assert acc["same_cells"] == acc["of"] and acc["mae_same_cells_before_relaxation"] is not None
     dp = client.get("/api/studies/jarvis-dp").json()       # the case study of several routes: every structure served, every route counted
     assert dp["routes"] and dp["stability"]["n"] > 0 and len(dp["accepted"]) == sum(dp["accepted_classes"].values())
     for a in dp["accepted"]:
         r = client.get(f"/api/studies/jarvis-dp/files/{a['file']}")
         assert r.status_code == 200 and "_cell_length_a" in r.text, a["file"]
+        cell = Structure.from_str(r.text, fmt="cif")
+        assert contact_ratio(cell) >= COLLAPSED and not bulk_problem(cell), a["file"]
         assert a["route"] in {x["title"] for x in dp["routes"]}
     assert client.get("/api/studies/nope").status_code == 404
     assert client.get("/api/studies/mp20/files/../../settings.py").status_code in (404, 400)

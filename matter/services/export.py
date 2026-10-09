@@ -30,8 +30,6 @@ def candidate_rows(run: dict) -> tuple[list[str], list[dict]]:
             row[f"structure_in_window_{p}"] = v.get("structure_in_window")
             row[f"search_{p}"] = v["predicted"]                                  # the search value that kept the candidate
             row[f"search_difference_{p}"] = v["difference"]
-            row[f"predicted_{p}"] = v["predicted"]                               # kept for readers of the 0.2 columns
-            row[f"difference_{p}"] = v["difference"]
             row[f"encoder_{p}"] = c["model_evidence"]["encoder_prediction"].get(p)
             row[f"agreement_{p}"] = c["model_evidence"]["agreement"][p]["label"]
             row[f"domain_{p}"] = (v.get("structure_domain") or v["domain"])["status"]
@@ -131,6 +129,7 @@ def bundle_zip(run: dict, services) -> bytes:
     candidate-record schema, the engine's generation/ folder, one CIF per candidate under cifs/, the validation
     folder, environment.json and hashes.json."""
     from matter.schemas.candidate import json_schema
+    from matter.services.runs import public_record
     from matter.version import build_info
     run_dir = services.runs.path(run["run_id"])
     buf = io.BytesIO()
@@ -140,7 +139,7 @@ def bundle_zip(run: dict, services) -> bytes:
             z.writestr(name, data)
             hashes[name] = hashlib.sha256(data).hexdigest()
 
-        add_bytes("run.json", json.dumps(finite(run), indent=1, allow_nan=False, ensure_ascii=False).encode("utf-8"))
+        add_bytes("run.json", json.dumps(finite(public_record(run)), indent=1, allow_nan=False, ensure_ascii=False).encode("utf-8"))
         for name in ("config.yaml", "metrics.json", "readiness.json", "candidates.csv", os.path.join("validation", "README.txt")):
             p = os.path.join(run_dir, name)
             if os.path.exists(p):
