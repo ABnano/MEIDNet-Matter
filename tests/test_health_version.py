@@ -39,3 +39,10 @@ def test_the_version_is_the_same_everywhere():
 def test_unknown_api_route_is_a_json_404(client):
     r = client.get("/api/does-not-exist")
     assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"
+
+
+def test_large_responses_travel_compressed(client):
+    """gzip for a client that accepts it (a third of the bytes for the site's JSON); small answers stay plain."""
+    big = client.get("/api/pipeline/blocks", headers={"Accept-Encoding": "gzip"})
+    assert big.status_code == 200 and big.headers.get("content-encoding") == "gzip" and big.json()["blocks"]
+    assert client.get("/health", headers={"Accept-Encoding": "gzip"}).headers.get("content-encoding") is None

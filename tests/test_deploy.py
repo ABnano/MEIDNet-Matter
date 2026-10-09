@@ -79,6 +79,25 @@ def test_requirements_take_the_engine_from_the_bundle_not_pypi():
         assert dep in req, dep
 
 
+def test_the_space_installs_known_good_versions():
+    """The image installs every dependency at a version pinned from a clean meidnet-matter[judge] install, the judge's
+    stack (matgl, torch-geometric, lightning) included, so two builds of the same release install the same packages."""
+    with open(os.path.join(ROOT, "deploy", "Dockerfile"), encoding="utf-8") as f:
+        docker = f.read()
+    with open(os.path.join(ROOT, "deploy", "constraints.txt"), encoding="utf-8") as f:
+        pins = {re.sub(r"[-_.]+", "-", k).lower(): v for k, v in              # names as pip compares them (PyYAML = pyyaml)
+                (line.strip().split("==", 1) for line in f if "==" in line and not line.startswith("#"))}
+    assert "COPY constraints.txt ." in docker and docker.count("-c constraints.txt") == 2
+    for name in ("torch", "matgl", "torch-geometric", "lightning", "pymatgen", "fastapi", "numpy",
+                 "httptools", "uvloop", "watchfiles", "websockets", "python-dotenv"):       # uvicorn[standard]'s extras too
+        assert name in pins, name
+    with open(os.path.join(ROOT, "deploy", "requirements.txt"), encoding="utf-8") as f:     # every requirement has a pin
+        wanted = [re.sub(r"[-_.]+", "-", re.split(r"[\[<>=!~ ]", line.strip(), maxsplit=1)[0]).lower()
+                  for line in f if line.strip() and not line.startswith("#")]
+    assert wanted and all(name in pins for name in wanted), [n for n in wanted if n not in pins]
+    assert pins["matgl"] == "4.0.3" and not any(k.startswith("meidnet") for k in pins) and not any("+cpu" in v for v in pins.values())
+
+
 def _fake_tree(root, mod, token_in_tree=False):
     (root / "matter" / "static").mkdir(parents=True)
     (root / "matter" / "__init__.py").write_text('__version__ = "9.9.9"\n', encoding="utf-8")
@@ -111,6 +130,7 @@ def _fake_tree(root, mod, token_in_tree=False):
     (root / "deploy").mkdir()
     (root / "deploy" / "Dockerfile").write_text("FROM x\n", encoding="utf-8")
     (root / "deploy" / "requirements.txt").write_text("fastapi\n", encoding="utf-8")
+    (root / "deploy" / "constraints.txt").write_text("fastapi==0.1\n", encoding="utf-8")
 
 
 def test_stage_layout_on_a_fake_tree(tmp_path, monkeypatch):
@@ -124,7 +144,7 @@ def test_stage_layout_on_a_fake_tree(tmp_path, monkeypatch):
     assert "missing.pt" in str(e.value) and "--only missing" in str(e.value)
     stage = mod.build_stage(str(root), str(tmp_path / "stage"), fetch=False, version="9.9.9", allow_missing=True)
     names = {os.path.relpath(os.path.join(d, f), stage).replace(os.sep, "/") for d, _, fs in os.walk(stage) for f in fs}
-    assert {"README.md", ".gitattributes", "build_info.json", "requirements.txt", "Dockerfile", "matter/static/index.html",
+    assert {"README.md", ".gitattributes", "build_info.json", "requirements.txt", "constraints.txt", "Dockerfile", "matter/static/index.html",
             "examples/perov5/project.json", "examples/research/pipeline/blocks.json", f"checkpoints/{mod.CKPT_NAME}",
             "checkpoints/other.pt", "checkpoints/manifest.json", "checkpoints/configs/a.yaml",
             "engine/SNAPSHOT.json", "engine/meidnet/__init__.py"} <= names

@@ -10,10 +10,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm 
 RUN useradd -m -u 1000 user
 WORKDIR /app
 
-# torch from the CPU index first (its own layer), then the rest
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch>=2.4,<3"
+# every dependency at a known-good version (constraints.txt: a clean install of meidnet-matter[judge]), so two builds of
+# the same release install the same packages; torch from the CPU index first (its own layer), then the rest
+COPY constraints.txt .
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu -c constraints.txt "torch>=2.4,<3"
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -c constraints.txt -r requirements.txt
 
 # the engine snapshot, installed as the `meidnet` distribution; nothing is fetched from PyPI for it
 COPY engine/ ./engine/

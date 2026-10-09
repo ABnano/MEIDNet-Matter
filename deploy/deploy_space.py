@@ -49,7 +49,7 @@ sdk: docker
 app_port: 7860
 pinned: true
 license: mit
-short_description: From your materials data to candidate structures
+short_description: Ask for a band gap, get crystal structures with evidence
 thumbnail: https://babu09-meidnet-matter.hf.space/og.png
 tags: [materials, inverse-design, generative, crystal, perovskite, multimodal, search-engine, chemistry]
 models: [Babu09/MEIDNet]
@@ -57,13 +57,16 @@ models: [Babu09/MEIDNet]
 
 # MEIDNet Matter
 
-**From your materials data to candidate structures.** A multimodal inverse-design workbench for crystalline
-materials: define property targets and chemistry rules, read the Design Readiness report (can this dataset and model
-support the target?), search for candidate structures, and export them with their evidence and a run manifest.
-MEIDNet is the engine; MEIDNet Prism (https://babu09-meidnet.hf.space) is where to learn the method and benchmark it.
+**What:** crystal structures for a requested band gap, each with the evidence for it.  
+**For:** materials scientists choosing candidates to check by DFT, and anyone learning inverse design.  
+**Input:** one to three band-gap values (live, on MP-20); on your own computer, your own structures and properties.  
+**Output:** CIF files with two machine-learning readings of the PBE gap, charge balance, novelty against MP-20, and the
+command that relaxes them locally.  
+**Time:** seconds to a few minutes per request on the shared CPU, depending on how many structures you ask for; relaxation and DFT run on your side.
 
-Matter runs family-free generation live (MP-20, the symmetry decoder, two independent readings per cell) and the
-Perov-5 demo within a structural family; the same stages run on your own data locally (Method page).
+MEIDNet is the engine; MEIDNet Prism (https://babu09-meidnet.hf.space) is where to learn the method and benchmark it.
+Matter runs family-free generation live (MP-20, the symmetry decoder, two readings per cell: the generator's label and a
+second model) and the Perov-5 demo within a structural family; the same stages run on your own data locally (Method page).
 
 This version: the staged pipeline (ten blocks with their bands and code), four executed studies with downloadable
 checkpoints, live band-gap generation on MP-20 with 3D cards and an evidence map, the Perov-5 demo project, and a
@@ -170,6 +173,8 @@ def build_stage(root: str = ROOT, stage: str = STAGE, fetch: bool = True, versio
         shutil.copytree(os.path.join(root, "checkpoints", "configs"), os.path.join(stage, "checkpoints", "configs"))
     shutil.copy2(os.path.join(root, "deploy", "Dockerfile"), os.path.join(stage, "Dockerfile"))
     shutil.copy2(os.path.join(root, "deploy", "requirements.txt"), os.path.join(stage, "requirements.txt"))
+    if os.path.exists(os.path.join(root, "deploy", "constraints.txt")):     # the known-good versions the Dockerfile installs
+        shutil.copy2(os.path.join(root, "deploy", "constraints.txt"), os.path.join(stage, "constraints.txt"))
     with open(os.path.join(stage, "README.md"), "w", encoding="utf-8", newline="\n") as f:
         f.write(README)
     with open(os.path.join(stage, ".gitattributes"), "w", encoding="utf-8", newline="\n") as f:

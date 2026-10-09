@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, Response
 
 from matter import __version__
@@ -49,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     if settings.cors_origins:
         app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_methods=["*"], allow_headers=["*"])
+    app.add_middleware(GZipMiddleware, minimum_size=1024)       # the site's JSON and scripts travel compressed (about a third)
 
     from matter.api.errors import install_error_handlers
     from matter.api.router import api_router
