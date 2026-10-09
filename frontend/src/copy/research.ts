@@ -9,7 +9,7 @@ export const home = {
   ctaExplore: 'Explore a completed result',
   ctaPlay: 'Run a band-gap search',
   ctaDemo: 'Try the Perov-5 demo',
-  scope: 'Live MP-20 band-gap generation · Perov-5 exploratory demo · own-data workflow available locally',
+  scope: 'Live MP-20 band-gap generation · Perov-5 demo search · own-data workflow available locally',
   prism: 'Matter is the application half of MEIDNet. The method itself, its benchmarks and the documentation live in MEIDNet Prism.',
   prismCta: 'Open MEIDNet Prism',
   plain: 'New to the field? A band gap is the energy a material needs before its electrons can move freely. It decides whether a material behaves as a metal, a semiconductor or an insulator, so asking for a band gap is asking for a kind of behaviour. The app proposes crystal structures that two machine-learning models of different lineage expect to have the gap you asked for, at the level of theory the data was computed with (PBE).',
@@ -18,7 +18,7 @@ export const home = {
   choicesTitle: 'Three ways in',
   choices: [
     ['Explore a result', 'The MP-20 study: 175 generated cells, 4 accepted by two judges on relaxed cells that passed the contact and bulk tests, the response curve, every structure and its evidence.', '/studies/mp20', 'Open the study'],
-    ['Set my target', 'Ask for one to three band gaps and get cells in seconds, each with a label read from its own structure, a second model\'s reading and three statuses kept apart. Or walk the Perov-5 demo: goal, readiness, candidates, export.', '/play', 'Run a band-gap search'],
+    ['Set my target', 'Ask for one to three band gaps and get cells within minutes, each with a label read from its own structure, a second model\'s reading and three statuses kept apart. Or walk the Perov-5 demo: goal, readiness, candidates, export.', '/play', 'Run a band-gap search'],
     ['Use my data locally', 'Nothing is uploaded on this site. Eight commands take a folder of structures and a property table through the same stages, with the same bands, on your computer; the code of every block is here to read and change.', '/method#run', 'The steps'],
   ],
   featuredTitle: 'The MP-20 study: requested in, delivered out',

@@ -36,8 +36,8 @@ export default function Home() {
             <h1>{H.h1}</h1>
             <p className="lead">{H.lead}</p>
             <div className="ctas">
-              <Link to="/studies/mp20" className="btn btn-primary btn-lg">{H.ctaExplore}</Link>
-              <Link to="/play" className="btn btn-lg">{H.ctaPlay}</Link>
+              <Link to="/play" className="btn btn-primary btn-lg">{H.ctaPlay}</Link>
+              <Link to="/studies/mp20" className="btn btn-lg">{H.ctaExplore}</Link>
               <Link to="/p/perov5-demo/goal" className="btn btn-lg btn-ghost" data-testid="cta-demo">{H.ctaDemo}</Link>
             </div>
             <div className="scope-line">{H.scope}</div>

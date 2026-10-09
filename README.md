@@ -2,9 +2,14 @@
 
 # MEIDNet Matter
 
-**From your materials data to candidate structures.**
+**What:** crystal structures for a requested band gap, each with the evidence for it.  
+**For:** materials scientists choosing candidates to check by DFT, and anyone learning inverse design.  
+**Input:** one to three band-gap values (live, on MP-20); on your own computer, your own structures and properties.  
+**Output:** CIF files with two machine-learning readings of the PBE gap, charge balance, novelty against MP-20, and the
+command that relaxes them locally.  
+**Time:** seconds to a few minutes per request on the shared CPU, depending on how many structures you ask for; relaxation and DFT run on your side.
 
-MEIDNet Matter is a multimodal inverse-design workbench for crystalline materials. A researcher brings crystal structures and properties; Matter reports what the data and the model support (the Design Readiness report), then runs a constrained, property-conditioned search and returns candidate structures with their evidence and provenance. The scientific engine is [MEIDNet](https://github.com/ABnano/MEIDNet), imported as a package; the sibling platform [MEIDNet Prism](https://babu09-meidnet.hf.space/) is where to learn the method, reproduce the results and benchmark models.
+MEIDNet Matter is a multimodal inverse-design workbench for crystalline materials: it reports what the data and the model support (the Design Readiness report), then generates or searches candidate structures and returns them with their evidence and provenance. The scientific engine is [MEIDNet](https://github.com/ABnano/MEIDNet), imported as a package; the sibling platform [MEIDNet Prism](https://babu09-meidnet.hf.space/) is where to learn the method, reproduce the results and benchmark models.
 
 [![ci](https://github.com/ABnano/MEIDNet-Matter/actions/workflows/ci.yml/badge.svg)](https://github.com/ABnano/MEIDNet-Matter/actions/workflows/ci.yml)
 [![Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-MEIDNet--Matter-4f46e5)](https://huggingface.co/spaces/Babu09/MEIDNet-Matter)
@@ -13,11 +18,11 @@ MEIDNet Matter is a multimodal inverse-design workbench for crystalline material
 [![licence](https://img.shields.io/badge/licence-MIT-0a7d0a)](https://github.com/ABnano/MEIDNet-Matter/blob/main/LICENSE)
 [![paper](https://img.shields.io/badge/npj%20Comput.%20Mater.-2026-1c5cab)](https://doi.org/10.1038/s41524-026-02153-3)
 
-Matter currently searches property-conditioned candidates within supported structural families. Free-geometry crystal generation is planned as additional design backends mature.
+Matter generates crystal structures without a template (live, on MP-20) and searches within a structural family (the Perov-5 demo); the same stages run on your own data locally.
 
 ## Try it
 
-**Live:** https://babu09-meidnet-matter.hf.space/ — open the Perov-5 demo project, set a band-gap target, exclude lead, read the readiness report, run the search (about a minute on the shared CPU), open a candidate, download its CIF or the whole run bundle.
+**Live:** https://babu09-meidnet-matter.hf.space/ — **Run a band-gap search**: ask for one to three band gaps, get the generated cells with both readings, three statuses and the evidence for each, and download them with the command that relaxes them. Then the Perov-5 demo project: set a band-gap target, exclude lead, read the readiness report, run the search (about a minute on the shared CPU), open a candidate, download its CIF or the whole run bundle.
 
 **Mirror for any network:** https://abnano.github.io/MEIDNet-Matter/ — the same site on GitHub Pages, for networks that block
 `*.hf.space` (public Wi-Fi often does: the Space then shows a grey page). Everything that reads works there (studies, the
@@ -31,10 +36,11 @@ https://abnano.github.io/MEIDNet/.
 The home page opens on a worked result: a real accepted structure with both of its readings, a small requested-versus-delivered
 plot, an animated six-step walkthrough, and a rolling strip of the structures the generator delivered. From there: **Pipeline**
 (the ten blocks with their bands and code), **Studies** (Perov-5, Materials Project perovskites, an external upload, MP-20, with
-checkpoints), **Generate** (live band-gap generation on MP-20 with two independent readings per cell, 3D cards and an evidence
-map) and **Method** (mechanism, strengths, limits, and the commands that run the same stages on your own data: whatever route produced your candidates, one check gives them the qualified judge, relaxation by two potentials, both readings again on the relaxed cells, the energy above the hull with one potential for every phase, novelty, and a class: new, rediscovered, or contradicted by your data's own value). The Perov-5
-demo project below is the original flow and is kept as it was, with one change: every candidate now shows the
-**structure-based prediction** first and the **search value** beside it, and says which of the two supports the target.
+checkpoints), **Generate** (live band-gap generation on MP-20 with two readings per cell, the generator's label and a second model, 3D
+cards and an evidence map) and **Method** (mechanism, strengths, limits, and the commands that run the same stages on your own data: whatever route produced your candidates, one check gives them the qualified judge, relaxation by two potentials, both readings again on the relaxed cells, the energy above the hull with one potential for every phase, novelty, and a class: new, rediscovered, or contradicted by your data's own value). The Perov-5
+demo project below is the original flow with two changes: a retrained default model (the published one stays selectable), and
+every candidate shows the **structure-based prediction** first and the **search value** beside it, and says which of the two
+supports the target.
 
 
 | Step | What you get |
@@ -47,7 +53,7 @@ demo project below is the original flow and is kept as it was, with one change: 
 | **Export** | CIF per candidate, the candidate table, the candidate record (versioned: `meidnet-matter/candidate-record/1`, JSON Schema at `/api/schema/candidate-record`), and the run bundle: goal, engine configuration, metrics, readiness, candidates, CIFs, `targets.csv`, the record schema, a manifest with file hashes. |
 | **Score on Prism** | The bundle's `cifs/` and `targets.csv` are the input of `meidnet score` (MEIDNet 2.3.1 or later): validity, uniqueness, novelty, diversity, distribution and the conditional metrics, named as in LeMat-GenBench. The export page gives the commands; [the metrics are defined on Prism](https://babu09-meidnet.hf.space/docs/benchmarks/compatibility.html). |
 
-The demo project: cubic ABX₃ perovskites of the Perov-5 dataset, the published MEIDNet model, the direct band gap and the formation enthalpy. By the engine's thresholds the published model is weak on both properties on held-out data, so the demo opens its searches in exploratory mode by design; [docs/scientific-scope.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/scientific-scope.md) has the numbers and what the evidence shows instead.
+The demo project: cubic ABX₃ perovskites of the Perov-5 dataset, the direct band gap and the formation enthalpy, and two MEIDNet models. The default, retrained on the training split and chosen on the validation split, reads the formation enthalpy well and the band gap fairly on held-out data, so the default goal runs as a normal search (it rebuilds held-out structures less well than the earlier default, which the readiness report shows); the published model, still selectable, is weak on both by the engine's thresholds and runs in exploratory mode; [docs/scientific-scope.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/scientific-scope.md) has the numbers and what the evidence shows instead.
 
 Coming next (Phase 1): upload your own property table and CIF files, a data-quality report, training in the browser, readiness on your own held-out data, the same search with your model; then imports from Materials Project and NOMAD, a bring-your-own-model backend, and synthesis context linked from existing resources. [docs/data-format.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/data-format.md) describes the upload layout, the candidate record and `targets.csv`.
 
@@ -74,7 +80,7 @@ mirror or an offline machine:
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
   "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev3-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.8.1-py3-none-any.whl"
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.9.0-py3-none-any.whl"
 ```
 
 `constraints.txt` is written by the release workflow from its own install check (Linux, Python 3.12); on another Python

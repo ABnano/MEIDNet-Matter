@@ -3,8 +3,8 @@ import { Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import { AppShell } from '@/components/shell';
 import { Spinner } from '@/components/ui';
 import { STATIC_MIRROR } from '@/lib/mirror';
+import { STUDY_DATASETS } from '@/copy/research';
 
-const Landing = lazy(() => import('@/pages/Landing'));
 const CreateProject = lazy(() => import('@/pages/CreateProject'));
 const ComingNext = lazy(() => import('@/pages/ComingNext'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
@@ -32,6 +32,38 @@ const live = (el: ReactElement, title: string, what: string, path?: string) =>
 const GENERATE = 'Ask for a band gap and get crystal structures back, read by two models of different lineage; the generator runs on the live server.';
 const DEMO = 'The Perov-5 demo: set a goal, check the readiness of the data and the model, search, and export candidates with their evidence; the search runs on the live server.';
 
+/** Every page's own title, so tabs, history and bookmarks say where they lead. */
+const STUDY_TITLE = Object.fromEntries(STUDY_DATASETS) as Record<string, string>;
+const TITLES: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
+  [/^\/pipeline\/(S\d)$/, (m) => `Block ${m[1]} · Pipeline`], [/^\/pipeline$/, () => 'Pipeline'],
+  [/^\/studies\/([\w-]+)$/, (m) => `${STUDY_TITLE[m[1]] ?? m[1]} study`], [/^\/studies$/, () => 'Studies'],
+  [/^\/play\/[\w-]+$/, () => 'Generation job'], [/^\/play$/, () => 'Generate for a band gap'],
+  [/^\/method$/, () => 'Method'], [/^\/privacy$/, () => 'Privacy'], [/^\/new$/, () => 'A new project'],
+  [/^\/start-with-my-data$/, () => 'Start with my data'],
+  [/^\/p\/[\w-]+\/goal$/, () => 'Goal · Perov-5 demo'], [/^\/p\/[\w-]+\/readiness$/, () => 'Readiness · Perov-5 demo'],
+  [/^\/p\/[\w-]+\/runs$/, () => 'Searches · Perov-5 demo'], [/^\/p\/[\w-]+\/runs\/[\w-]+\/export$/, () => 'Validate and export · Perov-5 demo'],
+  [/^\/p\/[\w-]+\/runs\/[\w-]+\/compare$/, () => 'Compare · Perov-5 demo'], [/^\/p\/[\w-]+\/runs\/[\w-]+\/c\/[\w-]+$/, () => 'Candidate · Perov-5 demo'],
+  [/^\/p\/[\w-]+\/runs\/[\w-]+$/, () => 'Candidates · Perov-5 demo'],
+];
+
+/** The home page's title: the same words as index.html's <title>, which the page loads with. */
+export const HOME_TITLE = 'MEIDNet Matter — crystal structures for a requested band gap, with the evidence';
+
+export function pageTitle(pathname: string): string {
+  if (pathname === '/') return HOME_TITLE;
+  for (const [re, f] of TITLES) {
+    const m = pathname.match(re);
+    if (m) return `${f(m)} · MEIDNet Matter`;
+  }
+  return 'MEIDNet Matter';
+}
+
+function TitleSync() {
+  const { pathname } = useLocation();
+  useEffect(() => { document.title = pageTitle(pathname); }, [pathname]);
+  return null;
+}
+
 /** A link to a section of a page (/studies/mp20#accepted): scroll to it once it is there (it arrives with the page's data).
  *  The browser does this by itself only on a full load, never inside the app, nor in the mirror, whose routes follow '#'. */
 function ScrollToSection() {
@@ -58,9 +90,10 @@ export default function App() {
   return (
     <Suspense fallback={<div className="wrap page"><Spinner /></div>}>
       <ScrollToSection />
+      <TitleSync />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/demo" element={<Landing />} />
+        <Route path="/demo" element={<Navigate to={STATIC_MIRROR ? '/' : '/p/perov5-demo/goal'} replace />} />
         <Route path="/pipeline" element={<Pipeline />} />
         <Route path="/pipeline/:block" element={<PipelineBlock />} />
         <Route path="/studies" element={<Studies />} />

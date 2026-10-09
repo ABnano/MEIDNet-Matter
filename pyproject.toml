@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "meidnet-matter"
 dynamic = ["version"]
-description = "MEIDNet Matter: multimodal inverse design for materials discovery, from your materials data to candidate structures"
+description = "MEIDNet Matter: multimodal inverse design for materials, crystal structures for a requested band gap, each with the evidence for it"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

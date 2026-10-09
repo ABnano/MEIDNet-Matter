@@ -50,7 +50,7 @@ export function MarketingHeader() {
           <ExternalLink href={PRISM_SPACE}>Prism</ExternalLink>
           <ExternalLink href={GITHUB}>GitHub</ExternalLink>
         </nav>
-        <Link to="/p/perov5-demo/goal" className="btn btn-primary btn-sm">Try the Perov-5 demo</Link>
+        <Link to="/play" className="btn btn-primary btn-sm">Run a band-gap search</Link>
         <ThemeToggle /><DirectAppLink />
       </div>
     </header>
@@ -62,7 +62,7 @@ export function SiteFooter() {
   return (
     <footer className="site">
       <div className="wrap-narrow">
-        <span>MEIDNet Matter: from your materials data to candidate structures. MEIDNet is the engine.</span>
+        <span>MEIDNet Matter: crystal structures for a requested band gap, with the evidence for each. MEIDNet is the engine.</span>
         <Link to="/pipeline">Pipeline</Link>
         <Link to="/studies">Studies</Link>
         <Link to="/play">Generate</Link>
