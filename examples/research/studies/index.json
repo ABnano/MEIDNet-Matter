@@ -27,7 +27,7 @@
   },
   {
    "dataset": "MP-20",
-   "headline": "Requested band gap in, relaxed structures out: 13 accepted from 175 generated, 6 new compositions, and known compounds returned at their recorded gaps.",
+   "headline": "Requested band gap in, relaxed structures out: 7 accepted from 175 generated, 3 new compositions, and known compounds returned at their recorded gaps; 20 of the 37 relaxed cells collapsed and were set aside.",
    "id": "mp20",
    "mode": "generation, family-free (symmetry decoder)",
    "order": 4,

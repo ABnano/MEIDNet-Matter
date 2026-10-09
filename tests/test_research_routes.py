@@ -65,7 +65,12 @@ def test_studies_are_served_and_the_upload_study_carries_aggregates_only(client)
     for forbidden in ('"cif"', '"formula"', '"candidates"'):
         assert forbidden not in u
     mp20 = client.get("/api/studies/mp20").json()
-    assert len(mp20["accepted"]) == mp20["calibration"]["funnel"]["final"] == 13
+    assert len(mp20["accepted"]) == mp20["calibration"]["funnel"]["final"] == 7
+    from pymatgen.core import Structure                           # every accepted cell is still a crystal (contact test)
+    from meidnet_eval.d1_mlip_check import COLLAPSED, contact_ratio
+    for a in mp20["accepted"]:
+        cif = client.get(f"/api/studies/mp20/files/{a['file']}").text
+        assert contact_ratio(Structure.from_str(cif, fmt="cif")) >= COLLAPSED, a["formula"]
     dp = client.get("/api/studies/jarvis-dp").json()       # the case study of several routes: every structure served, every route counted
     assert dp["routes"] and dp["stability"]["n"] > 0 and len(dp["accepted"]) == sum(dp["accepted_classes"].values())
     for a in dp["accepted"]:

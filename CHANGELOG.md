@@ -4,6 +4,16 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-09
+
+### Fixed
+- The MP-20 study counted collapsed cells: 20 of its 37 relaxed cells, 6 of the 13 accepted among them (ZnCdPS₂, CsI,
+  Sr(HgCl)₂, CaTe, LaI, Zn₅I₈), have atoms pushed into each other after relaxation (P–S 0.31 Å, Hg–Hg 0.95 Å,
+  Te–Te 1.23 Å). With the contact test the study keeps 7 accepted structures (3 new compositions, 1 new polymorph, 3 known
+  compounds at their recorded gaps), and its calibration comes from the 17 relaxed cells that stayed physical: MAE 0.80 eV
+  (0.68 before), delivered = 0.24 + 0.80 × requested (0.09 + 0.86 before), novelty 88%. The Method page and the home page
+  quote the corrected numbers; a test checks every accepted cell with the contact test.
+
 ## [0.7.0] - 2026-10-09
 
 A new case study: double perovskites from public JARVIS-DFT data, the independent user's journey run again from the

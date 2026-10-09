@@ -341,7 +341,9 @@ def build_mp20(a, out: str) -> dict:
     sd = os.path.join(out, "studies", "mp20"); files = {}
     sup = os.path.join(out, "support", "mp20"); os.makedirs(sup, exist_ok=True)
     audit = json.load(open(os.path.join(D, "audit.json"))); prev = json.load(open(os.path.join(D, "preview.json")))
-    inst = json.load(open(os.path.join(R, "d1_instrument", "instrument.json")))
+    # the calibration without the relaxed cells that collapsed (d1_instrument_physical; d1_instrument is the sheet before
+    # the contact test, kept as it was)
+    inst = json.load(open(os.path.join(R, "d1_instrument_physical", "instrument.json")))
     pool_cal = json.load(open(os.path.join(R, "d1_pool", "calibration.json")))
     # support: judge qualification (precomputed), the exact test rows it used, known formulas, a reference AMD set
     write_json(os.path.join(sup, "judge_qualification.json"), finite(pool_cal["judge_qualification"]))
@@ -354,27 +356,31 @@ def build_mp20(a, out: str) -> dict:
         json.dump(known, f, separators=(",", ":"), sort_keys=True)
     from pymatgen.core import Structure
     frames = [pd.read_csv(os.path.join(D, f"{s}.csv"), usecols=["material_id", "cif"]) for s in ("train", "val", "test")]
-    ref = pd.concat(frames).sample(n=min(a.reference_sample, sum(len(f) for f in frames)), random_state=0)
-    vecs, ids = [], []
-    for mid, cif in zip(ref["material_id"], ref["cif"]):
-        try:
-            vecs.append(amd_vector(Structure.from_str(cif, fmt="cif"), k=10)); ids.append(str(mid))
-        except Exception:
-            pass
-    np.savez_compressed(os.path.join(sup, "reference_amd.npz"), amd=np.asarray(vecs, dtype=np.float32), material_id=np.asarray(ids))
+    if not os.path.exists(os.path.join(sup, "reference_amd.npz")):       # deterministic and slow: rebuilt only when missing
+        ref = pd.concat(frames).sample(n=min(a.reference_sample, sum(len(f) for f in frames)), random_state=0)
+        vecs, ids = [], []
+        for mid, cif in zip(ref["material_id"], ref["cif"]):
+            try:
+                vecs.append(amd_vector(Structure.from_str(cif, fmt="cif"), k=10)); ids.append(str(mid))
+            except Exception:
+                pass
+        np.savez_compressed(os.path.join(sup, "reference_amd.npz"), amd=np.asarray(vecs, dtype=np.float32), material_id=np.asarray(ids))
     # the accepted materials: both judges on the relaxed cell within 0.5 eV, judged metals excluded for non-zero requests
     rel = pd.read_csv(os.path.join(R, "d1_relaxed", "candidates.csv"))
     rcal = json.load(open(os.path.join(R, "d1_relaxed", "calibration.json")))["per_candidate"]
     mlip = [r for f in sorted(glob.glob(os.path.join(R, "d1_consensus", "mlip_shard*.json"))) for r in json.load(open(f))]
     ml = {os.path.basename(r["file"]): r for r in mlip}
-    sun = pd.read_csv(os.path.join(R, "d1_relaxed", "sun_relaxed_strict_per_candidate.csv"))
+    sun = pd.read_csv(os.path.join(R, "d1_relaxed_physical", "sun_relaxed_strict_per_candidate.csv"))
     amd_by_formula = dict(zip(sun["formula"], sun["amd_nearest"]))
+    from meidnet_eval.d1_mlip_check import COLLAPSED, contact_ratio
     accepted = []
     for _, r in rel.iterrows():
         c = rcal.get(r["file"], {}); lab, jud = c.get("reencoded_gap"), c.get("independent_gap")
         if lab is None or jud is None or not (abs(lab - r["target"]) <= 0.5 and abs(jud - r["target"]) <= 0.5) or (r["target"] > 0 and jud < 0.1):
             continue
         base = os.path.basename(r["file"]); m = ml.get(base, {}); d = amd_by_formula.get(r["formula"])
+        if contact_ratio(Structure.from_file(os.path.join(R, "d1_consensus", "relaxed_tensornet", base))) < COLLAPSED:
+            continue                                          # collapsed on relaxation: not a crystal, not accepted
         d = None if d is None or d != d else float(d)
         is_known = r["formula"] in known
         from pymatgen.core import Composition
@@ -411,12 +417,19 @@ def build_mp20(a, out: str) -> dict:
     for f in sorted(glob.glob(os.path.join(R, "d1_pool", "cifs", "*.cif"))):
         copy_file(f, sd, f"pool/{os.path.basename(f)}", files, "chemical/x-cif")
     # verdicts through the central bands where measured values exist
+    f_ = inst["funnel"]; acc_ = inst["accuracy"]; n_col = int(f_.get("collapsed_on_relaxation", 0)); n_rel_all = int(f_["relaxed"]) + n_col
+    measured = dict(MP20_MEASURED, S6=dict(MP20_MEASURED["S6"], judge_mae_request=acc_["mae_relaxed_cells"]))
+    notes = dict(MP20_VERDICT_NOTES)
+    notes["S6"] = (notes["S6"][0], f"independent judge against the request: {acc_['mae_generated_cells']:.2f} eV on generated cells, "
+                                   f"{acc_['mae_relaxed_cells']:.2f} eV on the {f_['relaxed']} relaxed cells that stayed physical; two-judge consensus yield {f_['both_judges'] / f_['generated']:.2f}")
+    notes["S7"] = (notes["S7"][0], f"two potentials relax all {n_rel_all} consensus cells; {n_col} collapse (closest atoms under 0.6 of their radii) and are set aside; "
+                                   f"novel {100 * inst['novelty']['novel_share']:.0f}% of the accepted-window cells; no hull energy computed")
     verdicts = {}
-    for blk, (grade, note) in MP20_VERDICT_NOTES.items():
+    for blk, (grade, note) in notes.items():
         g = grade
-        if blk in MP20_MEASURED:
+        if blk in measured:
             st = stages.BY_ID[blk]
-            g2, _ = st.verdict(MP20_MEASURED[blk])
+            g2, _ = st.verdict(measured[blk])
             g = g2 if g2 != "INFO" else grade
         verdicts[blk] = {"grade": g, "note": note}
     classes = {}
@@ -429,19 +442,23 @@ def build_mp20(a, out: str) -> dict:
                     "shared_profile_share": finite(audit.get("materials_sharing_profile_with_>=10")), "zero_share": 0.68,
                     "source": "Materials Project, structures of at most 20 atoms (the MP-20 benchmark split)", "properties": ["formation_energy_per_atom", "band_gap"]},
         "mode": "generation, family-free (symmetry decoder)",
-        "headline": "Requested band gap in, relaxed structures out: 13 accepted from 175 generated, 6 new compositions, and known compounds returned at their recorded gaps.",
+        "headline": (f"Requested band gap in, relaxed structures out: {len(accepted)} accepted from {len(pool)} generated, "
+                     f"{classes.get('new composition, new structure', 0)} new compositions, and known compounds returned at their recorded gaps; "
+                     f"{n_col} of the {n_rel_all} relaxed cells collapsed and were set aside."),
         "verdicts": verdicts,
         "calibration": inst,
         "accepted": accepted, "accepted_classes": classes,
-        "pool": {"generated": int(len(pool)), "both_judges_generated": int(inst["funnel"]["both_judges"]), "relaxed": int(inst["funnel"]["relaxed"]), "accepted": len(accepted)},
+        "pool": {"generated": int(len(pool)), "both_judges_generated": int(inst["funnel"]["both_judges"]), "relaxed": int(inst["funnel"]["relaxed"]),
+                 "collapsed_on_relaxation": n_col, "accepted": len(accepted)},
         "judge": finite(pool_cal["judge_qualification"]),
         "checkpoints": ["mp20-wyck", "mp20-main", "mp20-wyck-long", "mp20-wyck-bins"],
         "reproduce": [{"step": "one command", "command": "python -m meidnet_eval.generate_to_target --ckpt mp20_wyck.pt --intake <mp20 intake> --gap band_gap --targets 1.5 2.0 2.5 3.0 --per-target 25 --tag <tag>"},
                       {"step": "calibration", "command": "python -m meidnet_eval.instrument_sheet --pool <tag> --relaxed <tag>/relaxed --consensus <tag>/relax --out <tag>/instrument"}],
         "limits": ["Serviceable range 1–3 eV; above 3 eV the generator saturates.", "Resolution about 1 eV; precision ±0.7 eV per structure.",
                    "The generated cell is a starting point: relaxation lowers the energy by 1.3–8.7 eV/atom and moves atoms 1.4–2.3 Å; the relaxed cell is the product.",
+                   f"{n_col} of the {n_rel_all} relaxed cells collapsed (closest atoms under 0.6 of their radii; a sound crystal is near 1) and are set aside: the accepted structures and every calibration number come from the {f_['relaxed']} that stayed physical.",
                    "No hull energy is computed: nothing here is called stable.", "Coordinate accuracy (RMSE 0.24) is the open defect; a Wyckoff-letter head is the identified fix."],
-        "files": files, "sources": ["eval/results/d1_pool", "eval/results/d1_consensus", "eval/results/d1_relaxed", "eval/results/d1_instrument", "journal entries 53–64"],
+        "files": files, "sources": ["eval/results/d1_pool", "eval/results/d1_consensus", "eval/results/d1_relaxed", "eval/results/d1_relaxed_physical", "eval/results/d1_instrument_physical", "journal entries 53–64, 70"],
     }
     write_json(os.path.join(sd, "study.json"), scrub_paths(finite(study)))
     return {"id": "mp20", "verdicts": {k: v["grade"] for k, v in verdicts.items()}}

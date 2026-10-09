@@ -17,7 +17,7 @@ export const home = {
   discoveriesLead: 'Structures accepted by two independent models after relaxation: generated for a band gap on MP-20, and screened or generated within the double-perovskite family on public JARVIS-DFT data. Hover to pause; click a card to open its study.',
   choicesTitle: 'Three ways in',
   choices: [
-    ['Explore a result', 'The MP-20 study: 175 generated cells, 13 accepted by two judges after relaxation, the response curve, every structure and its evidence.', '/studies/mp20', 'Open the study'],
+    ['Explore a result', 'The MP-20 study: 175 generated cells, 7 accepted by two judges on relaxed cells that stayed physical, the response curve, every structure and its evidence.', '/studies/mp20', 'Open the study'],
     ['Set my target', 'Ask for one to three band gaps and get cells in seconds, each with a label read from its own structure, an independent reading and three statuses kept apart. Or walk the Perov-5 demo: goal, readiness, candidates, export.', '/play', 'Run a band-gap search'],
     ['Use my data locally', 'Nothing is uploaded on this site. Eight commands take a folder of structures and a property table through the same stages, with the same bands, on your computer; the code of every block is here to read and change.', '/method#run', 'The steps'],
   ],
@@ -61,7 +61,7 @@ export const play = {
   familyPointer: 'Need a specific family (double perovskites, a halide variant, your own chemistry)? This generator is family-free and trained on MP-20. Train on your own data instead: Method › Run it on your data, which also has a screening command for small datasets.',
   h1: 'Generate structures for a band gap',
   lead: 'Family-free generation with the MP-20 symmetry decoder. You ask for one to three band gaps; the server generates cells, reads each cell\'s label from its own structure, asks an independent judge, and returns the ones both place inside your window. Relaxation is not run here: download the cells and relax them locally with the command the result gives you.',
-  rangeNote: 'Measured on MP-20: the generator serves 0.5–3 eV with a slope of 0.86 and a precision of about ±0.7 eV per structure; it saturates above 3 eV. Expect few or no accepted structures there.',
+  rangeNote: 'Measured on MP-20: the generator serves 0.5–3 eV with a slope of 0.80 and a precision of about ±0.7 eV per structure; it saturates above 3 eV. Expect few or no accepted structures there.',
   stabilityNote: 'Nothing here is called stable. The generated cell is a starting point; two potentials lower its energy by whole electron-volts per atom and move atoms by bond lengths. The relaxed cell is the product.',
   sharedHost: 'On this shared server a session runs one job at a time, up to three targets and ten structures each, within eight minutes. Results are removed after an hour.',
 };
