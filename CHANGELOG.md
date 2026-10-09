@@ -4,6 +4,42 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-09
+
+One journey, Explore → Train → Generate, on one example dataset, with the research material kept whole one step away;
+the same three stages from Python.
+
+### Added
+- **Explore**: Perov-5 as a map of what the default model learned (its 11,356 training latents in two principal components,
+  computed at build time, sign-fixed so a rebuild gives the same picture), coloured by band gap or formation enthalpy;
+  click a point for the material's values, its cubic cell (rebuilt from a compact store of every cell) and its nearest
+  neighbours in the full latent space; the band-gap histogram with its zero spike drawn apart.
+  `GET /api/explore/{project}` and `GET /api/explore/{project}/materials/{id}`.
+- **Train Lite**: a real MEIDNet training on the server, small and fixed: 1,500 Perov-5 materials (30% with a non-zero
+  gap, sampled from the training split; the validation 500 from the validation split; the test split untouched), the
+  demo's own recipe, 10, 20 or 50 epochs, under a minute on two CPU cores. The page draws the training loss and the
+  validation error of each property after every epoch, then the predictions against the reference values, the small
+  model's learned space, the error against the spread next to the demo's full model measured on the same 500 materials,
+  and offers the checkpoint, the recipe and the command that runs the same training at full size locally. The small
+  model never drives generation on the server; the page says so. `POST /api/train`, `GET /api/train/{id}`, stop, three
+  downloads; one job at a time per session, 300 s cap. The subset ships featurised (`examples/perov5/trainlite/`), so no
+  CIF is parsed on the server.
+- **Python API**: `matter.client.Matter`, a standard-library client for every route (Explore, Train Lite followed to
+  the end, Generate, the Perov-5 readiness and search, every download), with `docs/python-api.md` and a Method section.
+- A Research hub (`/research`) carrying what left the home page: the six-step walkthrough, the delivered structures,
+  the MP-20 funnel, the pipeline strip and the study cards.
+
+### Changed
+- The home page is the front door of the journey: one headline, one example result, the three stages, the research one
+  step away. Navigation: Explore · Train · Generate · Research · Prism · GitHub, with "Start exploring" as the one action.
+- Generate asks for one target and four structures by default; model, window, seed, anion and element settings sit
+  behind "Advanced settings"; the Perov-5 family search is offered beside it as what it is (compositions placed on a
+  template). `/generate` is the address; `/play` redirects. Every generated candidate carries a one-line reading of its
+  evidence in the site's vocabulary (both readings, charge balance, novelty against the checked dataset; never a
+  stability claim).
+- The `/api/datasets/upload` and `/api/models/train` stubs (501) are gone: training exists at `/api/train`; upload stays
+  off the shared server.
+
 ## [0.9.1] - 2026-10-09
 
 ### Changed
