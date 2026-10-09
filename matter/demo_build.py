@@ -31,8 +31,8 @@ import numpy as np
 LABELS = {"heat_all": ("Formation energy", "eV/atom"), "dir_gap": ("Direct band gap", "eV")}
 PERCENTILES = (1, 5, 10, 25, 50, 75, 90, 95, 99)
 FAMILIES = {"perovskite_abx3": ["oxide", "halide", "chalcogenide", "nitride"], "double_perovskite_a2bbx6": ["halide", "oxide"]}
-SCOPE = ("Matter currently searches property-conditioned candidates within supported structural families. "
-         "Free-geometry crystal generation is planned as additional design backends mature.")
+SCOPE = ("This demo searches property-conditioned candidates within a structural family; generation without a template "
+         "runs live on MP-20, and the same stages run on your own data locally.")
 SPLITS = ("train", "val", "test")
 
 
@@ -351,6 +351,9 @@ def build(data_dir: str, models: dict[str, str], out: str, skip_recoverability: 
                                  "A re-run of the paper's alignment training with seed 3 (MEIDNet v1 checkpoint)." if "seed3" in mid else
                                  "MEIDNet retrained on the Perov-5 training split with element descriptors: the final Perov-5 "
                                  "configuration of the research pipeline (MEIDNet 2 checkpoint)." if mid == "desc-full" else
+                                 "MEIDNet retrained on the Perov-5 training split with element descriptors and four times the weight "
+                                 "on reading the properties from the structure; chosen by its band-gap error on the validation split "
+                                 "(MEIDNet 2 checkpoint)." if mid == "desc-full-sp4" else
                                  lm.meta.get("note") or "MEIDNet checkpoint"),
                  "latents_file": f"latents_train.{mid}.npz"}
         model_entries.append(entry)

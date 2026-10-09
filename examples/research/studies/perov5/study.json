@@ -465,6 +465,7 @@
  },
  "checkpoints": [
   "desc-full",
+  "desc-full-sp4",
   "control",
   "perov5-2k",
   "desc-full-s1",

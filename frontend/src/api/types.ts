@@ -84,6 +84,9 @@ export interface Indicator {
 export interface SearchAdvice { diverse_set: boolean; per_target_min: number; min_cosine_sep_max: number }
 export interface Readiness {
   verdict: 'SUPPORTED' | 'CAUTION' | 'NOT_RECOMMENDED'; exploratory_required: boolean; reasons: string[]; summary: string[];
+  /** 0.9.0: every reason is the model's weak reading of a property, which no other target can change. */
+  limited_by_model?: boolean;
+  limited_by_model_note?: string | null;
   indicators: Record<'fidelity' | 'alignment' | 'recoverability' | 'target_support' | 'ambiguity' | 'family_support', Indicator>;
   model_id: string; caveats: string[]; goal_hash: string; search_advice: SearchAdvice | null; ambiguity: 'low' | 'moderate' | 'high';
   windows: Record<string, [number | null, number | null]>; notes: string[]; estimated_seconds: number; computed_in_ms: number;

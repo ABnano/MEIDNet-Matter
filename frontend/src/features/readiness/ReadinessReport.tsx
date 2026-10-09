@@ -61,8 +61,14 @@ export function Verdict({ report, onSearch, onAdjust, starting }: { report: Read
       <div className="stack" style={{ gap: 6 }}>{report.summary.map((s, i) => <p key={i} className="muted" style={{ margin: 0 }}>{s}</p>)}</div>
       {report.reasons.length > 1 && <ul className="small muted" style={{ margin: '10px 0 0 18px' }}>{report.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
       {report.caveats.map((c) => <div key={c} className="banner banner-warn small" style={{ marginTop: 10 }}>{c[0].toUpperCase() + c.slice(1)}.</div>)}
+      {v === 'NOT_RECOMMENDED' && report.limited_by_model && report.limited_by_model_note && <p className="small muted" style={{ margin: '10px 0 0' }} data-testid="model-limited">{report.limited_by_model_note}</p>}
       <div className="row" style={{ marginTop: 16 }}>
-        {v === 'NOT_RECOMMENDED' ? (
+        {v === 'NOT_RECOMMENDED' && report.limited_by_model ? (
+          <>
+            <button type="button" className="btn btn-primary" data-testid="run-search" disabled={starting} onClick={onSearch}>{starting ? 'Starting…' : 'Run exploratory search'}</button>
+            <button type="button" className="btn" onClick={onAdjust}>Adjust target</button>
+          </>
+        ) : v === 'NOT_RECOMMENDED' ? (
           <>
             <button type="button" className="btn btn-primary" onClick={onAdjust}>Adjust target</button>
             <button type="button" className="btn" data-testid="run-search" disabled={starting} onClick={onSearch}>{starting ? 'Starting…' : 'Proceed anyway — exploratory'}</button>

@@ -54,9 +54,10 @@ def test_job_slots():
 
 @pytest.mark.slow
 def test_search_candidates_evidence_and_exports(client, checkpoint):
-    r = client.post("/api/runs", json={"goal": TINY})
-    assert r.status_code == 400 and r.json()["error"]["code"] == "exploratory_required"           # the published model is weak
-    r = client.post("/api/runs", json={"goal": TINY, "acknowledge_exploratory": True})
+    weak = dict(TINY, model_id="meidnet-2k")              # the published model, weak by the engine's thresholds
+    r = client.post("/api/runs", json={"goal": weak})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "exploratory_required"
+    r = client.post("/api/runs", json={"goal": weak, "acknowledge_exploratory": True})
     assert r.status_code == 201, r.text
     run_id = r.json()["run_id"]
     assert r.json()["mode"] == "exploratory" and run_id.startswith("run-")

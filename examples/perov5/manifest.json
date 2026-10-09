@@ -9,7 +9,7 @@
  "dataset_fingerprint": "059d638f59d81c05f6e38ce2efb5db59bc6cdcbe2df8f4fd5bf85d1286f43e04",
  "limit": null,
  "models": {
-  "desc-full": "24059804ceae1fafbf4279c527fa9974f5576f9de6d27753a975cd77a4a54b83",
+  "desc-full-sp4": "7bac2136329d83488d3d321438cb25ad1822f66c21b1f93dfa1fa6133c09225b",
   "meidnet-2k": "f9493781d5bbb05dfe106874269496c4c1c0364ae9e543703625c8d1efd60c87"
  },
  "rows": {

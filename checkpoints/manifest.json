@@ -4,7 +4,7 @@
    "bytes": 2840642,
    "config": null,
    "dataset": "perov5",
-   "description": "The published Perov-5 model behind the demo project (Goal → Readiness → Candidates → Export).",
+   "description": "The published Perov-5 model; selectable in the demo project (Goal → Readiness → Candidates → Export).",
    "file": "dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth",
    "id": "perov5-2k",
    "loadable": true,
@@ -93,6 +93,32 @@
    "urls": [
     "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/desc_full.pt",
     "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/desc_full.pt"
+   ]
+  },
+  {
+   "bytes": 2093461,
+   "config": "configs/desc_full_sp4.yaml",
+   "dataset": "perov5",
+   "description": "Perov-5, the desc-full recipe with four times the weight on reading the properties from the structure: the demo project's default: the best band-gap reading on the validation split of the 15 checkpoints trained on the training split (six new desc-full variants and nine existing models).",
+   "element_features": "cgcnn",
+   "epochs": 200,
+   "file": "desc_full_sp4.pt",
+   "geometry": "free",
+   "id": "desc-full-sp4",
+   "loadable": true,
+   "max_sites": 5,
+   "properties": [
+    "heat_all",
+    "dir_gap"
+   ],
+   "role": "demo",
+   "seed": 0,
+   "sha256": "7bac2136329d83488d3d321438cb25ad1822f66c21b1f93dfa1fa6133c09225b",
+   "ship": true,
+   "study": "perov5",
+   "urls": [
+    "https://github.com/ABnano/MEIDNet-Matter/releases/download/v0.3.0/desc_full_sp4.pt",
+    "https://huggingface.co/spaces/Babu09/MEIDNet-Matter/resolve/main/checkpoints/desc_full_sp4.pt"
    ]
   },
   {

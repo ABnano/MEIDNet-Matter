@@ -39,7 +39,7 @@
   },
   "family": "perovskite_abx3",
   "max_elements": null,
-  "model_id": "desc-full",
+  "model_id": "desc-full-sp4",
   "novelty": {
    "require_not_in_dataset": false
   },
@@ -62,10 +62,10 @@
   "rule_overrides": {},
   "variant": "oxide"
  },
- "default_model": "desc-full",
- "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the formation energy, and two MEIDNet models trained on them: desc-full (the default) and meidnet-2k. The readiness page shows how closely each one reads the properties of held-out materials.",
+ "default_model": "desc-full-sp4",
+ "description": "Cubic ABX3 perovskites from the Perov-5 dataset with two DFT properties, the direct band gap and the formation energy, and two MEIDNet models trained on them: desc-full-sp4 (the default) and meidnet-2k. The readiness page shows how closely each one reads the properties of held-out materials.",
  "models": [
-  "desc-full",
+  "desc-full-sp4",
   "meidnet-2k"
  ],
  "privacy": {
@@ -73,6 +73,6 @@
   "local": "Run locally, nothing leaves your computer."
  },
  "project_id": "perov5-demo",
- "scope_statement": "Matter currently searches property-conditioned candidates within supported structural families. Free-geometry crystal generation is planned as additional design backends mature.",
+ "scope_statement": "This demo searches property-conditioned candidates within a structural family; generation without a template runs live on MP-20, and the same stages run on your own data locally.",
  "title": "Perov-5 example"
 }

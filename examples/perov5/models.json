@@ -1,14 +1,14 @@
 [
  {
   "backend": "meidnet",
-  "description": "MEIDNet retrained on the Perov-5 training split with element descriptors: the final Perov-5 configuration of the research pipeline (MEIDNet 2 checkpoint).",
+  "description": "MEIDNet retrained on the Perov-5 training split with element descriptors and four times the weight on reading the properties from the structure; chosen by its band-gap error on the validation split (MEIDNet 2 checkpoint).",
   "family": null,
-  "file": "desc_full.pt",
+  "file": "desc_full_sp4.pt",
   "latent_dim": 128,
-  "latents_file": "latents_train.desc-full.npz",
+  "latents_file": "latents_train.desc-full-sp4.npz",
   "legacy": false,
   "max_sites": 5,
-  "model_id": "desc-full",
+  "model_id": "desc-full-sp4",
   "note": "",
   "properties": [
    {
@@ -40,7 +40,7 @@
     5.16
    ]
   },
-  "sha256": "24059804ceae1fafbf4279c527fa9974f5576f9de6d27753a975cd77a4a54b83",
+  "sha256": "7bac2136329d83488d3d321438cb25ad1822f66c21b1f93dfa1fa6133c09225b",
   "trained_on": "train",
   "training_rows": 11356
  },

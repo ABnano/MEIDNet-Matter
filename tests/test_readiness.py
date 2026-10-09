@@ -51,6 +51,9 @@ def test_report_on_the_demo_project(client, checkpoint):
     assert fid["dir_gap"]["basis"] == "nonzero" and fid["dir_gap"]["word"] == "weak"           # the published model, as benchmarked
     assert fid["heat_all"]["word"] == "weak" and fid["heat_all"]["knn_word"] == "good"
     assert rep["verdict"] == "NOT_RECOMMENDED" and rep["exploratory_required"]
+    assert rep["limited_by_model"]                    # only the model's readings stand in the way: no other target helps
+    note = rep["limited_by_model_note"]                # worded with where the error was measured: not held out for this model
+    assert "also saw in training" in note and "held-out" not in note and "direct band gap" in note
     assert any("does not reliably predict" in s for s in rep["indicators"]["fidelity"]["sentences"])
     assert any("optimistic" in s for s in rep["indicators"]["fidelity"]["sentences"])          # the test-split caveat
     tgt = rep["indicators"]["target_support"]
@@ -66,20 +69,24 @@ def test_report_on_the_demo_project(client, checkpoint):
 
 @pytest.mark.slow
 def test_the_default_model_reads_held_out_materials(client, checkpoint):
-    """The demo's default (desc-full, trained on the training split only): formation enthalpy good; the band gap,
-    graded on the materials with a non-zero gap, still weak by the engine's thresholds, so a gap target is exploratory."""
+    """The demo's default (desc-full-sp4, trained on the training split only, chosen on the validation split): formation
+    enthalpy good, the band gap fair on the materials with a non-zero gap, so the default goal runs as a normal search."""
+    import json
     import os
-    from tests.conftest import ROOT
-    if not os.path.exists(os.path.join(ROOT, "checkpoints", "desc_full.pt")):
-        pytest.skip("desc_full.pt not fetched (scripts/fetch_assets.py --only desc-full)")
+    from tests.conftest import DEMO_DIR, ROOT
+    default = json.load(open(os.path.join(DEMO_DIR, "project.json"), encoding="utf-8"))["default_model"]
+    entry = {m["model_id"]: m for m in json.load(open(os.path.join(DEMO_DIR, "models.json"), encoding="utf-8"))}[default]
+    if not os.path.exists(os.path.join(ROOT, "checkpoints", entry["file"])):
+        pytest.skip(f"{entry['file']} not fetched (scripts/fetch_assets.py --only {default})")
     project = client.get("/api/projects/perov5-demo").json()
-    assert project["default_model"] == "desc-full" and "meidnet-2k" in [m["model_id"] for m in project["models"]]
+    assert project["default_model"] == default != "meidnet-2k" and "meidnet-2k" in [m["model_id"] for m in project["models"]]
     rep = client.post("/api/readiness", json=DEFAULT).json()
     fid = rep["indicators"]["fidelity"]["per_property"]
     assert fid["heat_all"]["word"] == "good"
-    assert fid["dir_gap"]["basis"] == "nonzero" and fid["dir_gap"]["word"] == "weak"
+    assert fid["dir_gap"]["basis"] == "nonzero" and fid["dir_gap"]["word"] == "fair" and fid["dir_gap"]["ratio"] < 0.5
     assert not any("optimistic" in s for s in rep["indicators"]["fidelity"]["sentences"])     # no test-split caveat
-    assert rep["exploratory_required"]
+    assert rep["verdict"] == "CAUTION" and not rep["exploratory_required"] and not rep["limited_by_model"]
+    assert rep["limited_by_model_note"] is None
 
 
 @pytest.mark.slow
@@ -90,6 +97,7 @@ def test_extrapolating_target_and_halide_gap(client, checkpoint):
     d = rep["indicators"]["target_support"]["per_property"]["dir_gap"]
     assert d["status"] == "far_outside" and EXTRAPOLATION_SENTENCE in d["reason"]
     assert rep["verdict"] == "NOT_RECOMMENDED" and any("far outside" in r for r in rep["reasons"])
+    assert not rep["limited_by_model"]                # the target is the problem: adjusting it is the way out
     halide = copy.deepcopy(DEFAULT)
     halide["variant"] = "halide"
     rep = client.post("/api/readiness", json=halide).json()

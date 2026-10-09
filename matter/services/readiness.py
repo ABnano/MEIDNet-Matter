@@ -68,15 +68,17 @@ def indicator_fidelity(targeted: list[str], record: dict, artefacts) -> dict:
                              f"{fmt(std, unit)}{basis_text}); target-conditioned design is not recommended.")
         elif word == "fair":
             sentences.append(f"The model predicts {label.lower()} {where} with an error of {fmt(mae, unit)} against a spread of "
-                             f"{fmt(std, unit)}{basis_text}: fair, about a third of the spread.")
+                             f"{fmt(std, unit)}{basis_text}: fair, {ratio:.2f} of the spread (good below 0.25, weak from 0.5).")
         elif word == "good":
             sentences.append(f"The model predicts {label.lower()} {where} with an error of {fmt(mae, unit)} against a spread of "
                              f"{fmt(std, unit)}{basis_text}: good.")
         else:
             sentences.append(f"The error of {label.lower()} cannot be judged: the evaluation values have no spread.")
         if knn is not None:
+            better = knn_ratio is not None and ratio is not None and knn_ratio < ratio and knn_word in ("good", "fair")
             sentences.append(f"The latent neighbourhood (mean of the 5 nearest training structures) predicts {label.lower()} with an error of "
-                             f"{fmt(knn, unit)} ({knn_word}): the shared space places similar materials together even where the decoder is off.")
+                             f"{fmt(knn, unit)} ({knn_word})" + (": the shared space places similar materials together even where the decoder is off."
+                                                                 if better else ", no better than the model's own reading."))
         per[c] = {"label": label, "unit": unit, "mae": mae, "std": std, "ratio": ratio, "word": word, "status": status,
                   "rmse": pp.get(f"rmse_{c}"), "r2": pp.get(f"r2_{c}"), "basis": basis, "knn_mae": knn, "knn_word": knn_word,
                   "knn_ratio": knn_ratio, "zero_share": p.get("zero_share", 0.0), "where": where,
@@ -398,7 +400,15 @@ def assess(v: ValidatedGoal, services) -> dict:
     ind["ambiguity"] = indicator_ambiguity(v.goal, art, latents, lm, box, windows)
     ind["family_support"] = indicator_family_support(v, art, services.dataset_index, entry)
     verdict, reasons, exploratory = verdict_of(ind)
-    return {"verdict": verdict, "exploratory_required": exploratory, "reasons": reasons, "summary": summary_of(verdict, ind, v.goal, art),
+    # when every reason is a weak reading by the model, a different target cannot help: the page then leads with the
+    # exploratory search instead of "Adjust target"
+    weak = [e for e in (ind["fidelity"].get("per_property") or {}).values() if e["word"] == "weak"]
+    limited_by_model = verdict == "NOT_RECOMMENDED" and bool(weak) and len(reasons) == len(weak)
+    note = (f"The limit is the model itself: its reading of {' and '.join(e['label'].lower() for e in weak)} {weak[0]['where']} is weak, "
+            "and no other target changes that. The search still runs in exploratory mode, with every reading marked as unreliable; "
+            "another model of this project may read the property better.") if limited_by_model else None
+    return {"verdict": verdict, "exploratory_required": exploratory, "limited_by_model": limited_by_model, "limited_by_model_note": note,
+            "reasons": reasons, "summary": summary_of(verdict, ind, v.goal, art),
             "indicators": ind, "model_id": model_id, "caveats": record.get("caveats", []), "goal_hash": goal_hash(v.goal),
             "search_advice": ind["ambiguity"]["search_advice"], "ambiguity": ind["ambiguity"]["word"],
             "windows": {k: list(w) for k, w in windows.items()}, "notes": v.notes, "estimated_seconds": v.estimated_seconds,

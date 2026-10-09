@@ -1,0 +1,70 @@
+{
+ "caveats": [],
+ "checkpoint_sha256": "7bac2136329d83488d3d321438cb25ad1822f66c21b1f93dfa1fa6133c09225b",
+ "columns": [
+  "heat_all",
+  "dir_gap"
+ ],
+ "evaluation": {
+  "property_prediction": {
+   "mae_dir_gap": 0.04296701736521846,
+   "mae_dir_gap_nonzero": 0.6315536875549137,
+   "mae_heat_all": 0.05748690836527231,
+   "mae_heat_all_nonzero": 0.05749140325925819,
+   "n_evaluated": 3785.0,
+   "r2_dir_gap": 0.847693586082847,
+   "r2_heat_all": 0.9867883765154183,
+   "rmse_dir_gap": 0.20918967334520758,
+   "rmse_heat_all": 0.08552147872719329
+  },
+  "representation": {
+   "chance_top1": 0.0027247956403269754,
+   "chance_top5": 0.013623978201634877,
+   "cosine_encoder": -0.03520183265209198,
+   "cosine_matched": 0.7072709798812866,
+   "cosine_projection": 0.7072709798812866,
+   "knn_mae_dir_gap": 0.039202113606340815,
+   "knn_mae_dir_gap_nonzero": 0.6866225165562915,
+   "knn_mae_heat_all": 0.05289405548216645,
+   "knn_mae_heat_all_nonzero": 0.052895348837209304,
+   "l2_matched": 0.7632043361663818,
+   "n_evaluated": 3785.0,
+   "n_profiles": 367.0,
+   "retrieval_top1": 0.1178335535006605,
+   "retrieval_top5": 0.5360634081902246,
+   "reverse_top1": 0.08719346049046321,
+   "reverse_top5": 0.3923705722070845
+  }
+ },
+ "k": 5,
+ "limit": null,
+ "meidnet_version": "2.4.0.dev3",
+ "model_id": "desc-full-sp4",
+ "n": 3785,
+ "recoverability": {
+  "from_joint": {
+   "composition_exact_pct": 20.0,
+   "coord_mae_frac": 0.2875010913004176,
+   "lattice_mae_angstrom": 0.1645259010616894,
+   "n": 3785,
+   "site_accuracy_pct": 70.01321003963012,
+   "structure_match_pct": 17.01453104359313
+  },
+  "from_property": {
+   "composition_exact_pct": 0.026420079260237782,
+   "coord_mae_frac": 0.19141784051292954,
+   "lattice_mae_angstrom": 0.22871072088759467,
+   "n": 3785,
+   "site_accuracy_pct": 38.932628797886395,
+   "structure_match_pct": 0.0
+  },
+  "matcher": {
+   "angle_tol": 10,
+   "element": "most likely per site",
+   "ltol": 0.3,
+   "stol": 0.5
+  }
+ },
+ "space": "projection",
+ "split": "test"
+}

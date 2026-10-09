@@ -42,7 +42,7 @@ PEROV5_2K = "dual_autoencoder_clip_earlyfusion_propertyaware_2k.pth"
 # which checkpoints ship in the Space bundle, which only as release assets, and what each one is for
 CHECKPOINTS = [
     dict(id="perov5-2k", file=PEROV5_2K, config=None, dataset="perov5", study="perov5", role="demo", ship=True, loadable=True,
-         description="The published Perov-5 model behind the demo project (Goal → Readiness → Candidates → Export).",
+         description="The published Perov-5 model; selectable in the demo project (Goal → Readiness → Candidates → Export).",
          urls=["https://github.com/ABnano/MEIDNet/raw/main/checkpoints/" + PEROV5_2K,
                "https://huggingface.co/Babu09/MEIDNet/resolve/main/checkpoints/" + PEROV5_2K]),
     dict(id="mp20-wyck", file="mp20_wyck.pt", dataset="mp20", study="mp20", role="generation", ship=True, loadable=True,
@@ -51,6 +51,10 @@ CHECKPOINTS = [
          description="MP-20, free-coordinate decoder, 100 epochs: the baseline the symmetry decoder is compared with."),
     dict(id="desc-full", file="desc_full.pt", dataset="perov5", study="perov5", role="final", ship=True, loadable=True,
          description="Perov-5, the final configuration of round 1 (descriptors, structure-read labels, unit-sphere search)."),
+    dict(id="desc-full-sp4", file="desc_full_sp4.pt", dataset="perov5", study="perov5", role="demo", ship=True, loadable=True,
+         description="Perov-5, the desc-full recipe with four times the weight on reading the properties from the structure: the "
+                     "demo project's default: the best band-gap reading on the validation split of the 15 checkpoints trained on the training "
+                     "split (six new desc-full variants and nine existing models)."),
     dict(id="control", file="control.pt", dataset="perov5", study="perov5", role="control", ship=True, loadable=True,
          description="Perov-5 control: the same recipe without the structure losses; the configuration the bands were validated against."),
     dict(id="mp-grounded", file="mp_grounded.pt", dataset="mp-perovskites", study="mp-perovskites", role="screening", ship=True, loadable=True,
@@ -217,7 +221,7 @@ def build_perov5(a, out: str) -> dict:
                      "note": "Each row is one configuration of the pipeline; rho and hit rate are against the DFT values of what was returned."},
         "rediscoveries": redisc,
         "judges": {"cgcnn_p5": judges},
-        "checkpoints": ["desc-full", "control", "perov5-2k", "desc-full-s1", "grounded", "prop-only", "recon-only", "cgcnn-p5"],
+        "checkpoints": ["desc-full", "desc-full-sp4", "control", "perov5-2k", "desc-full-s1", "grounded", "prop-only", "recon-only", "cgcnn-p5"],
         "reproduce": [{"step": "scorecard", "command": "python -m meidnet_eval.scorecard <intake> --models final=desc_full.pt --gap dir_gap --out scorecard/"},
                       {"step": "generation and ablation", "command": "python -m meidnet_eval.eval_generate ... ; python -m meidnet_eval.eval_analyse"}],
         "limits": ["A complete grid: novelty and staying inside the training chemistry are mutually exclusive here.",
