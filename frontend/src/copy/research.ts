@@ -3,40 +3,50 @@
 /** The executed studies, in reading order, with the short name a table column uses. */
 export const STUDY_DATASETS: Array<[string, string]> = [['perov5', 'Perov-5'], ['mp-perovskites', 'MP perovskites'], ['user-246', 'Upload (246)'], ['mp20', 'MP-20'], ['jarvis-dp', 'JARVIS DP']];
 export const home = {
-  eyebrow: 'MEIDNet Matter · multimodal inverse design for materials',
-  h1: 'From a target property to candidate crystal structures.',
-  lead: 'Set a band-gap target, inspect the generated structures, and see which checks each candidate has passed. Model predictions, reference DFT values and further validation are shown separately, never merged into one score.',
-  ctaExplore: 'Explore a completed result',
-  ctaPlay: 'Run a band-gap search',
-  ctaDemo: 'Try the Perov-5 demo',
-  scope: 'Live MP-20 band-gap generation · Perov-5 demo search · own-data workflow available locally',
-  prism: 'Matter is the application half of MEIDNet. The method itself, its benchmarks and the documentation live in MEIDNet Prism.',
+  eyebrow: 'MEIDNet Matter · inverse materials design, hands on',
+  h1: 'Explore materials. Train a small model. Discover candidates.',
+  lead: 'Inverse design on a real dataset, in the browser, with nothing to install: see what a materials dataset holds, watch a MEIDNet model learn from it, and ask the full model for crystal structures with a requested band gap. Every number comes with its evidence and its limits.',
+  ctaExplore: 'Start exploring',
+  ctaGenerate: 'Run a band-gap search',
+  ctaDemo: 'Search within the Perov-5 family',
+  example: 'Example dataset: Perov-5, 18,928 cubic perovskites with two DFT properties. No setup required.',
+  stages: [
+    ['01', 'Explore', 'Understand the data', 'The band-gap distribution, a map of the learned representation, and any material\'s cell and nearest neighbours.', '/explore'],
+    ['02', 'Train', 'Try a small experiment', 'A real MEIDNet training on 1,500 materials, in under a minute: the curves, the predictions against the reference values, the map forming, and the full model to compare with.', '/train'],
+    ['03', 'Generate', 'Inspect candidates', 'Ask for a band gap and get cells read by two models, with their checks, their limits and the files to take further.', '/generate'],
+  ] as Array<[string, string, string, string, string]>,
+  after: 'Satisfied with the small run? The same recipe at full size runs on your own computer with one command, on your own data too.',
+  researchTitle: 'The evidence behind it',
+  researchLead: 'The studies this site is built on, the ten-block pipeline with its bands and code, and the method with its limits. Kept whole, one step away.',
+  prism: 'Matter is the application half of MEIDNet. The method itself, its benchmarks, the documentation and the Studio for your own tables live in MEIDNet Prism.',
   prismCta: 'Open MEIDNet Prism',
   plain: 'New to the field? A band gap is the energy a material needs before its electrons can move freely. It decides whether a material behaves as a metal, a semiconductor or an insulator, so asking for a band gap is asking for a kind of behaviour. The app proposes crystal structures that two machine-learning models of different lineage expect to have the gap you asked for, at the level of theory the data was computed with (PBE).',
   discoveriesTitle: 'What the generator has delivered',
   discoveriesLead: 'Structures accepted after relaxation by two models of different lineage, both estimating the PBE band gap the data records: generated for a band gap on MP-20, and screened or generated within the double-perovskite family on public JARVIS-DFT data. Hover to pause; click a card to open its study.',
-  choicesTitle: 'Three ways in',
-  choices: [
-    ['Explore a result', 'The MP-20 study: 175 generated cells, 4 accepted by two judges on relaxed cells that passed the contact and bulk tests, the response curve, every structure and its evidence.', '/studies/mp20', 'Open the study'],
-    ['Set my target', 'Ask for one to three band gaps and get cells within minutes, each with a label read from its own structure, a second model\'s reading and three statuses kept apart. Or walk the Perov-5 demo: goal, readiness, candidates, export.', '/play', 'Run a band-gap search'],
-    ['Use my data locally', 'Nothing is uploaded on this site. Eight commands take a folder of structures and a property table through the same stages, with the same bands, on your computer; the code of every block is here to read and change.', '/method#run', 'The steps'],
-  ],
+  walkthroughTitle: 'How a request becomes a structure, in six steps',
+  walkthroughLead: 'An animated walkthrough on a real result: press play, or step through it. One sentence for a newcomer, one for a researcher.',
   featuredTitle: 'The MP-20 study: requested in, delivered out',
   featuredLead: 'Relaxed, retrospective results: seven requested gaps between 0.5 and 4 eV, 25 cells each. A live search returns unrelaxed cells; its plot is drawn the same way.',
-  howTitle: 'How a request becomes a structure',
-  how: [
-    ['Request', 'A band gap in electron-volts. The property vector is encoded to a point in the shared latent space; no gradient refinement follows, because on MP-20 that step made the model report the target while drifting towards metals.'],
-    ['Generate', 'The symmetry decoder predicts a space group and the few sites that symmetry does not relate; the symmetry operations build the cell. One anion is required and radioactive elements are excluded.'],
-    ['Label from the structure', 'The returned cell is encoded again and its properties read from that encoding, never from the search latent. Cells the encoder cannot read are not reported.'],
-    ['Judge with a second model', 'A second model of different lineage, qualified on the dataset\'s own test split, reads the same cell. A candidate counts only when both agree within the window. Both estimate the PBE gap the data records.'],
-    ['Relax and re-judge', 'Two machine-learning potentials relax the cell; both judges are run again on the relaxed structure. That is the structure a user receives.'],
-  ],
   pipelineTitle: 'Ten blocks, each with a question and a reference band',
   pipelineLead: 'The staged evaluation reads a dataset and a model block by block, against bands validated on configurations of known quality. Open a block to read its metrics, what each value means, the remedy when a measurement falls outside its band, and the code that computes it; each study shows how its dataset went through the blocks.',
   studiesTitle: 'The studies',
   studiesLead: 'Datasets from a complete 11,356-structure grid to 45,229 structures of general inorganic chemistry, and an independent user\'s double perovskites. Each study shows how its dataset went through the blocks, its target-following result and the checkpoints to download.',
-  tryTitle: 'Try it',
-  tryLead: 'Generate structures for a band gap with the MP-20 model, judged twice, in a few minutes. Or walk through the Perov-5 demo project: goal, readiness, candidates, export.',
+};
+
+export const explore = {
+  h1: 'Explore the data',
+  lead: 'Perov-5: 18,928 cubic ABX₃ perovskites (Castelli et al. 2012, the CDVAE split), each with a direct band gap and a formation enthalpy from DFT. The map places the 11,356 training materials by what the demo\'s model learned about their structures; click a point to see the material.',
+  mapNote: 'Two principal components of a 128-dimensional learned space: a projection for looking, not a measure of similarity. The nearest neighbours on the card are computed in the full space.',
+  histNote: '96% of the band gaps are exactly zero (metals at the PBE level), so the histogram draws the zero count apart; the readiness checks grade the band gap on the materials with a non-zero gap.',
+  next: 'Seen enough of the data? Train a small model on 1,500 of these materials and watch it learn.',
+};
+
+export const train = {
+  h1: 'Train a small model',
+  lead: 'A real MEIDNet training, small and fixed, on this server: 1,500 Perov-5 materials, the demo\'s own recipe, 10 to 50 epochs. Watch the training loss and the validation error fall epoch by epoch, then read the model\'s predictions against the reference values of 500 materials it never saw, next to the full model measured on the same ones.',
+  what: 'What this is: a model trained from scratch on a small subset, to show how the method learns. What it is not: the demo\'s model, which trained on 11,356 materials for 200 epochs; the small model does not drive generation on this server.',
+  sampling: 'The subset keeps the band gaps visible: 30% of its materials have a non-zero gap, against 4% in Perov-5. Its validation materials come from the validation split; the test split is untouched.',
+  after: 'The same recipe at full size, on your computer: download the configuration, point it at the Perov-5 CSVs (or your own table in the same layout) and run one command. The Method page has every step.',
 };
 
 export const pipeline = {

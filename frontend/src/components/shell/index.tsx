@@ -46,11 +46,11 @@ export function MarketingHeader() {
       <div className="wrap-narrow">
         <Link to="/" className="brand"><MatterMark /><Wordmark /></Link>
         <nav aria-label="Sections">
-          <NavLink to="/pipeline">Pipeline</NavLink><NavLink to="/studies">Studies</NavLink><NavLink to="/play">Generate</NavLink><NavLink to="/method">Method</NavLink>
+          <NavLink to="/explore">Explore</NavLink><NavLink to="/train">Train</NavLink><NavLink to="/generate">Generate</NavLink><NavLink to="/research">Research</NavLink>
           <ExternalLink href={PRISM_SPACE}>Prism</ExternalLink>
           <ExternalLink href={GITHUB}>GitHub</ExternalLink>
         </nav>
-        <Link to="/play" className="btn btn-primary btn-sm">Run a band-gap search</Link>
+        <Link to="/explore" className="btn btn-primary btn-sm">Start exploring</Link>
         <ThemeToggle /><DirectAppLink />
       </div>
     </header>
@@ -62,10 +62,13 @@ export function SiteFooter() {
   return (
     <footer className="site">
       <div className="wrap-narrow">
-        <span>MEIDNet Matter: crystal structures for a requested band gap, with the evidence for each. MEIDNet is the engine.</span>
-        <Link to="/pipeline">Pipeline</Link>
+        <span>MEIDNet Matter: explore a dataset, train a small model, generate candidates, with the evidence for each. MEIDNet is the engine.</span>
+        <Link to="/explore">Explore</Link>
+        <Link to="/train">Train</Link>
+        <Link to="/generate">Generate</Link>
+        <Link to="/research">Research</Link>
         <Link to="/studies">Studies</Link>
-        <Link to="/play">Generate</Link>
+        <Link to="/pipeline">Pipeline</Link>
         <Link to="/method">Method</Link>
         <ExternalLink href={GITHUB}>Code</ExternalLink>
         {STATIC_MIRROR ? <ExternalLink href={SPACE_PAGE}>Live app (Hugging Face)</ExternalLink> : <ExternalLink href={MIRROR_URL}>Mirror for restricted networks</ExternalLink>}

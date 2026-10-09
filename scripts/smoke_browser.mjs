@@ -69,7 +69,7 @@ try {
   await connect();
   // 0. landing
   await goto(`${BASE}/`);
-  check('landing: headline', /From a target property|Ask for a property|From your materials data/.test(await text('h1')), await text('h1'));   // 0.4.0 / 0.3.0 home, or the demo landing
+  check('landing: headline', /Explore materials|From a target property/.test(await text('h1')), await text('h1'));   // 0.10.0 home (0.4.0 kept for older builds)
   await shot('landing.png');
   // 1. the demo goal
   check('landing: demo CTA', await click('[data-testid="cta-demo"]'));
@@ -118,6 +118,19 @@ try {
   await goto(`${BASE}/pipeline/S6`);
   check('pipeline: workflow diagram', await waitFor(`document.querySelectorAll('.flow-node').length >= 5`, 20000));
   check('pipeline: code viewer renders', (await click('.flow-node.kind-code')) && await waitFor(`!!document.querySelector('.code-viewer pre code')`, 20000));
+
+  // 6b2. 0.10.0: the three stages. Explore draws the map and opens a material; Train describes the fixed experiment and
+  // starts one (10 epochs, under a minute), whose page draws the curves and the result
+  await goto(`${BASE}/explore`);
+  check('explore: the map and a material', await waitFor(`!!document.querySelector('canvas[aria-label*="points coloured"]')`, 30000));
+  await ev(`document.querySelector('input[aria-label="Find a formula"]').focus()`);
+  check('explore: a material opens from its formula', (await type('input[aria-label="Find a formula"]', 'SrTiO3')) && await waitFor(`(document.querySelector('[data-testid="material-card"]')||{}).textContent?.includes('A material')`, 5000));
+  await goto(`${BASE}/train`);
+  check('train: the experiment is described', await waitFor(`/1,500 Perov-5 materials/.test(document.body.textContent || '')`, 20000));
+  const t2 = Date.now();
+  check('train: start 10 epochs', (await ev(`(() => { const b = [...document.querySelectorAll('button')].find(x => x.textContent === '10'); if (!b) return false; b.click(); return true; })()`)) && await click('[data-testid="train-start"]'));
+  check('train: the job page draws the curves', await waitFor(`!!document.querySelector('figure.linechart svg path')`, 60000));
+  check('train: the result arrives', await waitFor(`/of the spread/.test(document.body.textContent || '')`, 240000, 1000), `${Math.round((Date.now() - t2) / 1000)} s`);
 
   // 6c. 0.9.0: a run the server no longer has explains itself at once, with the way back; every page has its own title
   await goto(`${BASE}/p/perov5-demo/runs/run-smoke-gone`);

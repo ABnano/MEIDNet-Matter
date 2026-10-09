@@ -96,6 +96,17 @@ function EvidenceMap({ cands, window, selected, onOpen }: { cands: GenCandidate[
   );
 }
 
+/** One sentence on what the evidence says, in the vocabulary the site uses everywhere: a model prediction, a second-model
+ *  estimate, a chemistry check, novelty against the checked dataset; never a stability claim. */
+export function whyCandidate(c: GenCandidate): string {
+  const st = statusesOf(c);
+  const gap = st.gap_window === 'both models' ? 'Both readings place it inside your window' : st.gap_window === 'neither' ? 'Neither reading places it inside your window'
+    : `Only the ${st.gap_window === 'label only' ? "generator's own label" : "second model's estimate"} places it inside your window`;
+  const charge = st.charge_balance === 'yes' ? 'it is charge balanced' : st.charge_balance === 'no' ? 'it is not charge balanced' : 'its charge balance could not be decided';
+  const novel = c.known_formula ? `its formula exists in MP-20 (recorded ${c.recorded_gaps_eV.map((g) => g.toFixed(2)).join(', ')} eV)` : c.known_formula === false ? 'its formula is not in MP-20' : '';
+  return `${gap}; ${charge}${novel ? `; ${novel}` : ''}. Unrelaxed; stability not assessed here.`;
+}
+
 function CandidateCard({ c, selected, onOpen, jobId }: { c: GenCandidate; selected: boolean; onOpen: () => void; jobId: string }) {
   const cell = useMemo(() => cellOf(c), [c]);
   const st = statusesOf(c);
@@ -105,6 +116,7 @@ function CandidateCard({ c, selected, onOpen, jobId }: { c: GenCandidate; select
       <div>
         <h3 style={{ margin: 0 }}><button type="button" className="btn btn-ghost" style={{ padding: 0, fontSize: 17 }} onClick={onOpen}>{c.formula}</button></h3>
         <div className="small muted">asked {c.target_eV.toFixed(1)} eV · label from the structure <b className="num"><Num v={c.label_structure_eV} /></b> · judge <b className="num"><Num v={c.judge_eV} /></b> eV</div>
+        <p className="small" style={{ margin: '6px 0 0' }} data-testid="why">{whyCandidate(c)}</p>
         <div className="lines small" style={{ marginTop: 6 }}>
           <div>Gap window: <b>{st.gap_window}</b></div>
           <div>Charge balanced: <b>{st.charge_balance}</b></div>
@@ -137,7 +149,7 @@ export default function PlayJob() {
       <MarketingHeader />
       <main className="wrap-narrow page" id="main">
         <div className="page-head">
-          <div className="micro"><Link to="/play">Generate</Link> · job {jobId}</div>
+          <div className="micro"><Link to="/generate">Generate</Link> · job {jobId}</div>
           <h1>{job ? `${job.request.targets.join(', ')} eV` : 'Generation job'}</h1>
           {job && <p>{job.request.per_target} structures per target · window {job.request.window_eV} eV · {job.request.require_anion ? 'anion required' : 'no anion requirement'} · excluded {job.request.exclude_elements.join(' ') || 'none'} · seed {job.request.seed} · model {job.request.model_id}</p>}
         </div>

@@ -6,7 +6,7 @@ import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { play as P } from '@/copy/research';
 
-const PRESETS: Array<[string, number[]]> = [['1.5 eV', [1.5]], ['1.5 and 2.5 eV', [1.5, 2.5]], ['1, 2 and 3 eV', [1.0, 2.0, 3.0]]];
+const PRESETS: Array<[string, number[]]> = [['2 eV', [2.0]], ['1.5 eV', [1.5]], ['1.5 and 2.5 eV', [1.5, 2.5]], ['1, 2 and 3 eV', [1.0, 2.0, 3.0]]];
 const RADIOACTIVE = ['Ac', 'Np', 'Pa', 'Pm', 'Pu', 'Tc', 'Th', 'U'];
 const TOXIC = ['Tl', 'Pb', 'Hg', 'Cd', 'As', 'Be'];
 
@@ -16,9 +16,10 @@ export default function Play() {
   const jobs = useResource<GenJob[]>('generate/jobs', () => research.jobs());
   const models = (ck.data?.checkpoints ?? []).filter((c) => c.geometry === 'wyckoff' && c.available);
   const [model, setModel] = useState('mp20-wyck');
-  const [targets, setTargets] = useState<number[]>([1.5, 2.5]);
+  const [targets, setTargets] = useState<number[]>([2.0]);
   const [custom, setCustom] = useState('');
-  const [perTarget, setPerTarget] = useState(6);
+  const [perTarget, setPerTarget] = useState(4);
+  const [advanced, setAdvanced] = useState(false);
   const [window, setWindow] = useState(0.5);
   const [anion, setAnion] = useState(true);
   const [excluded, setExcluded] = useState<string[]>(RADIOACTIVE);
@@ -36,24 +37,17 @@ export default function Play() {
     setBusy(true); setError(null);
     try {
       const job = await research.generate({ model_id: model, targets, per_target: perTarget, window_eV: window, require_anion: anion, exclude_elements: excluded, seed });
-      navigate(`/play/${job.job_id}`);
+      navigate(`/generate/${job.job_id}`);
     } catch (e) { setError(e as Error); setBusy(false); }
   };
   return (
     <>
       <MarketingHeader />
       <main className="wrap-narrow page" id="main">
-        <div className="page-head"><h1>{P.h1}</h1><p>{P.lead}</p><p className="small muted">{P.familyPointer.split('Method ›')[0]}<Link to="/method#run">Method › Run it on your data</Link>{P.familyPointer.split('your own data')[1]}</p></div>
+        <div className="page-head"><div className="micro">Stage 3 of 3 · Generate</div><h1>{P.h1}</h1><p>{P.lead}</p><p className="small muted">{P.familyPointer.split('Method ›')[0]}<Link to="/method#run">Method › Run it on your data</Link>{P.familyPointer.split('your own data')[1]}</p></div>
         {ck.error && <ErrorNote error={ck.error} retry={ck.reload} />}
         <div className="cards-2" style={{ alignItems: 'start' }}>
           <div className="card stack" style={{ gap: 16 }}>
-            <div className="field">
-              <label htmlFor="play-model">Model</label>
-              <select id="play-model" className="input" value={model} onChange={(e) => setModel(e.target.value)}>
-                {models.map((m) => <option key={m.id} value={m.id}>{m.id} — {m.description}</option>)}
-                {models.length === 0 && <option value="mp20-wyck">mp20-wyck</option>}
-              </select>
-            </div>
             <div className="field">
               <span className="small muted" id="play-targets-label">Requested band gaps (eV), up to three</span>
               <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }} aria-labelledby="play-targets-label">
@@ -64,22 +58,31 @@ export default function Play() {
               <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>{PRESETS.map(([l, v]) => <button key={l} type="button" className="btn btn-sm btn-ghost" onClick={() => setTargets(v)}>{l}</button>)}</div>
               <p className="small muted" style={{ marginTop: 6 }}>{P.rangeNote}</p>
             </div>
-            <div className="row" style={{ gap: 16, flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-sm btn-ghost" style={{ alignSelf: 'flex-start' }} aria-expanded={advanced} onClick={() => setAdvanced(!advanced)}>{advanced ? '− Fewer settings' : '+ Advanced settings'}</button>
+            {advanced && <div className="field">
+              <label htmlFor="play-model">Model</label>
+              <select id="play-model" className="input" value={model} onChange={(e) => setModel(e.target.value)}>
+                {models.map((m) => <option key={m.id} value={m.id}>{m.id} — {m.description}</option>)}
+                {models.length === 0 && <option value="mp20-wyck">mp20-wyck</option>}
+              </select>
+            </div>}
+            {advanced && <div className="row" style={{ gap: 16, flexWrap: 'wrap' }}>
               <div className="field"><label htmlFor="play-n">Structures per target</label><input id="play-n" className="input input-num" type="number" min={1} max={10} value={perTarget} onChange={(e) => setPerTarget(Math.max(1, Math.min(10, Number(e.target.value))))} /></div>
               <div className="field"><label htmlFor="play-w">Window (eV, both judges)</label><input id="play-w" className="input input-num" type="number" step="0.05" min={0.25} max={1} value={window} onChange={(e) => setWindow(Number(e.target.value))} /></div>
               <div className="field"><label htmlFor="play-seed">Seed</label><input id="play-seed" className="input input-num" type="number" min={0} value={seed} onChange={(e) => setSeed(Number(e.target.value))} /></div>
-            </div>
-            <div className="field">
+            </div>}
+            {advanced && <div className="field">
               <label><input type="checkbox" checked={anion} onChange={(e) => setAnion(e.target.checked)} /> Require at least one anion (F, O, Cl, N, Br, I, S, Se, Te)</label>
               <p className="small muted" style={{ margin: '4px 0 0' }}>Without it the species head returns the training set's dominant answer, which for MP-20 is a zero-gap intermetallic.</p>
-            </div>
-            <div className="field">
+            </div>}
+            {advanced && <div className="field">
               <span className="small muted">Excluded elements</span>
               <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
                 {[...RADIOACTIVE, ...TOXIC].map((el) => <button type="button" key={el} className={`btn btn-sm ${excluded.includes(el) ? 'btn-primary' : ''}`} aria-pressed={excluded.includes(el)} onClick={() => toggle(el)}>{el}</button>)}
               </div>
               <p className="small muted" style={{ margin: '4px 0 0' }}>Radioactive elements are excluded by default; add the toxic ones if the candidates should be practical.</p>
-            </div>
+            </div>}
+            {!advanced && <p className="small muted" style={{ margin: 0 }}>Defaults: {perTarget} structures per target, a {window} eV window for both readings, an anion required, radioactive elements excluded, model {model}.</p>}
             {error && <ErrorNote error={error} />}
             <div className="row" style={{ gap: 12 }}>
               <button type="button" className="btn btn-primary btn-lg" onClick={start} disabled={busy || targets.length === 0}>{busy ? 'Starting…' : 'Generate'}</button>
@@ -95,10 +98,15 @@ export default function Play() {
               </ul>
               <p className="note small">{P.stabilityNote}</p>
             </div>
+            <div className="card">
+              <h3>Or search within a family</h3>
+              <p className="small muted">The Perov-5 project: a goal (band gap, formation enthalpy, elements), a readiness report on whether the data and the model support it, then a search for compositions on the cubic perovskite prototype, with the evidence beside each candidate. Compositions placed on a template, not cells generated from scratch.</p>
+              <Link to="/p/perov5-demo/goal" className="btn btn-sm" data-testid="cta-demo">Open the Perov-5 project</Link>
+            </div>
             {jobs.data && jobs.data.length > 0 && (
               <div className="card">
                 <h3>Your jobs</h3>
-                <ul className="small">{jobs.data.map((j) => <li key={j.job_id}><Link to={`/play/${j.job_id}`}>{j.job_id}</Link> · {j.status} · {j.request.targets.join(', ')} eV · {j.n_consensus}/{j.n_candidates} accepted</li>)}</ul>
+                <ul className="small">{jobs.data.map((j) => <li key={j.job_id}><Link to={`/generate/${j.job_id}`}>{j.job_id}</Link> · {j.status} · {j.request.targets.join(', ')} eV · {j.n_consensus}/{j.n_candidates} accepted</li>)}</ul>
               </div>
             )}
             {ck.loading && <Spinner label="Loading the models" />}

@@ -24,12 +24,17 @@ const Study = lazy(() => import('@/pages/Study'));
 const Play = lazy(() => import('@/pages/Play'));
 const PlayJob = lazy(() => import('@/pages/PlayJob'));
 const Method = lazy(() => import('@/pages/Method'));
+const Research = lazy(() => import('@/pages/Research'));
+const Explore = lazy(() => import('@/pages/Explore'));
+const Train = lazy(() => import('@/pages/Train'));
+const TrainJob = lazy(() => import('@/pages/TrainJob'));
 const LiveOnlyPage = lazy(() => import('@/pages/LiveOnlyPage'));
 
 /** In the static mirror a page that computes live becomes a pointer to the live app (lib/mirror.ts). */
 const live = (el: ReactElement, title: string, what: string, path?: string) =>
   (STATIC_MIRROR ? <LiveOnlyPage title={title} what={what} path={path} /> : el);
 const GENERATE = 'Ask for a band gap and get crystal structures back, read by two models of different lineage; the generator runs on the live server.';
+const TRAIN = 'Train a small MEIDNet model on 1,500 Perov-5 materials and watch it learn; the training runs on the live server.';
 const DEMO = 'The Perov-5 demo: set a goal, check the readiness of the data and the model, search, and export candidates with their evidence; the search runs on the live server.';
 
 /** Every page's own title, so tabs, history and bookmarks say where they lead. */
@@ -37,7 +42,8 @@ const STUDY_TITLE = Object.fromEntries(STUDY_DATASETS) as Record<string, string>
 const TITLES: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
   [/^\/pipeline\/(S\d)$/, (m) => `Block ${m[1]} · Pipeline`], [/^\/pipeline$/, () => 'Pipeline'],
   [/^\/studies\/([\w-]+)$/, (m) => `${STUDY_TITLE[m[1]] ?? m[1]} study`], [/^\/studies$/, () => 'Studies'],
-  [/^\/play\/[\w-]+$/, () => 'Generation job'], [/^\/play$/, () => 'Generate for a band gap'],
+  [/^\/(play|generate)\/[\w-]+$/, () => 'Generation job'], [/^\/(play|generate)$/, () => 'Generate for a band gap'],
+  [/^\/explore$/, () => 'Explore the data'], [/^\/train\/[\w-]+$/, () => 'Training job'], [/^\/train$/, () => 'Train a small model'], [/^\/research$/, () => 'Research'],
   [/^\/method$/, () => 'Method'], [/^\/privacy$/, () => 'Privacy'], [/^\/new$/, () => 'A new project'],
   [/^\/start-with-my-data$/, () => 'Start with my data'],
   [/^\/p\/[\w-]+\/goal$/, () => 'Goal · Perov-5 demo'], [/^\/p\/[\w-]+\/readiness$/, () => 'Readiness · Perov-5 demo'],
@@ -98,8 +104,14 @@ export default function App() {
         <Route path="/pipeline/:block" element={<PipelineBlock />} />
         <Route path="/studies" element={<Studies />} />
         <Route path="/studies/:id" element={<Study />} />
-        <Route path="/play" element={live(<Play />, 'Generate for a band gap', GENERATE, '/play')} />
-        <Route path="/play/:jobId" element={live(<PlayJob />, 'Generate for a band gap', GENERATE, '/play')} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/train" element={live(<Train />, 'Train a small model', TRAIN, '/train')} />
+        <Route path="/train/:jobId" element={live(<TrainJob />, 'Train a small model', TRAIN, '/train')} />
+        <Route path="/generate" element={live(<Play />, 'Generate for a band gap', GENERATE, '/generate')} />
+        <Route path="/generate/:jobId" element={live(<PlayJob />, 'Generate for a band gap', GENERATE, '/generate')} />
+        <Route path="/play" element={<Navigate to="/generate" replace />} />
+        <Route path="/play/:jobId" element={live(<PlayJob />, 'Generate for a band gap', GENERATE, '/generate')} />
+        <Route path="/research" element={<Research />} />
         <Route path="/method" element={<Method />} />
         <Route path="/new" element={live(<CreateProject />, 'A new project', DEMO, '/new')} />
         <Route path="/start-with-my-data" element={<ComingNext />} />
