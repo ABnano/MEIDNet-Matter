@@ -33,14 +33,28 @@ https://abnano.github.io/MEIDNet/.
 
 ## What it does, in this version
 
-The home page opens on a worked result: a real accepted structure with both of its readings, a small requested-versus-delivered
-plot, an animated six-step walkthrough, and a rolling strip of the structures the generator delivered. From there: **Pipeline**
-(the ten blocks with their bands and code), **Studies** (Perov-5, Materials Project perovskites, an external upload, MP-20, with
-checkpoints), **Generate** (live band-gap generation on MP-20 with two readings per cell, the generator's label and a second model, 3D
-cards and an evidence map) and **Method** (mechanism, strengths, limits, and the commands that run the same stages on your own data: whatever route produced your candidates, one check gives them the qualified judge, relaxation by two potentials, both readings again on the relaxed cells, the energy above the hull with one potential for every phase, novelty, and a class: new, rediscovered, or contradicted by your data's own value). The Perov-5
-demo project below is the original flow with two changes: a retrained default model (the published one stays selectable), and
-every candidate shows the **structure-based prediction** first and the **search value** beside it, and says which of the two
-supports the target.
+Three stages, one example dataset (Perov-5: 18,928 cubic perovskites with two DFT properties), nothing to install:
+
+1. **Explore.** The band-gap distribution and a map of the learned representation (the default model's training latents in
+   two principal components); click a material to see its values, its cell and its nearest neighbours in the full latent
+   space.
+2. **Train.** A real MEIDNet training on the server, small and fixed: 1,500 materials, the demo's own recipe, 10 to 50 epochs,
+   under a minute on two CPU cores. The curves epoch by epoch, the predictions against the reference values of 500 materials
+   the model never saw, the learned space, and the demo's full model measured on the same materials. The trained model, its
+   recipe and the command that runs the same training at full size on your own computer are downloadable. The small model
+   never drives generation on the server.
+3. **Generate.** Ask for a band gap and get cells read by two models (the generator's own label from the returned cell and a
+   second model that played no part in generation), with their checks, their limits and the files to take further; or
+   search within the Perov-5 family with a readiness report first.
+
+The evidence behind it stays whole under **Research**: the studies (Perov-5, Materials Project perovskites, an external
+upload, MP-20, JARVIS double perovskites, with checkpoints), the ten-block **Pipeline** with its bands and code, and the
+**Method** with its limits and the commands that run every stage on your own data. The same three stages run from Python
+against any server: [docs/python-api.md](https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/python-api.md).
+
+The Perov-5 project below is the original flow with two changes: a retrained default model (the published one stays
+selectable), and every candidate shows the **structure-based prediction** first and the **search value** beside it, and says
+which of the two supports the target.
 
 
 | Step | What you get |
@@ -80,7 +94,7 @@ mirror or an offline machine:
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
   "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev3-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.9.1-py3-none-any.whl"
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.10.0-py3-none-any.whl"
 ```
 
 `constraints.txt` is written by the release workflow from its own install check (Linux, Python 3.12); on another Python

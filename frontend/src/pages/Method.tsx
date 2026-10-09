@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ExternalLink, MarketingHeader, SiteFooter } from '@/components/shell';
 import { method as M } from '@/copy/research';
 
 const MECHANISM: Array<[string, string]> = [
@@ -28,7 +28,7 @@ const LIMITS: Array<[string, string]> = [
 ];
 
 const RUN_STEPS: Array<[string, string, string]> = [
-  ['Install', 'One command from PyPI: the engine and the application with the judge, with CPU torch (the default Linux build pulls about 2.5 GB of GPU libraries), pinned to the versions this release was tested with (Linux, Python 3.12; on another Python drop the -c line). Linux, macOS and Windows through WSL are supported; Windows 11 with Smart App Control blocks unsigned wheels, so use WSL there. The last line proves the install. On a slow or flaky network, scripts/install.sh in the repository does the same with retries and a fresh environment; the wheels are also attached to every release, for an index mirror or an offline machine (second command).', 'pip install --extra-index-url https://download.pytorch.org/whl/cpu \\\n  -c https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/constraints.txt "meidnet-matter[judge]"\npython -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version\n# without PyPI: the same from the release\x27s wheels\npip install --extra-index-url https://download.pytorch.org/whl/cpu \\\n  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev3-py3-none-any.whl" \\\n  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.9.1-py3-none-any.whl"'],
+  ['Install', 'One command from PyPI: the engine and the application with the judge, with CPU torch (the default Linux build pulls about 2.5 GB of GPU libraries), pinned to the versions this release was tested with (Linux, Python 3.12; on another Python drop the -c line). Linux, macOS and Windows through WSL are supported; Windows 11 with Smart App Control blocks unsigned wheels, so use WSL there. The last line proves the install. On a slow or flaky network, scripts/install.sh in the repository does the same with retries and a fresh environment; the wheels are also attached to every release, for an index mirror or an offline machine (second command).', 'pip install --extra-index-url https://download.pytorch.org/whl/cpu \\\n  -c https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/constraints.txt "meidnet-matter[judge]"\npython -c "import meidnet, matter, matgl; print(meidnet.__version__, matter.__version__)" && meidnet --version\n# without PyPI: the same from the release\x27s wheels\npip install --extra-index-url https://download.pytorch.org/whl/cpu \\\n  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev3-py3-none-any.whl" \\\n  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.10.0-py3-none-any.whl"'],
   ['Turn what you have into one table', 'A folder of CIF or POSCAR files plus a spreadsheet of properties becomes one CSV with a structure column. The name column may hold the file names (JVASP-123, mp-456) or compositions; a -<space group> tag picks a polymorph; every ambiguity is reported and nothing matched is an error.', 'python -m meidnet_eval.ingest_upload structures/ properties.xlsx data/ --props "Band gap" --id-col "JARVIS id"'],
   ['Audit, detect prototypes, split', 'The intake writes the audit (rows, elements, zeros, shared property profiles), the dominant structural prototypes and a fair train/validation/test split.', 'python -m meidnet_eval.intake data/table.csv data/intake --id material_id --cif cif --props band_gap'],
   ['Block S0: can this dataset support what you want?', 'The preview grades the data before any training: compositions per element decides generation versus screening, the property\'s zeros and shared profiles decide whether it is well posed. With a family it also measures the novelty frontier and how many structures have the family\'s prototype. The verdict names the next command.', 'python -m meidnet_eval.preview data/intake --gap band_gap --targets 1 2 3 --family double_perovskite_a2bbx6:halide'],
@@ -71,6 +71,23 @@ export default function Method() {
             ))}
           </ol>
           <p className="small muted">Checkpoints trained for the studies are on the <Link to="/studies">studies pages</Link>, each with its training configuration, so a run can start from one of them instead of from scratch. Relaxation and hull energies need the local extras named in the result of a generation job.</p>
+        </section>
+        <section className="section" id="python">
+          <h2>The same three stages from Python</h2>
+          <p className="muted">Everything the site does is one HTTP API; <code>matter.client.Matter</code>, part of the <code>meidnet-matter</code> package, is a thin client for it: plain dicts in and out, nothing beyond the standard library, one session per client. The Explore map, a Train Lite run followed to the end with its curves and predictions, generation with both readings, the Perov-5 readiness report and search, every download.</p>
+          <pre className="mono small" style={{ background: 'var(--tint)', border: '1px solid var(--line)', padding: 10, overflowX: 'auto' }}>{`from matter.client import Matter
+m = Matter("https://babu09-meidnet-matter.hf.space")
+
+points = m.explore()                                  # every training material on the latent map
+sro = m.material("mp-5229")                           # its values, its cell, its nearest neighbours
+
+job = m.wait(m.train(epochs=20, seed=0), every=1)     # a small MEIDNet training, followed to the end
+job["result"]["against_spread"]                       # its error against the spread, next to the full model's
+m.download(m.urls.train_model(job["job_id"]), "lite.pt")
+
+gen = m.wait(m.generate(targets=[2.0], per_target=4)) # cells for a band gap, read by two models
+m.download(m.urls.generate_zip(gen["job_id"]), "cells.zip")`}</pre>
+          <p className="small muted">The full reference, with the Perov-5 project, errors and sessions: <ExternalLink href="https://github.com/ABnano/MEIDNet-Matter/blob/main/docs/python-api.md">docs/python-api.md ↗</ExternalLink>. The server's own route list: <code>/docs</code>.</p>
         </section>
         <section className="section" id="requirements">
           <h2>What a dataset needs</h2>
