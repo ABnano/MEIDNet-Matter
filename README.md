@@ -9,7 +9,7 @@ MEIDNet Matter is a multimodal inverse-design workbench for crystalline material
 [![ci](https://github.com/ABnano/MEIDNet-Matter/actions/workflows/ci.yml/badge.svg)](https://github.com/ABnano/MEIDNet-Matter/actions/workflows/ci.yml)
 [![Space](https://img.shields.io/badge/%F0%9F%A4%97%20Space-MEIDNet--Matter-4f46e5)](https://huggingface.co/spaces/Babu09/MEIDNet-Matter)
 [![PyPI](https://img.shields.io/pypi/v/meidnet-matter?label=PyPI&color=4f46e5)](https://pypi.org/project/meidnet-matter/)
-[![engine](https://img.shields.io/badge/engine-meidnet%202.4.0.dev2-9333ea)](https://pypi.org/project/meidnet/)
+[![engine](https://img.shields.io/badge/engine-meidnet%202.4.0.dev3-9333ea)](https://pypi.org/project/meidnet/)
 [![licence](https://img.shields.io/badge/licence-MIT-0a7d0a)](https://github.com/ABnano/MEIDNet-Matter/blob/main/LICENSE)
 [![paper](https://img.shields.io/badge/npj%20Comput.%20Mater.-2026-1c5cab)](https://doi.org/10.1038/s41524-026-02153-3)
 
@@ -73,12 +73,12 @@ mirror or an offline machine:
 
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
-  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev2-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.7.1-py3-none-any.whl"
+  "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev3-py3-none-any.whl" \
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.8.0-py3-none-any.whl"
 ```
 
 `constraints.txt` is written by the release workflow from its own install check (Linux, Python 3.12); on another Python
-drop the `-c` line. The engine on PyPI, `meidnet` 2.4.0.dev2, is the snapshot in `engine/`, published from this repository
+drop the `-c` line. The engine on PyPI, `meidnet` 2.4.0.dev3, is the snapshot in `engine/`, published from this repository
 until the upstream MEIDNet release 2.4.0 replaces it.
 
 From a clone instead (the engine first, so that nothing older is fetched from PyPI):

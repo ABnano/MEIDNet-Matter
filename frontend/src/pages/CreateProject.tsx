@@ -11,7 +11,7 @@ export default function CreateProject() {
           <div className="card">
             <span className="ribbon">Available now</span>
             <h3 style={{ marginTop: 10 }}>Use an example project</h3>
-            <p className="muted small">Perov-5: cubic ABX₃ perovskites, direct band gap and formation enthalpy, the published MEIDNet model.</p>
+            <p className="muted small">Perov-5: cubic ABX₃ perovskites, direct band gap and formation enthalpy, two MEIDNet models (retrained by default; the published one selectable).</p>
             <Link to="/p/perov5-demo/goal" className="btn btn-primary">Open Perov-5</Link>
           </div>
           <div className="card">

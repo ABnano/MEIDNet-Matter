@@ -90,7 +90,7 @@ export default function Play() {
             <div className="card">
               <h3>What you get back</h3>
               <ul className="small">
-                <li>For every structure: the model's label <b>read from the returned cell</b>, the independent judge's value, whether both lie inside your window, the space group, a charge-balance flag, whether the formula exists in MP-20 (with its recorded gaps), and its AMD distance to the nearest training structure.</li>
+                <li>For every structure: the model's label <b>read from the returned cell</b>, a second model's reading (MEGNet, which played no part in generation; both estimate the PBE gap MP-20 records), whether both lie inside your window, the space group, a charge-balance flag, whether the formula exists in MP-20 (with its recorded gaps), and its AMD distance to the nearest training structure.</li>
                 <li>The CIF of every cell, a table, the record as JSON, and the command that relaxes the cells locally with two potentials.</li>
               </ul>
               <p className="note small">{P.stabilityNote}</p>

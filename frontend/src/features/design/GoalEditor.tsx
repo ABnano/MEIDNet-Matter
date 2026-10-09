@@ -242,7 +242,7 @@ export function GoalEditor({ project, initial }: { project: Project; initial: Go
           <div className="stack small">
             {validation.targets_explained?.map((s) => <div key={s} className="muted">{s}</div>)}
             {validation.notes?.map((n) => <div key={n} style={{ color: 'var(--warn)' }}>{n}</div>)}
-            <div>Estimated search time: <b className="num">{seconds(validation.estimated_seconds ?? 0)}</b> on this server; {validation.generation?.targets.length} target{(validation.generation?.targets.length ?? 1) > 1 ? 's' : ''}, {model?.description ? 'published model' : ''}.</div>
+            <div>Estimated search time: <b className="num">{seconds(validation.estimated_seconds ?? 0)}</b> on this server; {validation.generation?.targets.length} target{(validation.generation?.targets.length ?? 1) > 1 ? 's' : ''}{model ? `, model ${model.model_id}` : ''}.</div>
           </div>
         )}
         <ErrorNote error={error} />

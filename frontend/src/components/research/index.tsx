@@ -69,7 +69,7 @@ export function ResponseCurve({ points, bands, fit, width = 560, height = 360, c
     <figure className="response-curve">
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" role="img" aria-labelledby="rc-title rc-desc">
         <title id="rc-title">Delivered band gap against requested band gap</title>
-        <desc id="rc-desc">Each point is one relaxed structure judged independently; bars are the mean and one standard deviation per request; the solid line is the identity and the dashed line the fitted response.</desc>
+        <desc id="rc-desc">Each point is one relaxed structure as the judge reads it; bars are the mean and one standard deviation per request; the solid line is the identity and the dashed line the fitted response.</desc>
         {ticks.map((v) => (
           <g key={v}>
             <line x1={X(v)} x2={X(v)} y1={Y(0)} y2={Y(max)} stroke="var(--line)" />
@@ -92,7 +92,7 @@ export function ResponseCurve({ points, bands, fit, width = 560, height = 360, c
           </circle>
         ))}
         <text x={(X(0) + X(max)) / 2} y={height - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">{compact ? 'requested (eV)' : 'requested band gap (eV)'}</text>
-        <text transform={`translate(${compact ? 12 : 14} ${(Y(0) + Y(max)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fill="var(--muted)">{compact ? 'delivered (eV)' : 'delivered band gap, independent judge on the relaxed cell (eV)'}</text>
+        <text transform={`translate(${compact ? 12 : 14} ${(Y(0) + Y(max)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fill="var(--muted)">{compact ? 'delivered (eV)' : 'delivered band gap, judge on the relaxed cell (eV)'}</text>
       </svg>
       {!compact && <figcaption className="small muted">Points: relaxed structures (filled when both judges accept them); bars: mean ± one standard deviation per request; solid line: identity; dashed: the fitted response.</figcaption>}
     </figure>

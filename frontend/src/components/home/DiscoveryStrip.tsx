@@ -6,7 +6,7 @@ import { explicitStructure } from '@/lib/lattice';
 
 export const cellOfAccepted = (a: Accepted) => (a.structure ? explicitStructure(a.structure.sites, a.structure.lattice) : null);
 export const shortClass = (c: string) =>
-  c.startsWith('new composition') ? 'new composition' : c.startsWith('new polymorph') ? 'new polymorph' : c.startsWith('rediscovered') ? 'known compound returned' : c;
+  c.startsWith('new composition') ? 'new composition' : c.startsWith('new polymorph') ? 'new polymorph' : c.startsWith('rediscovered') ? 'known structure found again' : c;
 
 function Card({ a, decorative }: { a: Accepted; decorative?: boolean }) {
   const cell = useMemo(() => cellOfAccepted(a), [a]);

@@ -29,7 +29,7 @@ const LiveOnlyPage = lazy(() => import('@/pages/LiveOnlyPage'));
 /** In the static mirror a page that computes live becomes a pointer to the live app (lib/mirror.ts). */
 const live = (el: ReactElement, title: string, what: string, path?: string) =>
   (STATIC_MIRROR ? <LiveOnlyPage title={title} what={what} path={path} /> : el);
-const GENERATE = 'Ask for a band gap and get crystal structures back, judged by two independent models; the generator runs on the live server.';
+const GENERATE = 'Ask for a band gap and get crystal structures back, read by two models of different lineage; the generator runs on the live server.';
 const DEMO = 'The Perov-5 demo: set a goal, check the readiness of the data and the model, search, and export candidates with their evidence; the search runs on the live server.';
 
 /** A link to a section of a page (/studies/mp20#accepted): scroll to it once it is there (it arrives with the page's data).

@@ -13,7 +13,7 @@ const STEPS: Array<{ title: string; plain: (a: Accepted) => string; precise: str
     precise: 'Symmetry decoder: space group, up to 16 orbits, a lattice projected to the group; one anion required, radioactive elements excluded, cells capped at the encoder\'s size.' },
   { title: 'Read it back', plain: (a) => `The proposed crystal is read again by the model. Does it really have the gap you asked for? Here it reads ${a.label_structure_gap.toFixed(2)} eV.`,
     precise: 'The label is read from the returned structure, never from the search point. A label read from the search point reports the request back by construction.' },
-  { title: 'Ask a second model', plain: (a) => `An independent model of a different lineage reads the same crystal: ${a.judge_gap.toFixed(2)} eV. Both readings must sit inside your window.`,
+  { title: 'Ask a second model', plain: (a) => `A second model of a different lineage, which played no part in generation, reads the same crystal: ${a.judge_gap.toFixed(2)} eV. Both readings must sit inside your window.`,
     precise: 'MEGNet band-gap model, qualified on the dataset\'s own test split before judging anything (MAE 0.10 eV, Spearman 0.82 on MP-20).' },
   { title: 'Relax, then check again', plain: () => 'Atoms are let go to their resting positions, and both readings are repeated on the relaxed crystal. That is the structure you download, with all its evidence.',
     precise: 'TensorNet and CHGNet relaxation, both judges re-run on the relaxed cell. No hull energy is computed, so stability is not claimed.' },
@@ -60,7 +60,7 @@ export function Explainer({ example }: { example: Accepted }) {
           {step >= 3 && (
             <div className="explainer-readings small">
               <div><span className="muted">read from the structure</span> <b className="num">{example.label_structure_gap.toFixed(2)}</b> eV</div>
-              {step >= 4 && <div><span className="muted">independent model</span> <b className="num">{example.judge_gap.toFixed(2)}</b> eV</div>}
+              {step >= 4 && <div><span className="muted">second model</span> <b className="num">{example.judge_gap.toFixed(2)}</b> eV</div>}
               {step >= 5 && <div><b>{inWindow ? 'accepted' : 'not accepted'}</b> · both readings within 0.5 eV of {example.requested.toFixed(1)} eV · relaxed cell</div>}
             </div>
           )}

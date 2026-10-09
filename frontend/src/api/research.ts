@@ -47,14 +47,19 @@ export interface StudyStability {
 }
 export interface Calibration {
   window_eV: number; metal_floor_eV: number;
-  /** relaxed = the relaxed cells that stayed physical; collapsed_on_relaxation (0.6.0) = those whose atoms were pushed into each other. */
-  funnel: { generated: number; both_judges: number; collapsed_on_relaxation?: number; relaxed: number; final: number };
+  /** relaxed = the relaxed cells that stayed physical and bulk-like; collapsed_on_relaxation (0.6.0) = those whose atoms were pushed into each
+   *  other; not_bulk_on_relaxation (0.8.0) = slabs and sparse cells. */
+  funnel: { generated: number; both_judges: number; collapsed_on_relaxation?: number; not_bulk_on_relaxation?: number; relaxed: number; final: number };
   collapsed_on_relaxation?: Array<{ formula: string; target: number; contact_ratio: number }>;
+  /** 0.8.0: relaxed cells that are a slab or a sparse cell (an empty layer over 6 Å, a packing fraction under 0.12). */
+  not_bulk_on_relaxation?: Array<{ formula: string; target: number; reason: string }>;
   judge: { fidelity: number; n: number; mae: number; spearman: number; mae_on_nonzero: number | null; share_zero_truth: number };
   per_target: Array<{ requested: number; generated: number; both_judges: number; relaxed: number; final: number; generated_judge_mean: number;
     delivered_mean: number | null; delivered_sd: number | null; delivered_min: number | null; delivered_max: number | null; bias: number | null;
     drop_median: number | null; spacegroup_kept: number | null; final_formulas: string[] }>;
-  accuracy: { mae_generated_cells: number; mae_relaxed_cells: number; mae_relaxed_ci95: [number, number]; within_window: number; of: number };
+  accuracy: { mae_generated_cells: number; mae_relaxed_cells: number; mae_relaxed_ci95: [number, number]; within_window: number; of: number;
+    /** 0.8.0: the judge's error on the same cells before relaxation, so that before and after compare like with like. */
+    mae_same_cells_before_relaxation?: number | null; same_cells?: number };
   linearity: { slope: number; intercept: number; r2: number; spearman: number; ideal: string };
   precision: { within_target_sd_median: number | null };
   resolution: Array<{ pair: [number, number]; delta_mean: number; pooled_sd: number; separable: boolean }>;
@@ -72,7 +77,7 @@ export interface Study {
   ablation?: { columns: string[]; rows: Array<Record<string, unknown>>; note: string };
   rediscoveries?: Rediscovery[]; judges?: Record<string, Record<string, unknown>>;
   calibration?: Calibration; accepted?: Accepted[]; accepted_classes?: Record<string, number>;
-  pool?: { generated: number; both_judges_generated: number; relaxed: number; accepted: number; collapsed_on_relaxation?: number };
+  pool?: { generated: number; both_judges_generated: number; relaxed: number; accepted: number; collapsed_on_relaxation?: number; not_bulk_on_relaxation?: number };
   checks?: Array<{ stage: string; check: string; status: string; detail: string }>;
   lessons?: string[];
   /** A study with several routes to its candidates (0.7.0). */
@@ -96,6 +101,8 @@ export interface GenCandidate {
   within_window: { label: boolean; judge: boolean }; metal_by_judge: boolean | null; consensus: boolean; charge_balanced: boolean | null;
   known_formula: boolean | null; recorded_gaps_eV: number[]; amd_nearest_reference: number | null; novel_by_amd: boolean | null;
   lattice: { a: number; b: number; c: number; alpha: number; beta: number; gamma: number }; volume_per_atom: number; file: string; sha256: string;
+  /** 0.8.0: closest atoms over the sum of their radii, the thickest empty layer and the packing fraction of the generated cell. */
+  geometry?: { contact_ratio: number; empty_layer_A: number; packing: number } | null;
   evidence: Record<string, string>; stability: { status: string; note: string };
   /** 0.4.0: the cell for the 3D card and the three statuses, kept apart. */
   lattice_matrix?: number[][]; sites?: Array<{ element: string; frac: [number, number, number] }>;

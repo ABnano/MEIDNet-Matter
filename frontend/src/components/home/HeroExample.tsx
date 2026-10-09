@@ -22,7 +22,7 @@ export function HeroExample({ study, example }: { study: Study; example?: Accept
           <div>
             <div className="micro">a result you can open</div>
             <h3 style={{ margin: '2px 0 4px' }}>{pick.formula}</h3>
-            <div className="small">asked <b>{pick.requested.toFixed(1)} eV</b> · independent judge <b className="num">{pick.judge_gap.toFixed(2)}</b> eV · label from the structure <span className="num">{pick.label_structure_gap.toFixed(2)}</span> eV</div>
+            <div className="small">asked <b>{pick.requested.toFixed(1)} eV</b> · second model <b className="num">{pick.judge_gap.toFixed(2)}</b> eV · label from the structure <span className="num">{pick.label_structure_gap.toFixed(2)}</span> eV</div>
             <div className="small muted" style={{ marginTop: 4 }}>{shortClass(pick.class)} · charge balanced · space group {pick.spacegroup_relaxed ?? pick.spacegroup_designed} · both readings on the relaxed cell</div>
             <div className="row" style={{ gap: 8, marginTop: 8 }}>
               <Link to="/studies/mp20#accepted" className="btn btn-sm">All {accepted.length} accepted</Link>

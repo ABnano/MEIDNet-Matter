@@ -4,6 +4,42 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-09
+
+### Fixed
+- MP-20 study: three accepted cells were not bulk crystals. HfZrAuI₄ and KTe hold an empty layer of 8.9 and 6.6 Å (slabs),
+  and BaBHS₂ has a packing fraction of 0.11. A bulk test now sets such relaxed cells aside next to the contact test: an
+  empty layer over 6 Å or a packing fraction under 0.12, lines that 98.7% of the 45,229 known MP-20 crystals meet. The
+  study keeps 4 accepted structures (Na₂Ag₂Sb₂Te, a new composition; Na₂O₂ and SrO, new polymorphs; CaO, matching
+  mp-545512, recorded at 3.12 eV), and its calibration comes from the 13 relaxed cells that pass both tests: MAE 0.88 eV,
+  delivered = 0.34 + 0.71 × requested.
+- "Rediscovered known structure" now needs a structural match (StructureMatcher) with an MP-20 entry of the same formula,
+  every entry compared. It came from a composition-blind AMD distance to a 4,000-structure sample, which had called Na₂O₂
+  and SrO rediscoveries.
+- Before and after relaxation are compared on the same cells: the judge's error against the request is 0.25 eV on the 13
+  cells before relaxation and 0.88 eV after. The 1.10 eV of all 175 generated cells describes a different set.
+- Scorecard (engine): every component runs inside `--out`, so no result is read from or written to the package folder; a
+  failed component marks its blocks NOT COMPUTED with the reason, and the command exits non-zero. `--cost` defaults to
+  the intake's formation-energy column.
+- On a shared host, a generation job or a search can be stopped only from the session that started it, and the session id
+  is no longer served in job or run records or written into downloaded zips.
+- Perov-5 demo: the default model is now desc-full, MEIDNet retrained on the training split with element descriptors. On
+  the held-out test split it reads formation enthalpy with R² 0.99 and the band gap with R² 0.80 (the published model: 0.48
+  and −31.4), and the published model stays selectable. The band gap is graded on the materials with a non-zero gap, where
+  its error (0.83 eV against a spread of 1.56 eV) is still weak by the engine's thresholds, so a band-gap target runs in
+  exploratory mode.
+
+### Changed
+- The live generator drops cells with an empty layer over 6 Å or a packing fraction under 0.12 as it draws them (in the
+  MP-20 study no such cell became bulk-like on relaxation), and every generated cell carries its contact ratio, thickest
+  empty layer and packing fraction; under a contact ratio of 0.6 the page says to relax the cell before any use.
+- Band-gap readings are described as what they are: two machine-learning estimates of the PBE band gap the data records
+  (the generator's label and MEGNet, a second model that played no part in generation), not independent measurements.
+- `candidates.csv` drops the `predicted_<property>` and `difference_<property>` columns kept from 0.2: they held the search
+  value, which `search_<property>` and `search_difference_<property>` carry under their own name, next to
+  `structure_<property>`.
+- Engine snapshot 2.4.0.dev3.
+
 ## [0.7.1] - 2026-10-09
 
 ### Fixed

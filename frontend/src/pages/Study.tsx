@@ -17,18 +17,19 @@ function CalibrationPanel({ cal, study }: { cal: Calibration; study: StudyT }) {
     <section className="section" id="calibration">
       <h2>Calibration: requested in, delivered out</h2>
       <div className="stat-tiles">
-        <div className="card"><div className="k">Accuracy</div><div className="v"><Num v={cal.accuracy.mae_relaxed_cells} /> eV</div><div className="n">MAE against the request on relaxed cells; 95% CI {cal.accuracy.mae_relaxed_ci95[0].toFixed(2)}–{cal.accuracy.mae_relaxed_ci95[1].toFixed(2)}; {cal.accuracy.mae_generated_cells.toFixed(2)} eV before relaxation</div></div>
+        <div className="card"><div className="k">Accuracy</div><div className="v"><Num v={cal.accuracy.mae_relaxed_cells} /> eV</div><div className="n">MAE against the request on the {cal.accuracy.of} relaxed cells; 95% CI {cal.accuracy.mae_relaxed_ci95[0].toFixed(2)}–{cal.accuracy.mae_relaxed_ci95[1].toFixed(2)}; {cal.accuracy.mae_same_cells_before_relaxation != null ? `the same cells before relaxation ${cal.accuracy.mae_same_cells_before_relaxation.toFixed(2)} eV; ` : ''}all {cal.funnel.generated} generated cells {cal.accuracy.mae_generated_cells.toFixed(2)} eV</div></div>
         <div className="card"><div className="k">Response</div><div className="v">{cal.linearity.intercept.toFixed(2)} + {cal.linearity.slope.toFixed(2)}·x</div><div className="n">ideal {cal.linearity.ideal}; Spearman {cal.linearity.spearman.toFixed(2)}</div></div>
         <div className="card"><div className="k">Precision</div><div className="v">± <Num v={cal.precision.within_target_sd_median} /> eV</div><div className="n">within-request standard deviation, median</div></div>
         <div className="card"><div className="k">Range served</div><div className="v">{cal.range.served[0]}–{cal.range.served[cal.range.served.length - 1]} eV</div><div className="n">{cal.range.served.length} of {cal.range.requested.length} requested values returned an accepted structure</div></div>
-        <div className="card"><div className="k">Resolution</div><div className="v">≈ 1 eV</div><div className="n">adjacent requests separate at {cal.resolution.filter((r) => r.separable).map((r) => `${r.pair[0]}→${r.pair[1]}`).join(', ') || 'no pair'}</div></div>
-        {cal.novelty && <div className="card"><div className="k">Novelty</div><div className="v">AMD {cal.novelty.amd_median.toFixed(2)}</div><div className="n">median distance to the nearest training structure (new above 0.3); {Math.round(100 * cal.novelty.novel_share)}% new</div></div>}
+        <div className="card"><div className="k">Resolution</div><div className="v">{cal.resolution.length === 0 ? 'not measured' : cal.resolution.some((r) => r.separable) ? `${Math.min(...cal.resolution.filter((r) => r.separable).map((r) => r.pair[1] - r.pair[0])).toFixed(1)} eV` : 'none separable'}</div><div className="n">{cal.resolution.length === 0 ? 'too few relaxed cells per request to compare adjacent requests' : `adjacent requests separate at ${cal.resolution.filter((r) => r.separable).map((r) => `${r.pair[0]}→${r.pair[1]}`).join(', ') || 'no pair'}`}</div></div>
+        {cal.novelty && <div className="card"><div className="k">Novelty</div><div className="v">AMD {cal.novelty.amd_median.toFixed(2)}</div><div className="n">median distance to the nearest training structure of any composition (new above 0.3); {Math.round(100 * cal.novelty.novel_share)}% new</div></div>}
       </div>
       <div className="cards-2" style={{ marginTop: 20, alignItems: 'start' }}>
         <div className="card"><ResponseCurve points={points} bands={bands} fit={{ slope: cal.linearity.slope, intercept: cal.linearity.intercept }} /></div>
         <div className="card">
           <h3>Funnel</h3>
-          <Funnel stages={[['generated', cal.funnel.generated], ['both judges, generated cell', cal.funnel.both_judges], ['relaxed by two potentials', cal.funnel.relaxed], ['both judges, relaxed cell', cal.funnel.final]]} />
+          <Funnel stages={[['generated', cal.funnel.generated], ['both judges, generated cell', cal.funnel.both_judges], ['relaxed, sound and bulk-like', cal.funnel.relaxed], ['both judges, relaxed cell', cal.funnel.final]]} />
+          {(cal.funnel.collapsed_on_relaxation || cal.funnel.not_bulk_on_relaxation) ? <p className="small muted" style={{ marginTop: 12 }}>Set aside after relaxation: {cal.funnel.collapsed_on_relaxation ?? 0} collapsed (closest atoms under 0.6 of their radii){cal.not_bulk_on_relaxation && cal.not_bulk_on_relaxation.length > 0 ? `; ${cal.not_bulk_on_relaxation.length} slabs or sparse cells (${cal.not_bulk_on_relaxation.map((c) => c.formula).join(', ')})` : ''}.</p> : null}
           <p className="small muted" style={{ marginTop: 12 }}>{cal.stability_note}.</p>
         </div>
       </div>
@@ -46,7 +47,7 @@ function CalibrationPanel({ cal, study }: { cal: Calibration; study: StudyT }) {
             ))}
           </tbody>
         </table>
-        <p className="small muted" style={{ marginTop: 8 }}>Delivered = the independent judge on the relaxed cell; drop = energy lowered by relaxation, eV/atom (sound structures: under 0.1). Counts above 1 eV are small, so quote the pooled statistics.</p>
+        <p className="small muted" style={{ marginTop: 8 }}>Delivered = the judge (a second model, MEGNet) on the relaxed cell; drop = energy lowered by relaxation, eV/atom (sound structures: under 0.1). Counts above 1 eV are small, so quote the pooled statistics.</p>
       </div>
     </section>
   );

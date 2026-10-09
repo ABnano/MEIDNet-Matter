@@ -8,7 +8,7 @@ export const landing = {
   ctaSecondary: 'Start with my data',
   trust: 'Open source · Reproducible runs · Downloadable structures · Powered initially by MEIDNet',
   previewTitle: 'A design request and what comes back',
-  previewLead: 'The demo project: cubic ABX₃ perovskites of the Perov-5 dataset, the published MEIDNet model, two DFT properties.',
+  previewLead: 'The demo project: cubic ABX₃ perovskites of the Perov-5 dataset, two DFT properties and two MEIDNet models; the request below was run with the published model.',
   how: [
     ['Define the goal', 'Set a target value or range for each property and the chemistry rules a candidate must satisfy.'],
     ['Check readiness', 'Matter measures how well the model predicts each property on held-out data, where your target sits in the training distribution and how many structures share it.'],

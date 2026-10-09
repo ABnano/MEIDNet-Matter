@@ -71,9 +71,9 @@ function EvidenceMap({ cands, window, selected, onOpen }: { cands: GenCandidate[
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <b>Requested in, delivered out</b>
-        <Segmented value={axis} label="Vertical axis" options={[{ value: 'judge', label: 'Independent judge' }, { value: 'label', label: 'Label from the structure' }]} onChange={setAxis} />
+        <Segmented value={axis} label="Vertical axis" options={[{ value: 'judge', label: 'Judge (second model)' }, { value: 'label', label: 'Label from the structure' }]} onChange={setAxis} />
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Requested band gap against the ${axis === 'judge' ? 'independent judge' : 'structure-read label'} for every generated structure`}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Requested band gap against the ${axis === 'judge' ? 'judge (second model)' : 'structure-read label'} for every generated structure`}>
         {targets.map((t) => <rect key={t} x={X(t) - 6} y={Y(t + window)} width={12} height={Math.max(1, Y(t - window) - Y(t + window))} fill="var(--c-targets)" opacity={0.15}><title>window {t - window}–{t + window} eV</title></rect>)}
         <line x1={X(lo)} y1={Y(lo)} x2={X(hi)} y2={Y(hi)} stroke="var(--ink)" strokeWidth={1} />
         {pts.map(({ c, x, y }) => {
@@ -86,7 +86,7 @@ function EvidenceMap({ cands, window, selected, onOpen }: { cands: GenCandidate[
         {ticks.map((v) => <text key={`x${v}`} x={X(v)} y={H - m.b + 14} fontSize={10} textAnchor="middle" fill="var(--faint)">{v}</text>)}
         {ticks.map((v) => <text key={`y${v}`} x={m.l - 5} y={Y(v) + 3} fontSize={10} textAnchor="end" fill="var(--faint)">{v}</text>)}
         <text x={(W + m.l) / 2} y={H - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">requested band gap (eV)</text>
-        <text x={12} y={H / 2} textAnchor="middle" fontSize={11} fill="var(--muted)" transform={`rotate(-90 12 ${H / 2})`}>{axis === 'judge' ? 'independent judge' : 'label from the structure'} (eV), unrelaxed cell</text>
+        <text x={12} y={H / 2} textAnchor="middle" fontSize={11} fill="var(--muted)" transform={`rotate(-90 12 ${H / 2})`}>{axis === 'judge' ? 'judge (second model)' : 'label from the structure'} (eV), unrelaxed cell</text>
       </svg>
       <p className="small muted">Filled: both models inside the window. Hollow: one or neither. Line: delivered equals requested. Pink: the window around each request. These cells are not relaxed; the MP-20 study shows the same plot on relaxed cells.</p>
     </div>
@@ -124,6 +124,7 @@ export default function PlayJob() {
   const [view, setView] = useState<'cards' | 'table'>('cards');
   const cell = useMemo(() => (open ? cellOf(open) : null), [open]);
   const running = job && (job.status === 'queued' || job.status === 'running');
+  const [stopError, setStopError] = useState<string | null>(null);
   const total = job ? job.request.targets.length * job.request.per_target : 1;
   const cands = job?.candidates ?? [];
   const nBoth = cands.filter((c) => statusesOf(c).gap_window === 'both models').length;
@@ -144,18 +145,19 @@ export default function PlayJob() {
             <div className="card" aria-live="polite">
               <div className="row" style={{ gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                 <b>{job.status}</b><span className="small muted">{job.progress.phase} · {job.progress.seconds.toFixed(0)} s · target {Math.min(job.progress.target_index + 1, job.progress.targets)} of {job.progress.targets} · {job.progress.attempts} draws · {job.progress.kept} kept</span>
-                {running && <button type="button" className="btn btn-sm" onClick={() => research.stopJob(job.job_id)}>Stop</button>}
+                {running && <button type="button" className="btn btn-sm" onClick={() => { setStopError(null); research.stopJob(job.job_id).catch((e: Error) => setStopError(e.message)); }}>Stop</button>}
                 {!running && <a className="btn btn-sm" href={research.zipUrl(job.job_id)}>Download everything (zip)</a>}
               </div>
               <div style={{ marginTop: 8 }}><Meter value={job.n_candidates} max={total} kind="info" /><span className="small muted">{job.n_candidates} of up to {total} structures kept so far</span></div>
               {job.notes.length > 0 && <ul className="small muted" style={{ margin: '8px 0 0 18px' }}>{job.notes.map((n) => <li key={n}>{n}</li>)}</ul>}
+              {stopError && <p className="error-text small" role="alert">{stopError}</p>}
               {job.error && <p className="error-text">{job.error}</p>}
               {running && job.log && job.log.length > 0 && <div className="progress-list" style={{ marginTop: 8 }}>{job.log.slice(-8).map((l, i) => <div key={i}>{l}</div>)}</div>}
             </div>
 
             {job.judge && (
               <p className="small muted" style={{ marginTop: 12 }}>
-                Independent judge: {job.judge.name}{job.judge.qualification ? ` — on the dataset's test split MAE ${Number(job.judge.qualification.mae_eV).toFixed(2)} eV, Spearman ${Number(job.judge.qualification.spearman).toFixed(2)} (n = ${job.judge.qualification.n})` : ''}.
+                Judge, a second model that played no part in generation: {job.judge.name}{job.judge.qualification ? ` — on the dataset's test split MAE ${Number(job.judge.qualification.mae_eV).toFixed(2)} eV, Spearman ${Number(job.judge.qualification.spearman).toFixed(2)} (n = ${job.judge.qualification.n})` : ''}. Both readings estimate the PBE band gap MP-20 records; PBE gaps are usually smaller than measured ones.
               </p>
             )}
 
@@ -178,21 +180,22 @@ export default function PlayJob() {
                       <dl className="kv small">
                         <dt>requested</dt><dd>{open.target_eV.toFixed(1)} eV</dd>
                         <dt>label from the structure</dt><dd><Num v={open.label_structure_eV} /> eV · {open.within_window.label ? 'inside' : 'outside'} the window</dd>
-                        <dt>independent judge</dt><dd><Num v={open.judge_eV} /> eV · {open.within_window.judge ? 'inside' : 'outside'} the window{open.metal_by_judge ? ' · judged a metal' : ''}</dd>
+                        <dt>judge (second model)</dt><dd><Num v={open.judge_eV} /> eV · {open.within_window.judge ? 'inside' : 'outside'} the window{open.metal_by_judge ? ' · judged a metal' : ''}</dd>
                         <dt>gap window</dt><dd>{statusesOf(open).gap_window}</dd>
                         <dt>charge balanced</dt><dd>{statusesOf(open).charge_balance}</dd>
                         <dt>relaxed and re-judged</dt><dd>{statusesOf(open).relaxed}</dd>
                         <dt>formation energy label</dt><dd><Num v={open.label_formation_energy_eV_atom} /> eV/atom (model estimate, unrelaxed)</dd>
                         <dt>lattice</dt><dd className="mono">a {open.lattice.a} b {open.lattice.b} c {open.lattice.c} Å · α {open.lattice.alpha} β {open.lattice.beta} γ {open.lattice.gamma}° · {open.volume_per_atom} Å³/atom · space group {open.spacegroup}</dd>
+                        {open.geometry && <><dt>geometry</dt><dd>closest atoms at <Num v={open.geometry.contact_ratio} /> of their radii (a sound crystal is near 1) · thickest empty layer <Num v={open.geometry.empty_layer_A} d={1} /> Å · packing <Num v={open.geometry.packing} />{open.geometry.contact_ratio < 0.6 && <span className="small" style={{ color: 'var(--warn)' }}> · under 0.6: relax before any use; in the MP-20 study two of three such cells collapsed when relaxed</span>}</dd></>}
                         <dt>known formula</dt><dd>{open.known_formula === null ? '—' : open.known_formula ? `yes, recorded ${open.recorded_gaps_eV.map((g) => g.toFixed(2)).join(', ')} eV` : 'not in MP-20'}{open.known_formula && open.recorded_gaps_eV.length > 0 && !open.recorded_gaps_eV.some((g) => Math.abs(g - open.target_eV) <= job.request.window_eV) && <span className="small" style={{ color: 'var(--warn)' }}> · every recorded gap of this formula lies outside your window: this cell is a different polymorph or the models disagree with the record</span>}</dd>
-                        <dt>novelty</dt><dd><Num v={open.amd_nearest_reference} d={3} /> AMD to the nearest reference structure{open.novel_by_amd ? ' · new above 0.3' : ''}</dd>
+                        <dt>novelty</dt><dd><Num v={open.amd_nearest_reference} d={3} /> AMD to the nearest of the sampled MP-20 reference structures, of any composition{open.novel_by_amd ? ' · new above 0.3' : ''}</dd>
                         <dt>stability</dt><dd>{open.stability.status}: {open.stability.note}</dd>
                         <dt>sha256</dt><dd className="mono">{open.sha256}</dd>
                       </dl>
                       <a className="btn btn-sm btn-primary" href={research.cifUrl(job.job_id, open.candidate_id)} download>Download CIF</a>
                     </div>
                   ) : (
-                    <div className="card"><h3>Pick a structure</h3><p className="small muted">Click a point on the plot or a card to see its cell, both readings and the three statuses. The evidence of every structure says what it is: a model's label read from the returned cell, an independent model's reading, a charge-balance check, whether the formula exists in MP-20, and the distance to the nearest known structure.</p></div>
+                    <div className="card"><h3>Pick a structure</h3><p className="small muted">Click a point on the plot or a card to see its cell, both readings and the three statuses. The evidence of every structure says what it is: a model's label read from the returned cell, a second model's reading, a charge-balance check, whether the formula exists in MP-20, and the distance to the nearest known structure.</p></div>
                   )}
                 </div>
 

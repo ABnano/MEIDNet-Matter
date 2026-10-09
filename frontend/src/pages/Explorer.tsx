@@ -26,6 +26,7 @@ export default function Explorer() {
   const { data: full } = useResource(finished ? `run:${runId}:${status?.status}` : null, (signal) => api.run(runId, signal));
   const { data: dataset } = useResource(q.view === 'map' ? `dataset:${projectId}` : null, () => api.dataset(projectId));
   const [stopping, setStopping] = useState(false);
+  const [stopError, setStopError] = useState<string | null>(null);
   useEffect(() => { if (window.innerWidth < 900 && q.view === 'table' && !sp.has('view')) setQ((x) => ({ ...x, view: 'cards' })); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
 
   if (error) return <ErrorNote error={error} retry={retry} />;
@@ -64,8 +65,9 @@ export default function Explorer() {
         <div className="card card-tight" style={{ marginBottom: 12 }} role="status" aria-live="polite">
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <span><span className="spinner" aria-hidden="true" /> Searching — target {p.target || 1} of {p.targets} · round {p.round} of {p.rounds} · step {p.step} of {p.steps}{p.loss != null && <span className="faint num"> · loss {p.loss.toExponential(2)}</span>} · {seconds(p.seconds)} of about {seconds(status.estimated_seconds)}</span>
-            <button type="button" className="btn btn-sm btn-danger" disabled={stopping} onClick={async () => { setStopping(true); await api.stop(runId); }}>Stop</button>
+            <button type="button" className="btn btn-sm btn-danger" disabled={stopping} onClick={async () => { setStopping(true); setStopError(null); try { await api.stop(runId); } catch (e) { setStopping(false); setStopError((e as Error).message); } }}>Stop</button>
           </div>
+          {stopError && <p className="error-text small" role="alert">{stopError}</p>}
           <div className="progress" role="progressbar" aria-valuenow={Math.round(progressPct)} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${progressPct}%` }} /></div>
           {status.notes.map((n) => <div key={n} className="small muted" style={{ marginTop: 4 }}>{n}</div>)}
         </div>
