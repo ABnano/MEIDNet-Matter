@@ -64,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "generation_model_loaded": bool(services and getattr(services, "generation_ready", False)),
                 "judge_ready": bool(judge and judge.available),
                 "research_artefacts": bool(services and getattr(services, "studies", None) and services.studies.available),
+                "notes": [n for n in [getattr(services, "default_note", None)] if n],
                 "engine": {"version": _meidnet_version(), "symmetry_decoder": _has_symmetry()}}
 
     static_root = os.path.abspath(settings.static_dir)

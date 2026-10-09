@@ -23,6 +23,7 @@ class Services:
     generations: object = None          # GenerationStore
     startup_error: str | None = None
     generation_error: str | None = None
+    default_note: str | None = None     # set when the demo's default model file is missing and another one stands in
 
     @classmethod
     def build(cls, settings: Settings) -> "Services":
@@ -48,6 +49,16 @@ class Services:
             s.registry = ModelRegistry(settings, s.artefacts)
             s.dataset_index = DatasetIndex(s.artefacts.materials, s.artefacts.dataset.get("title", "the dataset"))
             default = s.artefacts.project["default_model"]
+            if not s.registry.available(default):
+                # a checkpoints folder from before 0.8.0 holds only the published model: the demo runs on a model whose
+                # file is present, and /health says so, rather than failing at the first search
+                present = [m for m in s.registry.ids() if s.registry.available(m)]
+                if present:
+                    s.default_note = (f"the model file of {default} is not present, so the demo uses {present[0]}; "
+                                      "python scripts/fetch_assets.py fetches every model")
+                    default = s.artefacts.project["default_model"] = present[0]
+                    if isinstance(s.artefacts.project.get("default_goal"), dict):
+                        s.artefacts.project["default_goal"]["model_id"] = default
             if s.registry.available(default):
                 try:
                     s.registry.load(default)

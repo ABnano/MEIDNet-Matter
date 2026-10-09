@@ -38,8 +38,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: checkpoints
-          key: matter-checkpoints-f9493781-205de8b8
-      - run: python scripts/fetch_assets.py --only perov5-2k
+          key: matter-checkpoints-f9493781-24059804
+      - run: python scripts/fetch_assets.py --only perov5-2k desc-full
       - name: Tests
         run: python -m pytest -q -m "not browser and not network"
 
@@ -114,8 +114,8 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: checkpoints
-          key: matter-checkpoints-f9493781-205de8b8
-      - run: python scripts/fetch_assets.py --only perov5-2k
+          key: matter-checkpoints-f9493781-24059804
+      - run: python scripts/fetch_assets.py --only perov5-2k desc-full
       - name: Start the server with the demo
         run: |
           MATTER_PUBLIC=1 MATTER_RUN_ROOT=$RUNNER_TEMP/runs python -m uvicorn matter.app:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &

@@ -4,6 +4,13 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-09
+
+### Fixed
+- A checkpoints folder from before 0.8.0 holds only the published Perov-5 model. The demo now runs on that model, and
+  `/health` says why under `notes`, instead of failing at the first search because the new default model's file is
+  missing; `python scripts/fetch_assets.py` fetches every model. CI fetches both demo models.
+
 ## [0.8.0] - 2026-10-09
 
 ### Fixed

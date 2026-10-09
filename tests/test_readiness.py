@@ -68,6 +68,10 @@ def test_report_on_the_demo_project(client, checkpoint):
 def test_the_default_model_reads_held_out_materials(client, checkpoint):
     """The demo's default (desc-full, trained on the training split only): formation enthalpy good; the band gap,
     graded on the materials with a non-zero gap, still weak by the engine's thresholds, so a gap target is exploratory."""
+    import os
+    from tests.conftest import ROOT
+    if not os.path.exists(os.path.join(ROOT, "checkpoints", "desc_full.pt")):
+        pytest.skip("desc_full.pt not fetched (scripts/fetch_assets.py --only desc-full)")
     project = client.get("/api/projects/perov5-demo").json()
     assert project["default_model"] == "desc-full" and "meidnet-2k" in [m["model_id"] for m in project["models"]]
     rep = client.post("/api/readiness", json=DEFAULT).json()

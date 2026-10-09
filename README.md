@@ -74,7 +74,7 @@ mirror or an offline machine:
 ```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cpu \
   "meidnet @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet-2.4.0.dev3-py3-none-any.whl" \
-  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.8.0-py3-none-any.whl"
+  "meidnet-matter[judge] @ https://github.com/ABnano/MEIDNet-Matter/releases/latest/download/meidnet_matter-0.8.1-py3-none-any.whl"
 ```
 
 `constraints.txt` is written by the release workflow from its own install check (Linux, Python 3.12); on another Python
