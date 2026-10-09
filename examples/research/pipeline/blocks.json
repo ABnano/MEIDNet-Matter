@@ -5,7 +5,7 @@
     "S0 FAILs on Perov-5 for all configurations. That is a property of the dataset, not of the pipeline: it is a complete grid with 96% zero gaps. It is reported, not hidden."
    ],
    "components": [
-    "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on composition)",
+    "ingest_upload.py (upload adapter: folder + spreadsheet -> one table, joined on the file name, every unmatched row reported)",
     "intake.py (audit, prototypes, composition-grouped split)",
     "preview.py (the gate: runs with no model)",
     "screen_local.py (screening mode on a laptop: enumerate the family, label every composition from its template cell, judge independently)",
@@ -970,6 +970,7 @@
     "Family-free generation on MP-20: the latent refinement steps made the property decoder say the target while pushing the structure decoder into metals (semiconductor share 20% with them, 42-62% without), so the symmetry path uses the target anchor alone."
    ],
    "components": [
+    "check_candidates.py (any candidate table: label from the structure, qualified judge, consensus, two potentials, re-judge, report)",
     "eval_analyse.py (ablation summary)",
     "exhaustive_truth.py + generator_vs_truth.py (precision and recall against exact truth)",
     "screen_polymorphs.py --truth test (hold-out rediscovery, the generic replacement on a user dataset)",
@@ -1161,6 +1162,7 @@
     "No DFT is run anywhere in this pipeline. Stability rests on two ML potentials agreeing, and is labelled as such."
    ],
    "components": [
+    "hull_mlip.py (energy above the hull, one potential for every phase; calibrated on known materials of the data)",
     "candidate_cells.py (two independent ML potentials)",
     "sun_validate.py (hull, formability, novelty)",
     "perovskite_geometry.py (corner-sharing test)",
@@ -1244,7 +1246,7 @@
      },
      "better": "higher",
      "cap": "",
-     "computed_by": "sun_validate.py",
+     "computed_by": "hull_mlip.py (laptop) or sun_validate.py (cluster)",
      "conditional_on": null,
      "dataset_agnostic": true,
      "definition": "Share of validated candidates within the hull-distance threshold.",
@@ -1280,6 +1282,7 @@
     "A judge trained on the user's data shares that data's blind spots, so model-judge agreement is weaker evidence than agreement with DFT."
    ],
    "components": [
+    "scorecard.py --judge megnet (qualifies the MEGNet band-gap judge on the user's test split, every fidelity head measured)",
     "cgcnn_judge.py (train and apply a judge on the user's own data)",
     "judge_consensus.py (agreement of qualified judges)"
    ],
@@ -1293,7 +1296,7 @@
      },
      "better": "lower",
      "cap": "",
-     "computed_by": "cgcnn_judge.py (train, metrics on the test split)",
+     "computed_by": "scorecard.py --judge megnet (MEGNet qualified on the test split) or cgcnn_judge.py",
      "conditional_on": null,
      "dataset_agnostic": true,
      "definition": "The judge's error on the held-out split, divided by the spread of the property, measured before it judges anything.",
@@ -1589,6 +1592,17 @@
   }
  ],
  "dataset_verdicts": {
+  "jarvis-dp": {
+   "S0": "FAIL",
+   "S1": "FAIL",
+   "S2": "PASS",
+   "S3": "FAIL",
+   "S4": "INFO",
+   "S6": "PASS",
+   "S7": "INFO",
+   "S8": "PASS",
+   "S9": "WARN"
+  },
   "mp-perovskites": {
    "S0": "FAIL",
    "S1": "WARN",
@@ -1634,7 +1648,7 @@
  },
  "generated_from": {
   "module": "meidnet_eval.stages",
-  "sha256": "427e2a2f5996491a4d251d5a9c9ebeab056af2b76665328cd23b1bdbbd13a6f6"
+  "sha256": "16c54db556204eeba618793f8dd8f5736acb6c75db8e7606dd2e4fce6e4b54be"
  },
  "grades": [
   "PASS",

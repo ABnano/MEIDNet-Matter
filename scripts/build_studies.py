@@ -6,7 +6,7 @@ and the support files the live generator needs.  Deterministic: the same inputs 
 
 What is written
   examples/research/pipeline/blocks.json            the ten blocks, metrics, bands, components (from meidnet_eval.stages)
-  examples/research/studies/index.json              the four studies in reading order
+  examples/research/studies/index.json              the five studies in reading order
   examples/research/studies/<id>/study.json          facts, block verdicts, target following, candidates, checkpoints
   examples/research/studies/<id>/files/...           the small tables and CIFs a study links to
   examples/research/support/mp20/...                 judge qualification, test sample, reference AMD, known formulas
@@ -448,6 +448,168 @@ def build_mp20(a, out: str) -> dict:
 
 
 # ───────────────────────── checkpoints manifest ─────────────────────────
+# ───────────────────────── JARVIS double perovskites (an independent user's journey) ─────────────────────────
+DP_ROUTES = [  # run folder, id, title, how it proposes candidates
+    ("06_screen_halide", "screen-halide", "Screening, halide variant",
+     "Every composition of the halide double-perovskite family on its prototype cell, labelled by the family model; the best per target kept."),
+    ("06_screen_halide_nontoxic", "screen-halide-nontoxic", "Screening, halide, without Tl Pb Cd Hg As Be",
+     "The same screening without the elements a practical shortlist excludes."),
+    ("06_screen_oxide", "screen-oxide", "Screening, oxide variant", "The oxide variant of the same family, screened the same way."),
+    ("07_family/check", "family-generation", "Family generation",
+     "meidnet generate with the family model: compositions decoded inside the family, then built on its prototype cell."),
+    ("08_routeA/routeA", "family-free", "Family-free generation",
+     "The symmetry decoder proposes cells of any composition (generate_to_target), although S0 had said screening."),
+]
+DP_GAP = "Band_gap_OptB88vdW_eV"
+
+
+def build_jarvis_dp(a, out: str) -> dict:
+    """The double-perovskite study from the run of the published packages (meidnet_data/jarvis_dp/retest_pypi): the
+    independent user's data (public JARVIS-DFT), the two models they trained, every route through the same check."""
+    from meidnet_eval import stages
+    from pymatgen.core import Composition, Structure
+    D = os.path.join(a.data, "jarvis_dp"); W = os.path.join(D, "retest_pypi")
+    sd = os.path.join(out, "studies", "jarvis-dp"); files = {}
+    audit = json.load(open(os.path.join(W, "02_intake", "audit.json")))
+    prev = json.load(open(os.path.join(W, "03_preview", "preview.json")))
+    sc = json.load(open(os.path.join(W, "05_scorecard", "scorecard.json")))
+    judge = sc.get("judge") or {}
+    # the data's own gaps, by reduced formula, over every split of the intake the models were trained on
+    known = {}
+    for split in ("train", "val", "test"):
+        t = pd.read_csv(os.path.join(D, "tester_intake", f"{split}.csv"), usecols=["formula", DP_GAP])
+        for f, g in zip(t["formula"], t[DP_GAP]):
+            known.setdefault(Composition(f).reduced_formula, []).append(round(float(g), 3))
+    verdicts = {"S0": {"grade": prev["verdict"], "note": f"{prev['values']['density']:.1f} compositions per element (rule 200): {prev['mode']}; "
+                                                         f"family conformance {prev['values']['family_conformance']:.2f}"}}
+    for blk, rep in sc["report"]["main"].items():
+        verdicts[blk] = {"grade": rep["verdict"], "note": "; ".join(f"{m['metric']} {m['value']:.3g} {m['unit']}" for m in rep.get("metrics", [])[:2]
+                                                                   if m.get("value") is not None)}
+    routes, accepted, seen, pooled = [], [], set(), {"judge_err": [], "candidates": 0, "consensus": 0, "assessed": 0, "stable": 0}
+    stability = None
+    for folder, rid, title, how in DP_ROUTES:
+        R = os.path.join(W, folder)
+        rep = json.load(open(os.path.join(R, "report.json")))
+        st = rep["stages"]
+        funnel = []
+        if os.path.exists(os.path.join(R, "summary.json")):                     # screening: the enumeration before the shortlist
+            sm = json.load(open(os.path.join(R, "summary.json")))
+            funnel.append(["compositions enumerated", int(sm["enumerated"])])
+        funnel += [["candidates", st["1_candidates"]], ["both models in the window", st["2_two_model_consensus"]],
+                   ["relaxed, still a crystal", st.get("3_relaxed", 0)], ["both again on the relaxed cell", st.get("4_consensus_after_relaxation", 0)]]
+        h = rep.get("hull") or {}
+        if stability is None and h.get("validation"):
+            v = h["validation"]
+            stability = {"potential": "TensorNet" if h.get("potential") == "tensornet" else h.get("potential"), "reference": "JARVIS-DFT 3D (12-12-2022)",
+                         "n": v["n"], "mae_eV": v["mae_eV"], "median_abs_error_eV": v["median_abs_error_eV"], "agreement": v["agreement_within_stable_line"],
+                         "spearman": v.get("spearman"), "outliers": [o.split(" (")[0] for o in v.get("reference_outliers", [])],
+                         "mae_without_outliers": v.get("mae_eV_without_outliers"), "spearman_without_outliers": v.get("spearman_without_outliers"),
+                         "agreement_without_outliers": v.get("agreement_without_outliers")}
+        routes.append({"id": rid, "title": title, "how": how, "funnel": funnel, "classes": rep.get("classes", {}),
+                       "collapsed": [{"formula": c["formula"], "target": c["target"], "contact_ratio": c["contact_ratio"]} for c in rep.get("collapsed_on_relaxation", [])],
+                       "stable_share": h.get("stable_share"), "not_assessed": int(h.get("not_assessed", 0))})
+        pooled["candidates"] += st["1_candidates"]; pooled["consensus"] += st["2_two_model_consensus"]
+        rel = os.path.join(R, "relaxed")
+        rcal = json.load(open(os.path.join(rel, "calibration.json")))["per_candidate"] if os.path.exists(os.path.join(rel, "calibration.json")) else {}
+        rtab = pd.read_csv(os.path.join(rel, "candidates.csv")) if os.path.exists(os.path.join(rel, "candidates.csv")) else pd.DataFrame()
+        for _, r in rtab.iterrows():
+            jg = rcal.get(r["file"], {}).get("independent_gap")
+            if jg is not None:
+                pooled["judge_err"].append(abs(float(jg) - float(r["target"])))
+            if "e_hull" in r and r["e_hull"] == r["e_hull"] and bool(r.get("e_hull_assessed", True)):
+                pooled["assessed"] += 1; pooled["stable"] += int(float(r["e_hull"]) <= 0.1)
+        cons = pd.read_csv(os.path.join(rel, "candidates_consensus.csv")) if os.path.exists(os.path.join(rel, "candidates_consensus.csv")) else pd.DataFrame()
+        mlip = {os.path.basename(m["file"]): m for f in sorted(glob.glob(os.path.join(R, "relax", "mlip_shard*.json"))) for m in json.load(open(f))}
+        for x in rep.get("final", []):
+            k = Composition(x["formula"]).reduced_formula
+            if k in seen:
+                continue
+            seen.add(k)
+            row = cons[(cons["formula"] == x["formula"]) & (abs(cons["target"] - x["target"]) < 1e-9)].iloc[0]
+            src = os.path.join(rel, row["file"])
+            shown = x["formula"]                                          # as the pipeline wrote it (A2BB'X6 order)
+            name = f"accepted/{shown}_{rid}.cif"
+            copy_file(src, sd, name, files, "chemical/x-cif")
+            stc = Structure.from_file(src)
+            m = mlip.get(os.path.basename(row["file"]), {})
+            gaps = known.get(k) or ([round(float(row["reference_gap"]), 3)] if "reference_gap" in row and row["reference_gap"] == row["reference_gap"] else [])
+            note = x.get("e_hull_note") or ""
+            accepted.append({
+                "requested": float(x["target"]), "formula": shown, "label_structure_gap": round(float(x["label"]), 3), "judge_gap": round(float(x["judge"]), 3),
+                "amd_nearest": None if x.get("amd_nearest") is None else round(float(x["amd_nearest"]), 3), "known_formula": k in known,
+                "recorded_gaps": sorted(gaps), "class": x["cls"], "charge_balanced": x.get("charge_balanced"),
+                "relaxation_drop_eV_atom": m.get("tensornet_drop_per_atom"), "spacegroup_designed": m.get("spacegroup_designed"),
+                "spacegroup_relaxed": m.get("tensornet_spacegroup_relaxed"), "natoms": len(stc), "file": name,
+                "structure": {"lattice": [[round(float(v), 4) for v in row_] for row_ in stc.lattice.matrix],
+                              "sites": [{"element": str(site.specie.symbol), "frac": [round(float(v), 4) for v in site.frac_coords]} for site in stc]},
+                "flag": "judges disagree" if abs(float(x["label"]) - float(x["judge"])) > 0.5 else "",
+                "route": title, "e_hull": None if x.get("e_hull") is None or x["e_hull"] != x["e_hull"] else round(float(x["e_hull"]), 4),
+                "e_hull_note": note, "reference_id": x.get("reference_id")})
+    accepted.sort(key=lambda r: (r["requested"], r["formula"]))
+    classes = {}
+    for r in accepted:
+        classes[r["class"]] = classes.get(r["class"], 0) + 1
+    measured = {"S6": {"judge_mae_request": float(np.mean(pooled["judge_err"])), "consensus_yield": pooled["consensus"] / max(1, pooled["candidates"])},
+                "S7": {"stable_share": pooled["stable"] / max(1, pooled["assessed"])}}
+    for blk, vals in measured.items():
+        g, _ = stages.BY_ID[blk].verdict(vals)
+        verdicts[blk] = {"grade": g, "note": "; ".join(f"{k.replace('_', ' ')} {v:.2f}" for k, v in vals.items()) + " (all routes, relaxed cells)"}
+    new = [r for r in accepted if r["class"].startswith("new composition")]
+    dp_re = re.compile(r"^[A-Z][a-z]?2[A-Z][a-z]?[A-Z][a-z]?[A-Z][a-z]?6$")
+    new_dp = [r for r in new if dp_re.match(r["formula"])]
+    stable_dp = [r for r in new_dp if r["e_hull"] is not None and r["e_hull"] <= 0.1 and not r["e_hull_note"]]
+    xc_path = os.path.join(D, "crosscheck.json")                      # written and verified by hand: other databases, Prism scoring
+    cross = json.load(open(xc_path))["lines"] if os.path.exists(xc_path) else []
+    tab = pd.DataFrame([{k: v for k, v in r.items() if k not in ("structure",)} for r in accepted])
+    os.makedirs(os.path.join(sd, "files"), exist_ok=True)
+    tab.to_csv(os.path.join(sd, "files", "accepted.csv"), index=False)
+    files["accepted.csv"] = {"bytes": os.path.getsize(os.path.join(sd, "files", "accepted.csv")), "sha256": sha256_file(os.path.join(sd, "files", "accepted.csv")), "media": "text/csv"}
+    hv = os.path.join(W, DP_ROUTES[0][0], "relaxed", "hull_validation.csv")
+    if os.path.exists(hv):
+        copy_file(hv, sd, "hull_validation.csv", files, "text/csv")
+    study = {
+        "schema": "meidnet-matter/study/1", "id": "jarvis-dp", "title": "Double perovskites from public JARVIS-DFT data", "order": 5,
+        "dataset": {"name": "JARVIS-DFT double perovskites", "rows": audit["rows"], "train": audit["split_sizes"]["train"], "val": audit["split_sizes"]["val"],
+                    "test": audit["split_sizes"]["test"], "elements": audit["elements"], "prototypes": audit["prototypes"],
+                    "compositions_per_element": finite(prev["values"]["density"]), "family_conformance": finite(prev["values"]["family_conformance"]),
+                    "zero_share": finite(prev["values"]["zero_share"]),
+                    "source": "JARVIS-DFT 3D (release 12-12-2022), A₂BB′X₆ compounds after a structural filter; chosen, prepared and modelled by an independent user who followed the Method page",
+                    "properties": ["band gap (OptB88vdW)", "formation energy", "energy above the hull"]},
+        "mode": "screening (as S0 said), with family and family-free generation beside it",
+        "headline": (f"An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation "
+                     f"returned {len(new_dp)} A₂BB′X₆ compositions absent from the data and from JARVIS-DFT inside the requested gap window, "
+                     f"{len(stable_dp)} of them within 0.1 eV/atom of the hull with one potential for every phase."),
+        "verdicts": verdicts,
+        "target_following": {"targets_eV": [1.0, 2.0, 3.0], "window_eV": 0.5,
+                             "judge": (f"{judge['name']}, qualified on the test split: MAE {judge['mae_all']:.2f} eV ({judge['mae_nonzero']:.2f} on non-zero gaps), "
+                                       f"{judge.get('corr_name', 'Spearman')} {judge['corr']:.2f} (n = {judge['n']})") if judge else None,
+                             "routes": len(routes), "accepted": len(accepted), "new_compositions": len(new), "new_double_perovskites": len(new_dp),
+                             "installed_from": "PyPI (meidnet-matter 0.6.1) and the release's engine wheel, in a fresh environment"},
+        "routes": routes, "stability": stability, "accepted": accepted, "accepted_classes": classes, "window_eV": 0.5, "cross_checks": cross,
+        "lessons": ["S0 predicted screening before any training (48.5 compositions per element against a rule of 200); the trained decoder confirmed it (S3).",
+                    "A known compound's own DFT value outranks two machine-learned readings: Rb₂InSbCl₆ and Rb₂InSbI₆ are in the data at 0.58 and 0.00 eV, and both models were wrong about them.",
+                    "Collapsed cells: some relaxed cells had atoms pushed into each other (Te–Te 1.2 Å); the check now sets aside any cell whose closest atoms sit nearer than 0.6 of their radii.",
+                    "A reference set can be incomplete: JARVIS-DFT holds no cesium halide, so Cs₂InFeBr₆ came out far below every known phase; such a value is now reported as not assessed, with the missing element pairs named.",
+                    "The whole journey ran from the published packages in a fresh environment."],
+        "checkpoints": [],
+        "reproduce": [{"step": "install", "command": "pip install --extra-index-url https://download.pytorch.org/whl/cpu \"meidnet-matter[judge]\""},
+                      {"step": "one table from a folder of structures and a spreadsheet", "command": "python -m meidnet_eval.ingest_upload structures/ properties.xlsx data/ --props \"Band gap OptB88vdW\" \"E above hull\" --id-col \"JARVIS id\""},
+                      {"step": "intake and S0", "command": "python -m meidnet_eval.intake data/table.csv data/intake --id material_id --cif cif --props Band_gap_OptB88vdW_eV E_above_hull_eV_atom && python -m meidnet_eval.preview data/intake --gap Band_gap_OptB88vdW_eV --targets 1 2 3 --stability E_above_hull_eV_atom --family double_perovskite_a2bbx6"},
+                      {"step": "train, then the scorecard with S8", "command": "meidnet train meidnet.yaml && python -m meidnet_eval.scorecard data/intake --models mine=out/model.pt --gap Band_gap_OptB88vdW_eV --judge megnet --out scorecard/"},
+                      {"step": "screen with the full check and the hull", "command": "python -m meidnet_eval.screen_local data/intake --ckpt out/model.pt --family double_perovskite_a2bbx6:halide --gap Band_gap_OptB88vdW_eV --targets 1 2 3 --check --hull-reference jarvis:jdft_3d-12-12-2022.json --stability-col E_above_hull_eV_atom --out screening/"}],
+        "limits": ["The judge (MEGNet, fidelity 0) qualifies on this data at 0.50 of the gap spread, the edge of its band; its error, 0.82 eV, is wider than the ±0.5 eV window, so agreement of the two models supports a candidate without proving it.",
+                   "Stability is the energy above the hull from one machine-learning potential (TensorNet) for every phase, calibrated on known materials of the data; it is a screen, not a DFT result.",
+                   "Cs₂InFeBr₆: the reference set has no cesium halide, so its stability is not assessed; the Materials Project reference (--hull-reference mp) would give it.",
+                   "The iron compounds' gaps depend on magnetism and on the functional; the data's OptB88vdW gaps are the reference here.",
+                   "Thallium compounds are toxic; the screening without Tl, Pb, Cd, Hg, As and Be is the practical shortlist.",
+                   "No new composition has been checked by DFT yet: that is the next step for any of them.",
+                   "The two models were trained by the independent user (200 epochs each) and are not published; the Method page's commands train the same ones."],
+        "files": files, "sources": ["meidnet_data/jarvis_dp/retest_pypi (the run of the published packages)", "the independent user's package (journey and feedback)", "journal entries 68–70"],
+    }
+    write_json(os.path.join(sd, "study.json"), scrub_paths(finite(study)))
+    return {"id": "jarvis-dp", "verdicts": {k: v["grade"] for k, v in verdicts.items()}}
+
+
 def build_manifest(a) -> None:
     entries = []
     for c in CHECKPOINTS:
@@ -478,6 +640,10 @@ def build_manifest(a) -> None:
     write_json(a.manifest, {"schema": "meidnet-matter/checkpoints/1", "release": RELEASE, "checkpoints": entries})
 
 
+BUILDERS = {"perov5": build_perov5, "mp-perovskites": build_mp_perovskites, "user-246": build_user246, "mp20": build_mp20,
+            "jarvis-dp": build_jarvis_dp}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fix", required=True); ap.add_argument("--journey", required=True); ap.add_argument("--data", required=True)
@@ -485,14 +651,23 @@ def main():
     ap.add_argument("--out", default=os.path.join(ROOT, "examples", "research"))
     ap.add_argument("--manifest", default=os.path.join(ROOT, "checkpoints", "manifest.json"))
     ap.add_argument("--reference-sample", type=int, default=4000)
+    ap.add_argument("--only", choices=list(BUILDERS), default=None,
+                    help="rebuild one study (and the listings) and keep the others as they are; the full build takes ~10 min")
     a = ap.parse_args()
-    if os.path.isdir(a.out):
-        shutil.rmtree(a.out)
-    results = [build_perov5(a, a.out), build_mp_perovskites(a, a.out), build_user246(a, a.out), build_mp20(a, a.out)]
-    verdicts = {r["id"]: r["verdicts"] for r in results}
+    if a.only:
+        old = json.load(open(os.path.join(a.out, "pipeline", "blocks.json")))
+        shutil.rmtree(os.path.join(a.out, "studies", a.only), ignore_errors=True)
+        r = BUILDERS[a.only](a, a.out)
+        verdicts = {k: v for k, v in (old.get("dataset_verdicts") or {}).items()}
+        verdicts[r["id"]] = r["verdicts"]
+    else:
+        if os.path.isdir(a.out):
+            shutil.rmtree(a.out)
+        results = [b(a, a.out) for b in BUILDERS.values()]
+        verdicts = {r["id"]: r["verdicts"] for r in results}
     build_blocks(a, a.out, verdicts)
     index = []
-    for sid in ("perov5", "mp-perovskites", "user-246", "mp20"):
+    for sid in BUILDERS:
         s = json.load(open(os.path.join(a.out, "studies", sid, "study.json")))
         index.append({"id": sid, "title": s["title"], "dataset": s["dataset"]["name"], "mode": s["mode"], "headline": s["headline"], "order": s["order"]})
     write_json(os.path.join(a.out, "studies", "index.json"), {"schema": "meidnet-matter/studies/1", "studies": index})

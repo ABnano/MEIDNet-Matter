@@ -31,7 +31,7 @@ def test_blocks_payload_has_ten_blocks_and_no_published_column(client):
     assert [b["id"] for b in d["blocks"]] == [f"S{i}" for i in range(10)]
     assert sum(len(b["metrics"]) for b in d["blocks"]) >= 37
     # the home page's block x dataset matrix: every executed study has a verdict for every block it ran
-    assert set(d["dataset_verdicts"]) == {"perov5", "mp-perovskites", "user-246", "mp20"}
+    assert set(d["dataset_verdicts"]) == {"perov5", "mp-perovskites", "user-246", "mp20", "jarvis-dp"}
     assert all(d["dataset_verdicts"][k].get("S1") for k in d["dataset_verdicts"]), d["dataset_verdicts"]
     assert "published" not in d["configs"]
     assert not FORBIDDEN.search(json.dumps(d))
@@ -56,7 +56,7 @@ def test_component_sources_are_served_from_an_allowlist(client):
 @needs_artefacts
 def test_studies_are_served_and_the_upload_study_carries_aggregates_only(client):
     idx = client.get("/api/studies").json()["studies"]
-    assert [s["id"] for s in sorted(idx, key=lambda s: s["order"])] == ["perov5", "mp-perovskites", "user-246", "mp20"]
+    assert [s["id"] for s in sorted(idx, key=lambda s: s["order"])] == ["perov5", "mp-perovskites", "user-246", "mp20", "jarvis-dp"]
     for s in idx:
         d = client.get(f"/api/studies/{s['id']}").json()
         assert d["schema"] == "meidnet-matter/study/1" and d["verdicts"]
@@ -66,6 +66,12 @@ def test_studies_are_served_and_the_upload_study_carries_aggregates_only(client)
         assert forbidden not in u
     mp20 = client.get("/api/studies/mp20").json()
     assert len(mp20["accepted"]) == mp20["calibration"]["funnel"]["final"] == 13
+    dp = client.get("/api/studies/jarvis-dp").json()       # the case study of several routes: every structure served, every route counted
+    assert dp["routes"] and dp["stability"]["n"] > 0 and len(dp["accepted"]) == sum(dp["accepted_classes"].values())
+    for a in dp["accepted"]:
+        r = client.get(f"/api/studies/jarvis-dp/files/{a['file']}")
+        assert r.status_code == 200 and "_cell_length_a" in r.text, a["file"]
+        assert a["route"] in {x["title"] for x in dp["routes"]}
     assert client.get("/api/studies/nope").status_code == 404
     assert client.get("/api/studies/mp20/files/../../settings.py").status_code in (404, 400)
 

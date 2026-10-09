@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router';
-import { research, type Calibration, type CheckpointInfo, type Study as StudyT } from '@/api/research';
+import { research, type Calibration, type CheckpointInfo, type Study as StudyT, type StudyRoute, type StudyStability } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
@@ -48,6 +48,38 @@ function CalibrationPanel({ cal, study }: { cal: Calibration; study: StudyT }) {
         </table>
         <p className="small muted" style={{ marginTop: 8 }}>Delivered = the independent judge on the relaxed cell; drop = energy lowered by relaxation, eV/atom (sound structures: under 0.1). Counts above 1 eV are small, so quote the pooled statistics.</p>
       </div>
+    </section>
+  );
+}
+
+/** A study with several routes to its candidates: the same check for each, one funnel each. */
+function RoutesPanel({ routes, stability }: { routes: StudyRoute[]; stability?: StudyStability }) {
+  return (
+    <section className="section" id="routes">
+      <h2>Routes: one check for every route</h2>
+      <p className="muted">Each route ends with the same check: the label read from each cell, the qualified judge, both readings in the window, relaxation by two potentials, both readings again on the relaxed cell, the energy above the hull, novelty against the data and the reference set.</p>
+      <div className="cards-2" style={{ alignItems: 'start' }}>
+        {routes.map((r) => (
+          <div className="card" key={r.id}>
+            <h3>{r.title}</h3>
+            <p className="small muted">{r.how}</p>
+            <Funnel stages={r.funnel} unit="structures" />
+            <p className="small" style={{ marginTop: 10 }}>
+              {Object.keys(r.classes).length ? Object.entries(r.classes).map(([k, v]) => `${v} ${k}`).join('; ') : 'nothing accepted'}.
+              {r.stable_share !== null && <> Within 0.1 eV/atom of the hull: {Math.round(100 * r.stable_share)}% of the relaxed cells{r.not_assessed ? ` (${r.not_assessed} not assessed)` : ''}.</>}
+            </p>
+            {r.collapsed.length > 0 && <p className="small faint">Collapsed on relaxation and set aside: {r.collapsed.map((c) => `${c.formula} (${c.contact_ratio.toFixed(2)})`).join(', ')}.</p>}
+          </div>
+        ))}
+      </div>
+      {stability && (
+        <div className="stat-tiles" style={{ marginTop: 20 }}>
+          <div className="card"><div className="k">Stability</div><div className="v">{stability.potential}</div><div className="n">one potential for every phase; competing phases from {stability.reference}</div></div>
+          <div className="card"><div className="k">Checked on</div><div className="v">{stability.n} known</div><div className="n">materials of the data with a DFT hull value</div></div>
+          <div className="card"><div className="k">Median error</div><div className="v"><Num v={stability.median_abs_error_eV} d={3} /> eV/atom</div><div className="n">mean <Num v={stability.mae_eV} d={3} />{stability.outliers.length ? <>; <Num v={stability.mae_without_outliers} d={3} /> without {stability.outliers.join(', ')}</> : null}</div></div>
+          <div className="card"><div className="k">Agreement</div><div className="v">{Math.round(100 * (stability.agreement_without_outliers ?? stability.agreement))}%</div><div className="n">on &ldquo;within 0.1 eV/atom of the hull&rdquo;{stability.outliers.length ? `, without the implausible reference value (${Math.round(100 * stability.agreement)}% with it)` : ''}</div></div>
+        </div>
+      )}
     </section>
   );
 }
@@ -137,18 +169,23 @@ export default function Study() {
 
             {s.calibration && <CalibrationPanel cal={s.calibration} study={s} />}
 
+            {s.routes && s.routes.length > 0 && <RoutesPanel routes={s.routes} stability={s.stability} />}
+
             {s.accepted && s.accepted.length > 0 && (
               <section className="section" id="accepted">
                 <h2>Accepted structures</h2>
-                <p className="muted">Both judges within {s.calibration?.window_eV} eV of the request on the relaxed cell; a judged metal never satisfies a non-zero request. Classes: {Object.entries(s.accepted_classes ?? {}).map(([k, v]) => `${v} ${k}`).join('; ')}.</p>
+                <p className="muted">Both judges within {s.calibration?.window_eV ?? s.window_eV} eV of the request on the relaxed cell; a judged metal never satisfies a non-zero request. Classes: {Object.entries(s.accepted_classes ?? {}).map(([k, v]) => `${v} ${k}`).join('; ')}.</p>
                 <div className="table-wrap">
                   <table className="table">
-                    <thead><tr><th scope="col">requested</th><th scope="col">formula</th><th scope="col">label from the structure</th><th scope="col">judge</th><th scope="col">AMD</th><th scope="col">class</th><th scope="col">recorded gaps</th><th scope="col">charge balance</th><th scope="col">relaxation drop</th><th scope="col">space group</th><th scope="col">cell</th></tr></thead>
+                    <thead><tr><th scope="col">requested</th><th scope="col">formula</th>{s.routes && <th scope="col">route</th>}<th scope="col">label from the structure</th><th scope="col">judge</th>{s.stability && <th scope="col">above the hull (eV/atom)</th>}<th scope="col">AMD</th><th scope="col">class</th><th scope="col">recorded gaps</th><th scope="col">charge balance</th><th scope="col">relaxation drop</th><th scope="col">space group</th><th scope="col">cell</th></tr></thead>
                     <tbody>
                       {s.accepted.map((a) => (
                         <tr key={a.file}>
                           <td className="num">{a.requested.toFixed(1)}</td><td><b>{a.formula}</b>{a.flag && <div className="small faint">{a.flag}</div>}</td>
-                          <td className="num"><Num v={a.label_structure_gap} /></td><td className="num"><Num v={a.judge_gap} /></td><td className="num"><Num v={a.amd_nearest} d={3} /></td>
+                          {s.routes && <td className="small">{a.route}</td>}
+                          <td className="num"><Num v={a.label_structure_gap} /></td><td className="num"><Num v={a.judge_gap} /></td>
+                          {s.stability && <td className="num"><Num v={a.e_hull} d={3} />{a.e_hull_note ? ' †' : ''}</td>}
+                          <td className="num"><Num v={a.amd_nearest} d={3} /></td>
                           <td className="small">{a.class}</td><td className="small num">{a.recorded_gaps.length ? a.recorded_gaps.map((g) => g.toFixed(2)).join(', ') : '—'}</td>
                           <td className="small">{a.charge_balanced === null ? '—' : a.charge_balanced ? 'yes' : 'no'}</td><td className="num"><Num v={a.relaxation_drop_eV_atom} /></td>
                           <td className="small mono">{a.spacegroup_designed}→{a.spacegroup_relaxed}</td>
@@ -158,6 +195,8 @@ export default function Study() {
                     </tbody>
                   </table>
                 </div>
+                {s.accepted.some((a) => a.e_hull_note) && <ul className="small muted" style={{ marginTop: 8 }}>{s.accepted.filter((a) => a.e_hull_note).map((a) => <li key={a.file}>† {a.formula}: {a.e_hull_note}</li>)}</ul>}
+                {s.cross_checks && s.cross_checks.length > 0 && <div className="note" style={{ marginTop: 12 }}><b>Checked against other sources.</b><ul className="small" style={{ margin: '6px 0 0 18px' }}>{s.cross_checks.map((c) => <li key={c}>{c}</li>)}</ul></div>}
               </section>
             )}
 
@@ -166,7 +205,7 @@ export default function Study() {
               {mine.length > 0 ? (
                 <div className="table-wrap"><table className="table"><thead><tr><th scope="col">id</th><th scope="col">role</th><th scope="col">what it is</th><th scope="col">download</th></tr></thead>
                   <tbody>{mine.map((c) => <tr key={c.id}><td className="mono">{c.id}</td><td className="small">{c.role}</td><td className="small">{c.description}</td><td className="small">{c.download_url ? <a href={c.download_url} download={c.file}>from this server</a> : null}{c.urls?.map((u) => <span key={u}> · <a href={u} target="_blank" rel="noopener">{u.includes('github') ? 'release asset' : 'mirror'}</a></span>)}</td></tr>)}</tbody></table></div>
-              ) : <p className="muted small">No checkpoint of this dataset is published{s.id === 'user-246' ? ': the data belong to their owner' : ''}.</p>}
+              ) : <p className="muted small">No checkpoint of this dataset is published{s.id === 'user-246' ? ': the data belong to their owner' : s.id === 'jarvis-dp' ? ': the two models were trained by the independent user, and the Method page\'s commands train the same ones' : ''}.</p>}
               <h3 style={{ marginTop: 20 }}>Reproduce</h3>
               <div className="stack" style={{ gap: 8 }}>{s.reproduce.map((r) => <div key={r.step}><div className="small muted">{r.step}</div><div className="cmd">{r.command}</div></div>)}</div>
               {Object.keys(s.files).length > 0 && <><h3 style={{ marginTop: 20 }}>Files</h3><ul className="small">{Object.entries(s.files).filter(([n]) => !n.includes('/')).map(([n, f]) => <li key={n}><a href={research.studyFileUrl(s.id, n)} download>{n}</a> <span className="faint">({(f.bytes / 1024).toFixed(0)} KB)</span></li>)}</ul></>}

@@ -31,6 +31,19 @@ export interface Accepted {
   spacegroup_designed: number | null; spacegroup_relaxed: number | null; natoms: number; file: string; flag: string;
   /** The relaxed cell as sites and lattice (0.4.0), for the 3D cards. */
   structure?: { sites: Array<{ element: string; frac: [number, number, number] }>; lattice: number[][] } | null;
+  /** A study with several routes (0.7.0): the route that accepted it, its energy above the hull (one potential for every
+   *  phase) with the reason when the value is not a stability statement, the reference entry of a known compound. */
+  route?: string; e_hull?: number | null; e_hull_note?: string; reference_id?: string | null;
+  /** The study it belongs to, when cards from several studies are shown together. */
+  study?: string;
+}
+export interface StudyRoute {
+  id: string; title: string; how: string; funnel: Array<[string, number]>; classes: Record<string, number>;
+  collapsed: Array<{ formula: string; target: number; contact_ratio: number }>; stable_share: number | null; not_assessed: number;
+}
+export interface StudyStability {
+  potential: string; reference: string; n: number; mae_eV: number; median_abs_error_eV: number; agreement: number; spearman: number | null;
+  outliers: string[]; mae_without_outliers: number | null; spearman_without_outliers: number | null; agreement_without_outliers: number | null;
 }
 export interface Calibration {
   window_eV: number; metal_floor_eV: number;
@@ -62,6 +75,8 @@ export interface Study {
   pool?: { generated: number; both_judges_generated: number; relaxed: number; accepted: number; collapsed_on_relaxation?: number };
   checks?: Array<{ stage: string; check: string; status: string; detail: string }>;
   lessons?: string[];
+  /** A study with several routes to its candidates (0.7.0). */
+  routes?: StudyRoute[]; stability?: StudyStability; cross_checks?: string[]; window_eV?: number;
 }
 
 export interface CheckpointInfo {

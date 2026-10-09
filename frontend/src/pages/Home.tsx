@@ -7,7 +7,7 @@ import { Funnel, Num, VerdictText } from '@/components/research';
 import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
 import { HeroExample } from '@/components/home/HeroExample';
 import { Explainer } from '@/components/home/Explainer';
-import { home as H } from '@/copy/research';
+import { STUDY_DATASETS, home as H } from '@/copy/research';
 import { landing as L } from '@/copy/landing';
 
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
@@ -15,6 +15,7 @@ const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) +
 
 export default function Home() {
   const mp20 = useResource<Study>('studies/mp20', (s) => research.study('mp20', s));
+  const dp = useResource<Study>('studies/jarvis-dp', (s) => research.study('jarvis-dp', s));
   const perov5 = useResource<Study>('studies/perov5', (s) => research.study('perov5', s));
   const idx = useResource<{ studies: StudyIndexEntry[] }>('studies', (s) => research.studies(s));
   const blocks = useResource<BlocksPayload>('pipeline/blocks', (s) => research.blocks(s));
@@ -54,8 +55,9 @@ export default function Home() {
           <h2>{H.discoveriesTitle}</h2>
           <p className="muted">{H.discoveriesLead}</p>
           {perov5.error && <ErrorNote error={perov5.error} />}
-          <DiscoveryStrip items={accepted} />
+          <DiscoveryStrip items={[...accepted.map((a) => ({ ...a, study: 'mp20' })), ...(dp.data?.accepted ?? []).filter((a) => a.class.startsWith('new composition')).map((a) => ({ ...a, study: 'jarvis-dp' }))]} />
           {cal && <p className="small muted" style={{ marginTop: 10 }}>{cal.funnel.final} of {cal.funnel.generated} generated cells accepted{cal.funnel.collapsed_on_relaxation ? ` (${cal.funnel.collapsed_on_relaxation} relaxed cells collapsed and were set aside)` : ''} · {newComp} new compositions · {redisc.length} known compounds returned at their recorded gaps ({redisc.map((r) => r.formula).join(', ')}){perov5.data ? ` · Perov-5 target following ρ ${(perov5.data.target_following.rho_range as number[])[0]}–${(perov5.data.target_following.rho_range as number[])[1]}` : ''}. <Link to="/studies/mp20#accepted">Every accepted structure, with its evidence.</Link></p>}
+          {dp.data?.accepted && <p className="small muted" style={{ marginTop: 4 }}>Double perovskites on public JARVIS-DFT data: {dp.data.accepted.length} accepted across {dp.data.routes?.length ?? 0} routes, {dp.data.accepted.filter((a) => a.class.startsWith('new composition')).length} of them compositions absent from the data and from JARVIS-DFT. <Link to="/studies/jarvis-dp#accepted">The case study →</Link></p>}
         </section>
 
         <section className="section" id="choices">
@@ -101,12 +103,12 @@ export default function Home() {
               <div className="table-wrap" style={{ marginTop: 16 }}>
                 <table className="table">
                   <caption className="sr-only">Block verdicts per dataset</caption>
-                  <thead><tr><th scope="col">block</th><th scope="col">question</th><th scope="col">Perov-5</th><th scope="col">MP perovskites</th><th scope="col">Upload (246)</th><th scope="col">MP-20</th></tr></thead>
+                  <thead><tr><th scope="col">block</th><th scope="col">question</th>{STUDY_DATASETS.map(([d, l]) => <th scope="col" key={d}>{l}</th>)}</tr></thead>
                   <tbody>
                     {blocks.data.blocks.map((b) => (
                       <tr key={b.id}>
                         <td className="mono"><Link to={`/pipeline/${b.id}`}>{b.id}</Link></td><td className="small">{b.question}</td>
-                        {['perov5', 'mp-perovskites', 'user-246', 'mp20'].map((d) => <td key={d}><VerdictText grade={blocks.data!.dataset_verdicts?.[d]?.[b.id] ?? '—'} /></td>)}
+                        {STUDY_DATASETS.map(([d]) => <td key={d}><VerdictText grade={blocks.data!.dataset_verdicts?.[d]?.[b.id] ?? '—'} /></td>)}
                       </tr>
                     ))}
                   </tbody>

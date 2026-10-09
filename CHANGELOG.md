@@ -4,6 +4,28 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-09
+
+A new case study: double perovskites from public JARVIS-DFT data, the independent user's journey run again from the
+published packages.
+
+### Added
+- The study "Double perovskites from public JARVIS-DFT data": the user's dataset (1,282 A₂BB′X₆ compounds), their two
+  trained models, and every stage from S0 to S9, run again end to end with the packages installed from PyPI and the release
+  in a fresh environment. Five routes (three screenings, family generation, family-free generation) go through the same check;
+  the page shows a funnel per route, the accepted structures with their relaxed cells (CIF), the label from each cell, the
+  qualified judge, the energy above the hull with one potential for every phase and its calibration on known materials,
+  novelty against the data and JARVIS-DFT, checks against other databases, the limits, and what the study taught the
+  pipeline. Its new double perovskites join the home page's strip, and its verdicts the per-dataset columns of the pipeline
+  pages.
+- Study pages render routes, a stability card, and per structure its route and its energy above the hull, with the reason
+  when that value is not a stability statement.
+
+### Changed
+- `scripts/install.sh` pins the release's known-good versions only on the Python they were resolved for (3.12); on another
+  Python it installs unpinned and says so (numpy 2.5, for one, has no Python 3.10 build).
+- The list of studies is defined once for every page that shows a verdict per dataset.
+
 ## [0.6.1] - 2026-10-08
 
 The install, the way a newcomer expects it: `pip install "meidnet-matter[judge]"`.

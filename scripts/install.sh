@@ -60,8 +60,20 @@ retry "$PY" -m pip install "${PIP_OPTS[@]}" --index-url "$CPU_INDEX" torch || fa
 
 PIN_OPTS=()
 if [ "$PIN" = 1 ]; then
-  PINS="$REPO/releases/latest/download/constraints.txt"               # the versions the release's own test installed
-  if curl -fsSLI --retry 3 -o /dev/null "$PINS" 2>/dev/null; then PIN_OPTS=(-c "$PINS"); else echo "   (no constraints file on the latest release: installing unpinned)"; fi
+  # the versions the release's own install check used; they were resolved for one Python (named in the file's header),
+  # and some do not exist for another (numpy 2.5 has no Python 3.10 build), so they apply only to that Python
+  PINS="$ENV_DIR/constraints.txt"
+  if curl -fsSL --retry 3 -o "$PINS" "$REPO/releases/latest/download/constraints.txt" 2>/dev/null; then
+    WANT=$(grep -o -m1 'Python [0-9]*\.[0-9]*' "$PINS" | cut -d' ' -f2)
+    HAVE=$("$PY" -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+    if [ -n "$WANT" ] && [ "$WANT" = "$HAVE" ]; then
+      PIN_OPTS=(-c "$PINS"); echo "   pinned to the versions the release was tested with (Python $WANT)"
+    else
+      echo "   the release's known-good versions are for Python ${WANT:-?}; this is Python $HAVE: installing unpinned"
+    fi
+  else
+    echo "   (no constraints file on the latest release: installing unpinned)"
+  fi
 fi
 if [ "$SOURCE" = pypi ]; then
   say "the engine and the application with the judge, from PyPI"

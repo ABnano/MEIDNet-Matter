@@ -11,7 +11,7 @@ export const shortClass = (c: string) =>
 function Card({ a, decorative }: { a: Accepted; decorative?: boolean }) {
   const cell = useMemo(() => cellOfAccepted(a), [a]);
   return (
-    <Link to="/studies/mp20#accepted" className="card card-tight disc-card" aria-hidden={decorative} tabIndex={decorative ? -1 : 0}>
+    <Link to={`/studies/${a.study ?? 'mp20'}#accepted`} className="card card-tight disc-card" aria-hidden={decorative} tabIndex={decorative ? -1 : 0}>
       <div className="thumb">{cell && <CellViewer structure={cell} size={84} title={a.formula} interactive={false} />}</div>
       <div>
         <b>{a.formula}</b>
@@ -30,8 +30,8 @@ export function DiscoveryStrip({ items }: { items: Accepted[] }) {
   return (
     <div className="disc-strip" aria-label="Structures the generator delivered">
       <div className="disc-track">
-        {items.map((a) => <Card key={a.file} a={a} />)}
-        {items.map((a) => <Card key={`${a.file}-copy`} a={a} decorative />)}
+        {items.map((a) => <Card key={`${a.study}-${a.file}`} a={a} />)}
+        {items.map((a) => <Card key={`${a.study}-${a.file}-copy`} a={a} decorative />)}
       </div>
     </div>
   );

@@ -1,4 +1,7 @@
 // Prose for the research pages. Numbers come from the API; this file holds the sentences around them.
+
+/** The executed studies, in reading order, with the short name a table column uses. */
+export const STUDY_DATASETS: Array<[string, string]> = [['perov5', 'Perov-5'], ['mp-perovskites', 'MP perovskites'], ['user-246', 'Upload (246)'], ['mp20', 'MP-20'], ['jarvis-dp', 'JARVIS DP']];
 export const home = {
   eyebrow: 'MEIDNet Matter · multimodal inverse design for materials',
   h1: 'From a target property to candidate crystal structures.',
@@ -11,7 +14,7 @@ export const home = {
   prismCta: 'Open MEIDNet Prism',
   plain: 'New to the field? A band gap is the energy a material needs before its electrons can move freely. It decides whether a material behaves as a metal, a semiconductor or an insulator, so asking for a band gap is asking for a kind of behaviour. The app proposes crystal structures that two independent models expect to have the gap you asked for.',
   discoveriesTitle: 'What the generator has delivered',
-  discoveriesLead: 'Structures accepted by two independent models after relaxation, from the MP-20 study. Hover to pause; click a card to open the study.',
+  discoveriesLead: 'Structures accepted by two independent models after relaxation: generated for a band gap on MP-20, and screened or generated within the double-perovskite family on public JARVIS-DFT data. Hover to pause; click a card to open its study.',
   choicesTitle: 'Three ways in',
   choices: [
     ['Explore a result', 'The MP-20 study: 175 generated cells, 13 accepted by two judges after relaxation, the response curve, every structure and its evidence.', '/studies/mp20', 'Open the study'],

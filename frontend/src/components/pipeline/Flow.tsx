@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { STUDY_DATASETS } from '@/copy/research';
 import { Link } from 'react-router';
 import type { BlockDef, Grade } from '@/api/research';
 import { VerdictText } from '@/components/research';
@@ -31,7 +32,6 @@ const INPUT_BY_WHEN: Record<string, string> = {
 
 /** The flow of one block: its input, the programs that compute it (click one to read the code), its metrics, its verdict. */
 export function BlockFlow({ b, verdicts, open, onOpen }: { b: BlockDef; verdicts: Record<string, Record<string, Grade>> | undefined; open: string | null; onOpen: (file: string | null) => void }) {
-  const DATASETS: Array<[string, string]> = [['perov5', 'Perov-5'], ['mp-perovskites', 'MP perovskites'], ['user-246', 'Upload (246)'], ['mp20', 'MP-20']];
   const nodes: FlowNode[] = [
     { id: 'in', kind: 'input', label: INPUT_BY_WHEN[b.when] ?? b.when, sub: `runs ${b.when}` },
     ...b.components.map((c) => ({
@@ -40,7 +40,7 @@ export function BlockFlow({ b, verdicts, open, onOpen }: { b: BlockDef; verdicts
       title: c.viewable ? `${c.note} — click to read the code` : `${c.note} — source not served`,
     })),
     ...b.metrics.filter((m) => !m.info_only).map((m) => ({ id: m.id, kind: 'metric' as const, label: m.name, sub: `pass ${m.band.pass}`, href: `#m-${m.id}`, title: m.definition })),
-    { id: 'verdict', kind: 'verdict', label: 'verdict', sub: <>{DATASETS.map(([id, l]) => <span key={id} className="flow-grade">{l} <VerdictText grade={verdicts?.[id]?.[b.id] ?? '—'} /></span>)}</>, title: b.verdict_rule },
+    { id: 'verdict', kind: 'verdict', label: 'verdict', sub: <>{STUDY_DATASETS.map(([id, l]) => <span key={id} className="flow-grade">{l} <VerdictText grade={verdicts?.[id]?.[b.id] ?? '—'} /></span>)}</>, title: b.verdict_rule },
   ];
   return <Flow nodes={nodes} ariaLabel={`Workflow of block ${b.id}`} />;
 }
@@ -48,7 +48,7 @@ export function BlockFlow({ b, verdicts, open, onOpen }: { b: BlockDef; verdicts
 /** The ten blocks as a workflow in three phases, each box opening its block page. */
 export function PipelineOverview({ blocks, verdicts }: { blocks: BlockDef[]; verdicts: Record<string, Record<string, Grade>> | undefined }) {
   const phases: Array<[string, string, string]> = [['preview', 'Before training', 'Is the data usable?'], ['after training', 'After training', 'Does the model read, align, decode and judge correctly?'], ['after a run', 'After a run', 'Did the search follow the target, and what survives validation?']];
-  const worst = (id: string) => { const g = ['perov5', 'mp-perovskites', 'user-246', 'mp20'].map((d) => verdicts?.[d]?.[id]).filter(Boolean) as Grade[]; return g.includes('FAIL') ? 'FAIL' : g.includes('WARN') ? 'WARN' : g.includes('PASS') ? 'PASS' : null; };
+  const worst = (id: string) => { const g = STUDY_DATASETS.map(([d]) => verdicts?.[d]?.[id]).filter(Boolean) as Grade[]; return g.includes('FAIL') ? 'FAIL' : g.includes('WARN') ? 'WARN' : g.includes('PASS') ? 'PASS' : null; };
   return (
     <div className="overview" role="list" aria-label="The pipeline in three phases">
       {phases.map(([when, title, q], i) => (

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { STUDY_DATASETS } from '@/copy/research';
 import { research, type BlocksPayload } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
@@ -7,7 +8,7 @@ import { VerdictText } from '@/components/research';
 import { PipelineOverview } from '@/components/pipeline/Flow';
 import { pipeline as P } from '@/copy/research';
 
-const DATASETS: Array<[string, string]> = [['perov5', 'Perov-5'], ['mp-perovskites', 'MP perovskites'], ['user-246', 'Upload (246)'], ['mp20', 'MP-20']];
+const DATASETS = STUDY_DATASETS;
 
 export default function Pipeline() {
   const { data, error, loading, reload } = useResource<BlocksPayload>('pipeline/blocks', (s) => research.blocks(s));

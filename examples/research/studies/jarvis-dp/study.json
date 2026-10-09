@@ -1,0 +1,2464 @@
+{
+ "accepted": [
+  {
+   "amd_nearest": 0.018,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0,
+   "e_hull_note": "0.61 eV/atom below every known phase of its system, deeper than a new ground state plausibly lies; the reference set has no Br-Cs, Cs-Fe, Cs-In, Fe-In compound (try --reference mp)",
+   "file": "accepted/Cs2InFeBr6_screen-halide-nontoxic.cif",
+   "flag": "",
+   "formula": "Cs2InFeBr6",
+   "judge_gap": 0.781,
+   "known_formula": false,
+   "label_structure_gap": 1.003,
+   "natoms": 10,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.059,
+   "requested": 1.0,
+   "route": "Screening, halide, without Tl Pb Cd Hg As Be",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      7.0149,
+      0.0,
+      4.0501
+     ],
+     [
+      2.3383,
+      6.6137,
+      4.0501
+     ],
+     [
+      0.0,
+      0.0,
+      8.1001
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Cs",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Cs",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       1.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "Fe",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7281,
+       0.2719,
+       0.2719
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2719,
+       0.7281,
+       0.2719
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2719,
+       0.2719,
+       0.7281
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2719,
+       0.7281,
+       0.7281
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7281,
+       0.2719,
+       0.7281
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7281,
+       0.7281,
+       0.2719
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.006,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0248,
+   "e_hull_note": "",
+   "file": "accepted/K2LiScI6_family-generation.cif",
+   "flag": "",
+   "formula": "K2LiScI6",
+   "judge_gap": 0.659,
+   "known_formula": false,
+   "label_structure_gap": 1.027,
+   "natoms": 40,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.0026,
+   "requested": 1.0,
+   "route": "Family generation",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      11.7947,
+      0.0,
+      0.0
+     ],
+     [
+      -0.0,
+      11.7947,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      11.7947
+     ]
+    ],
+    "sites": [
+     {
+      "element": "K",
+      "frac": [
+       0.75,
+       0.25,
+       0.75
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.75,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.75,
+       0.75,
+       0.25
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.25,
+       0.25,
+       0.75
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.25,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "K",
+      "frac": [
+       0.25,
+       0.75,
+       0.25
+      ]
+     },
+     {
+      "element": "Li",
+      "frac": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "Li",
+      "frac": [
+       0.0,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Li",
+      "frac": [
+       0.5,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "element": "Li",
+      "frac": [
+       0.5,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "element": "Sc",
+      "frac": [
+       0.0,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "element": "Sc",
+      "frac": [
+       1.0,
+       1.0,
+       0.5
+      ]
+     },
+     {
+      "element": "Sc",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Sc",
+      "frac": [
+       0.5,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.2528,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.5,
+       0.7528
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7528,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.7472,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.5,
+       0.2472
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7472,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.7528,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.0,
+       0.2528
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7528,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.2472,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.0,
+       0.0,
+       0.7472
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7472,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.2528,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.5,
+       0.2528
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2528,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.7472,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.5,
+       0.7472
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2472,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.7528,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.0,
+       0.7528
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2528,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.2472,
+       0.0
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.5,
+       0.0,
+       0.2472
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2472,
+       0.5,
+       0.0
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.061,
+   "charge_balanced": true,
+   "class": "known in the data: its DFT value contradicts both models",
+   "e_hull": 0.0,
+   "e_hull_note": "",
+   "file": "accepted/Rb2InSbI6_screen-halide.cif",
+   "flag": "",
+   "formula": "Rb2InSbI6",
+   "judge_gap": 0.867,
+   "known_formula": true,
+   "label_structure_gap": 1.054,
+   "natoms": 10,
+   "recorded_gaps": [
+    0.0
+   ],
+   "reference_id": "JVASP-107862",
+   "relaxation_drop_eV_atom": 0.0827,
+   "requested": 1.0,
+   "route": "Screening, halide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      7.7514,
+      0.0,
+      4.4753
+     ],
+     [
+      2.5838,
+      7.3081,
+      4.4753
+     ],
+     [
+      0.0,
+      0.0,
+      8.9506
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Rb",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Rb",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       0.0,
+       1.0,
+       1.0
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7411,
+       0.2589,
+       0.2589
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2589,
+       0.7411,
+       0.2589
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2589,
+       0.2589,
+       0.7411
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2589,
+       0.7411,
+       0.7411
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7411,
+       0.2589,
+       0.7411
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7411,
+       0.7411,
+       0.2589
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.012,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0,
+   "e_hull_note": "",
+   "file": "accepted/Rb2LiFeBr6_screen-halide.cif",
+   "flag": "",
+   "formula": "Rb2LiFeBr6",
+   "judge_gap": 1.085,
+   "known_formula": false,
+   "label_structure_gap": 0.983,
+   "natoms": 10,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.0195,
+   "requested": 1.0,
+   "route": "Screening, halide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      6.566,
+      0.0,
+      3.7909
+     ],
+     [
+      2.1887,
+      6.1905,
+      3.7909
+     ],
+     [
+      0.0,
+      0.0,
+      7.5817
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Rb",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Rb",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Li",
+      "frac": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "Fe",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7398,
+       0.2602,
+       0.2602
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2602,
+       0.7398,
+       0.2602
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2602,
+       0.2602,
+       0.7398
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2602,
+       0.7398,
+       0.7398
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7398,
+       0.2602,
+       0.7398
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7398,
+       0.7398,
+       0.2602
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.015,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0,
+   "e_hull_note": "",
+   "file": "accepted/Rb2NaFeBr6_screen-halide.cif",
+   "flag": "",
+   "formula": "Rb2NaFeBr6",
+   "judge_gap": 1.053,
+   "known_formula": false,
+   "label_structure_gap": 0.989,
+   "natoms": 10,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.0777,
+   "requested": 1.0,
+   "route": "Screening, halide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      6.7266,
+      0.0,
+      3.8836
+     ],
+     [
+      2.2422,
+      6.3419,
+      3.8836
+     ],
+     [
+      0.0,
+      0.0,
+      7.7673
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Rb",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Rb",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Na",
+      "frac": [
+       0.0,
+       1.0,
+       1.0
+      ]
+     },
+     {
+      "element": "Fe",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7338,
+       0.2662,
+       0.2662
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2662,
+       0.7338,
+       0.2662
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2662,
+       0.2662,
+       0.7338
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.2662,
+       0.7338,
+       0.7338
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7338,
+       0.2662,
+       0.7338
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.7338,
+       0.7338,
+       0.2662
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.534,
+   "charge_balanced": false,
+   "class": "known in the reference set: its DFT value contradicts both models",
+   "e_hull": 0.8205,
+   "e_hull_note": "",
+   "file": "accepted/SbTeO3_family-free.cif",
+   "flag": "",
+   "formula": "SbTeO3",
+   "judge_gap": 0.908,
+   "known_formula": false,
+   "label_structure_gap": 1.026,
+   "natoms": 20,
+   "recorded_gaps": [
+    0.0
+   ],
+   "reference_id": "JVASP-39202",
+   "relaxation_drop_eV_atom": 8.98,
+   "requested": 1.0,
+   "route": "Family-free generation",
+   "spacegroup_designed": 14,
+   "spacegroup_relaxed": 14,
+   "structure": {
+    "lattice": [
+     [
+      8.5672,
+      0.0,
+      -1.8726
+     ],
+     [
+      0.0,
+      7.0865,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      11.5893
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Sb",
+      "frac": [
+       0.4752,
+       0.692,
+       0.5569
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5248,
+       0.308,
+       0.4431
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5248,
+       0.192,
+       0.9431
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.4752,
+       0.808,
+       0.0569
+      ]
+     },
+     {
+      "element": "Te",
+      "frac": [
+       0.2657,
+       0.1521,
+       0.0963
+      ]
+     },
+     {
+      "element": "Te",
+      "frac": [
+       0.7343,
+       0.8479,
+       0.9037
+      ]
+     },
+     {
+      "element": "Te",
+      "frac": [
+       0.7343,
+       0.6521,
+       0.4037
+      ]
+     },
+     {
+      "element": "Te",
+      "frac": [
+       0.2657,
+       0.3479,
+       0.5963
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.3418,
+       0.3593,
+       0.3083
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.6582,
+       0.6407,
+       0.6917
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.6582,
+       0.8593,
+       0.1917
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.3418,
+       0.1407,
+       0.8083
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.3737,
+       0.1513,
+       0.5242
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.6263,
+       0.8487,
+       0.4758
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.6263,
+       0.6513,
+       0.9758
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.3737,
+       0.3487,
+       0.0242
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.3982,
+       0.3227,
+       0.7584
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.6018,
+       0.8227,
+       0.7416
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.6018,
+       0.6773,
+       0.2416
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.3982,
+       0.1773,
+       0.2584
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.39,
+   "charge_balanced": false,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0989,
+   "e_hull_note": "",
+   "file": "accepted/Tl2Br_family-free.cif",
+   "flag": "",
+   "formula": "Tl2Br",
+   "judge_gap": 1.418,
+   "known_formula": false,
+   "label_structure_gap": 1.365,
+   "natoms": 12,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.1206,
+   "requested": 1.0,
+   "route": "Family-free generation",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      7.9117,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      7.9117,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      7.9117
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.25,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.75,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.75,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.25,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.5,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.0,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.0,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "element": "Br",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.007,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0778,
+   "e_hull_note": "",
+   "file": "accepted/Tl2InSbI6_screen-halide.cif",
+   "flag": "",
+   "formula": "Tl2InSbI6",
+   "judge_gap": 0.916,
+   "known_formula": false,
+   "label_structure_gap": 1.028,
+   "natoms": 10,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.0398,
+   "requested": 1.0,
+   "route": "Screening, halide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      7.5191,
+      0.0,
+      4.3411
+     ],
+     [
+      2.5064,
+      7.089,
+      4.3411
+     ],
+     [
+      0.0,
+      0.0,
+      8.6823
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       0.0,
+       1.0,
+       1.0
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7512,
+       0.2488,
+       0.2488
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2488,
+       0.7512,
+       0.2488
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2488,
+       0.2488,
+       0.7512
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.2488,
+       0.7512,
+       0.7512
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7512,
+       0.2488,
+       0.7512
+      ]
+     },
+     {
+      "element": "I",
+      "frac": [
+       0.7512,
+       0.7512,
+       0.2488
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.025,
+   "charge_balanced": true,
+   "class": "known in the data: its DFT value contradicts both models",
+   "e_hull": 0.0003,
+   "e_hull_note": "",
+   "file": "accepted/Rb2InSbCl6_screen-halide.cif",
+   "flag": "",
+   "formula": "Rb2InSbCl6",
+   "judge_gap": 1.82,
+   "known_formula": true,
+   "label_structure_gap": 1.991,
+   "natoms": 10,
+   "recorded_gaps": [
+    0.585
+   ],
+   "reference_id": "JVASP-102091",
+   "relaxation_drop_eV_atom": 0.2123,
+   "requested": 2.0,
+   "route": "Screening, halide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      6.9179,
+      0.0,
+      3.9941
+     ],
+     [
+      2.306,
+      6.5223,
+      3.9941
+     ],
+     [
+      0.0,
+      0.0,
+      7.9881
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Rb",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Rb",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.7364,
+       0.2636,
+       0.2636
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.2636,
+       0.7364,
+       0.2636
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.2636,
+       0.2636,
+       0.7364
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.2636,
+       0.7364,
+       0.7364
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.7364,
+       0.2636,
+       0.7364
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.7364,
+       0.7364,
+       0.2636
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.004,
+   "charge_balanced": true,
+   "class": "known in the data: its DFT value confirms (rediscovery)",
+   "e_hull": 0.0,
+   "e_hull_note": "",
+   "file": "accepted/Ba2MgWO6_screen-oxide.cif",
+   "flag": "",
+   "formula": "Ba2MgWO6",
+   "judge_gap": 3.073,
+   "known_formula": true,
+   "label_structure_gap": 2.993,
+   "natoms": 10,
+   "recorded_gaps": [
+    2.822
+   ],
+   "reference_id": "JVASP-87169",
+   "relaxation_drop_eV_atom": 0.1058,
+   "requested": 3.0,
+   "route": "Screening, oxide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      5.0052,
+      0.0,
+      2.8898
+     ],
+     [
+      1.6684,
+      4.719,
+      2.8898
+     ],
+     [
+      0.0,
+      0.0,
+      5.7795
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Ba",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Ba",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Mg",
+      "frac": [
+       1.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "W",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.7383,
+       0.2617,
+       0.2617
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.2617,
+       0.7383,
+       0.2617
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.2617,
+       0.2617,
+       0.7383
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.2617,
+       0.7383,
+       0.7383
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.7383,
+       0.2617,
+       0.7383
+      ]
+     },
+     {
+      "element": "O",
+      "frac": [
+       0.7383,
+       0.7383,
+       0.2617
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.018,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0,
+   "e_hull_note": "",
+   "file": "accepted/Rb2KInCl6_screen-halide.cif",
+   "flag": "",
+   "formula": "Rb2KInCl6",
+   "judge_gap": 3.37,
+   "known_formula": false,
+   "label_structure_gap": 3.109,
+   "natoms": 10,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.1687,
+   "requested": 3.0,
+   "route": "Screening, halide variant",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      6.8045,
+      0.0,
+      3.9286
+     ],
+     [
+      2.2682,
+      6.4153,
+      3.9286
+     ],
+     [
+      0.0,
+      0.0,
+      7.8571
+     ]
+    ],
+    "sites": [
+     {
+      "element": "K",
+      "frac": [
+       1.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "Rb",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Rb",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.7287,
+       0.2713,
+       0.2713
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.2713,
+       0.7287,
+       0.2713
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.2713,
+       0.2713,
+       0.7287
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.2713,
+       0.7287,
+       0.7287
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.7287,
+       0.2713,
+       0.7287
+      ]
+     },
+     {
+      "element": "Cl",
+      "frac": [
+       0.7287,
+       0.7287,
+       0.2713
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "amd_nearest": 0.009,
+   "charge_balanced": true,
+   "class": "new composition (absent from the data and the reference set)",
+   "e_hull": 0.0074,
+   "e_hull_note": "",
+   "file": "accepted/Tl2InSbF6_family-generation.cif",
+   "flag": "",
+   "formula": "Tl2InSbF6",
+   "judge_gap": 2.661,
+   "known_formula": false,
+   "label_structure_gap": 3.021,
+   "natoms": 40,
+   "recorded_gaps": [],
+   "reference_id": null,
+   "relaxation_drop_eV_atom": 0.4046,
+   "requested": 3.0,
+   "route": "Family generation",
+   "spacegroup_designed": 225,
+   "spacegroup_relaxed": 225,
+   "structure": {
+    "lattice": [
+     [
+      9.5317,
+      0.0,
+      0.0
+     ],
+     [
+      -0.0,
+      9.5317,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      9.5317
+     ]
+    ],
+    "sites": [
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.25,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.75,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.75,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.25,
+       0.25
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.25,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.75,
+       0.75
+      ]
+     },
+     {
+      "element": "Tl",
+      "frac": [
+       0.25,
+       0.75,
+       0.25
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       1.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       1.0,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       0.5,
+       1.0,
+       0.5
+      ]
+     },
+     {
+      "element": "In",
+      "frac": [
+       0.5,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       1.0,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.0,
+       1.0,
+       0.5
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "Sb",
+      "frac": [
+       0.5,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.0,
+       0.2694,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.0,
+       0.5,
+       0.7694
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.7694,
+       0.5,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.0,
+       0.7306,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.0,
+       0.5,
+       0.2306
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.7306,
+       1.0,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       1.0,
+       0.7694,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       1.0,
+       0.0,
+       0.2694
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.7694,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       1.0,
+       0.2306,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       1.0,
+       0.0,
+       0.7306
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.7306,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       0.2694,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       0.5,
+       0.2694
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.2694,
+       0.5,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       0.7306,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       0.5,
+       0.7306
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.2306,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       0.7694,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       1.0,
+       0.7694
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.2694,
+       1.0,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       0.2306,
+       1.0
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.5,
+       1.0,
+       0.2306
+      ]
+     },
+     {
+      "element": "F",
+      "frac": [
+       0.2306,
+       0.5,
+       1.0
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "accepted_classes": {
+  "known in the data: its DFT value confirms (rediscovery)": 1,
+  "known in the data: its DFT value contradicts both models": 2,
+  "known in the reference set: its DFT value contradicts both models": 1,
+  "new composition (absent from the data and the reference set)": 8
+ },
+ "checkpoints": [],
+ "cross_checks": [
+  "JARVIS-DFT 3D, the whole file (75,993 entries): 8 of the 8 new compositions are absent from it.",
+  "Materials Project (queried 2026-10-09): 7 of the 8 new compositions are absent; Rb2KInCl6 is there as mp-aaacehuv (a theoretical entry, gap 3.54 eV, 0.000 eV/atom above the hull).",
+  "The accepted compounds already known: Ba2MgWO6 (known in the data; JARVIS JVASP-87169; Materials Project mp-aaaabccg, gap 3.22 eV); Rb2InSbCl6 (known in the data; JARVIS JVASP-102091; Materials Project mp-aaaclkan, gap 1.28 eV); Rb2InSbI6 (known in the data; JARVIS JVASP-107862; Materials Project mp-aaaclkfn, gap 0.54 eV); SbTeO3 (known in the reference set; JARVIS JVASP-39202; Materials Project mp-aaacdjtl, gap 0.00 eV).",
+  "Prism (meidnet score 2.3.1) on the halide screening's relaxed cells (7 structures): valid 100%, new compositions against the training data 71%, inside the requested window 86%.",
+  "Prism (meidnet score 2.3.1) on the halide screening without Tl Pb Cd Hg As Be's relaxed cells (7 structures): valid 100%, new compositions against the training data 71%, inside the requested window 86%.",
+  "Prism (meidnet score 2.3.1) on the oxide screening's relaxed cells (3 structures): valid 100%, new compositions against the training data 33%, inside the requested window 33%.",
+  "Prism (meidnet score 2.3.1) on the family generation's relaxed cells (3 structures): valid 100%, new compositions against the training data 67%, inside the requested window 67%.",
+  "Prism (meidnet score 2.3.1) on the family-free generation's relaxed cells (5 structures): valid 20%, new compositions against the training data 100%, inside the requested window 40%."
+ ],
+ "dataset": {
+  "compositions_per_element": 48.486486486486484,
+  "elements": 75,
+  "family_conformance": 0.7893915756630265,
+  "name": "JARVIS-DFT double perovskites",
+  "properties": [
+   "band gap (OptB88vdW)",
+   "formation energy",
+   "energy above the hull"
+  ],
+  "prototypes": 38,
+  "rows": 1282,
+  "source": "JARVIS-DFT 3D (release 12-12-2022), A₂BB′X₆ compounds after a structural filter; chosen, prepared and modelled by an independent user who followed the Method page",
+  "test": 193,
+  "train": 897,
+  "val": 192,
+  "zero_share": 0.35101404056162244
+ },
+ "files": {
+  "accepted.csv": {
+   "bytes": 2827,
+   "media": "text/csv",
+   "sha256": "01330be8820040dddf9f249fd8705f96d76b2a9e7c8c22738d4cb68e861abf4d"
+  },
+  "accepted/Ba2MgWO6_screen-oxide.cif": {
+   "bytes": 1175,
+   "media": "chemical/x-cif",
+   "sha256": "5730e3bbc0c25896b41eaef9019d65f09833b9b047149fd79c2c8fce9b792bc0"
+  },
+  "accepted/Cs2InFeBr6_screen-halide-nontoxic.cif": {
+   "bytes": 1194,
+   "media": "chemical/x-cif",
+   "sha256": "979ded12dfa5e8850e66aa87259a3bd0571ddc2195891455d60670f136e1d6e2"
+  },
+  "accepted/K2LiScI6_family-generation.cif": {
+   "bytes": 2733,
+   "media": "chemical/x-cif",
+   "sha256": "363d94b6b74e7b55160739c251789ba23543303db3fd6c4fc3ededfbb036f1c0"
+  },
+  "accepted/Rb2InSbCl6_screen-halide.cif": {
+   "bytes": 1194,
+   "media": "chemical/x-cif",
+   "sha256": "ce29e7d165988895cdab5176c6a0c04a176c4c872d28c9b61a92ea7addf6ef95"
+  },
+  "accepted/Rb2InSbI6_screen-halide.cif": {
+   "bytes": 1180,
+   "media": "chemical/x-cif",
+   "sha256": "51d79047560d38a2a0bff2784f61f39ba4635d19f9b74fe53a612408f3e843cb"
+  },
+  "accepted/Rb2KInCl6_screen-halide.cif": {
+   "bytes": 1189,
+   "media": "chemical/x-cif",
+   "sha256": "d287f2f44096e188266b9642aef0731c1aab733b071b2b6b39e4e9a5e79ed087"
+  },
+  "accepted/Rb2LiFeBr6_screen-halide.cif": {
+   "bytes": 1195,
+   "media": "chemical/x-cif",
+   "sha256": "9d894191e99feb600e30b0d80a3c43097b50247441b1899c72853531e9745da6"
+  },
+  "accepted/Rb2NaFeBr6_screen-halide.cif": {
+   "bytes": 1195,
+   "media": "chemical/x-cif",
+   "sha256": "3b229d3f0caf761345c7f0bd00194af9de5fac917f892fc50edac7d10e877e63"
+  },
+  "accepted/SbTeO3_family-free.cif": {
+   "bytes": 1691,
+   "media": "chemical/x-cif",
+   "sha256": "c86d5296ec07afc677a4eb8bb86d2948f92831f71db6e4e867500124401ff698"
+  },
+  "accepted/Tl2Br_family-free.cif": {
+   "bytes": 1281,
+   "media": "chemical/x-cif",
+   "sha256": "23d37090f60c061d87b35714106cb72a9c1d6ea9784adb678ccf7d35751f3f19"
+  },
+  "accepted/Tl2InSbF6_family-generation.cif": {
+   "bytes": 2754,
+   "media": "chemical/x-cif",
+   "sha256": "7d7373dc6e3376329d338fa5c9a840b77e3a17aa0782ca9fe7aeb390a5ddc174"
+  },
+  "accepted/Tl2InSbI6_screen-halide.cif": {
+   "bytes": 1180,
+   "media": "chemical/x-cif",
+   "sha256": "72952e4011a3c296addb235b71337ed5e4a8f87b0e156b5aedd53bd6e72b02be"
+  },
+  "hull_validation.csv": {
+   "bytes": 809,
+   "media": "text/csv",
+   "sha256": "8191fd054c9482d6b837dd5227b67cb451a277ee0fefa4d1d137cf2c6826b0ec"
+  }
+ },
+ "headline": "An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation returned 7 A₂BB′X₆ compositions absent from the data and from JARVIS-DFT inside the requested gap window, 6 of them within 0.1 eV/atom of the hull with one potential for every phase.",
+ "id": "jarvis-dp",
+ "lessons": [
+  "S0 predicted screening before any training (48.5 compositions per element against a rule of 200); the trained decoder confirmed it (S3).",
+  "A known compound's own DFT value outranks two machine-learned readings: Rb₂InSbCl₆ and Rb₂InSbI₆ are in the data at 0.58 and 0.00 eV, and both models were wrong about them.",
+  "Collapsed cells: some relaxed cells had atoms pushed into each other (Te–Te 1.2 Å); the check now sets aside any cell whose closest atoms sit nearer than 0.6 of their radii.",
+  "A reference set can be incomplete: JARVIS-DFT holds no cesium halide, so Cs₂InFeBr₆ came out far below every known phase; such a value is now reported as not assessed, with the missing element pairs named.",
+  "The whole journey ran from the published packages in a fresh environment."
+ ],
+ "limits": [
+  "The judge (MEGNet, fidelity 0) qualifies on this data at 0.50 of the gap spread, the edge of its band; its error, 0.82 eV, is wider than the ±0.5 eV window, so agreement of the two models supports a candidate without proving it.",
+  "Stability is the energy above the hull from one machine-learning potential (TensorNet) for every phase, calibrated on known materials of the data; it is a screen, not a DFT result.",
+  "Cs₂InFeBr₆: the reference set has no cesium halide, so its stability is not assessed; the Materials Project reference (--hull-reference mp) would give it.",
+  "The iron compounds' gaps depend on magnetism and on the functional; the data's OptB88vdW gaps are the reference here.",
+  "Thallium compounds are toxic; the screening without Tl, Pb, Cd, Hg, As and Be is the practical shortlist.",
+  "No new composition has been checked by DFT yet: that is the next step for any of them.",
+  "The two models were trained by the independent user (200 epochs each) and are not published; the Method page's commands train the same ones."
+ ],
+ "mode": "screening (as S0 said), with family and family-free generation beside it",
+ "order": 5,
+ "reproduce": [
+  {
+   "command": "pip install --extra-index-url https://download.pytorch.org/whl/cpu \"meidnet-matter[judge]\"",
+   "step": "install"
+  },
+  {
+   "command": "python -m meidnet_eval.ingest_upload structures/ properties.xlsx data/ --props \"Band gap OptB88vdW\" \"E above hull\" --id-col \"JARVIS id\"",
+   "step": "one table from a folder of structures and a spreadsheet"
+  },
+  {
+   "command": "python -m meidnet_eval.intake data/table.csv data/intake --id material_id --cif cif --props Band_gap_OptB88vdW_eV E_above_hull_eV_atom && python -m meidnet_eval.preview data/intake --gap Band_gap_OptB88vdW_eV --targets 1 2 3 --stability E_above_hull_eV_atom --family double_perovskite_a2bbx6",
+   "step": "intake and S0"
+  },
+  {
+   "command": "meidnet train meidnet.yaml && python -m meidnet_eval.scorecard data/intake --models mine=out/model.pt --gap Band_gap_OptB88vdW_eV --judge megnet --out scorecard/",
+   "step": "train, then the scorecard with S8"
+  },
+  {
+   "command": "python -m meidnet_eval.screen_local data/intake --ckpt out/model.pt --family double_perovskite_a2bbx6:halide --gap Band_gap_OptB88vdW_eV --targets 1 2 3 --check --hull-reference jarvis:jdft_3d-12-12-2022.json --stability-col E_above_hull_eV_atom --out screening/",
+   "step": "screen with the full check and the hull"
+  }
+ ],
+ "routes": [
+  {
+   "classes": {
+    "known in the data: its DFT value contradicts both models": 2,
+    "new composition (absent from the data and the reference set)": 4
+   },
+   "collapsed": [],
+   "funnel": [
+    [
+     "compositions enumerated",
+     10340
+    ],
+    [
+     "candidates",
+     24
+    ],
+    [
+     "both models in the window",
+     7
+    ],
+    [
+     "relaxed, still a crystal",
+     7
+    ],
+    [
+     "both again on the relaxed cell",
+     6
+    ]
+   ],
+   "how": "Every composition of the halide double-perovskite family on its prototype cell, labelled by the family model; the best per target kept.",
+   "id": "screen-halide",
+   "not_assessed": 0,
+   "stable_share": 1.0,
+   "title": "Screening, halide variant"
+  },
+  {
+   "classes": {
+    "known in the data: its DFT value contradicts both models": 2,
+    "new composition (absent from the data and the reference set)": 4
+   },
+   "collapsed": [],
+   "funnel": [
+    [
+     "compositions enumerated",
+     7636
+    ],
+    [
+     "candidates",
+     24
+    ],
+    [
+     "both models in the window",
+     7
+    ],
+    [
+     "relaxed, still a crystal",
+     7
+    ],
+    [
+     "both again on the relaxed cell",
+     6
+    ]
+   ],
+   "how": "The same screening without the elements a practical shortlist excludes.",
+   "id": "screen-halide-nontoxic",
+   "not_assessed": 1,
+   "stable_share": 1.0,
+   "title": "Screening, halide, without Tl Pb Cd Hg As Be"
+  },
+  {
+   "classes": {
+    "known in the data: its DFT value confirms (rediscovery)": 1
+   },
+   "collapsed": [],
+   "funnel": [
+    [
+     "compositions enumerated",
+     1173
+    ],
+    [
+     "candidates",
+     16
+    ],
+    [
+     "both models in the window",
+     3
+    ],
+    [
+     "relaxed, still a crystal",
+     3
+    ],
+    [
+     "both again on the relaxed cell",
+     1
+    ]
+   ],
+   "how": "The oxide variant of the same family, screened the same way.",
+   "id": "screen-oxide",
+   "not_assessed": 0,
+   "stable_share": 1.0,
+   "title": "Screening, oxide variant"
+  },
+  {
+   "classes": {
+    "new composition (absent from the data and the reference set)": 2
+   },
+   "collapsed": [],
+   "funnel": [
+    [
+     "candidates",
+     12
+    ],
+    [
+     "both models in the window",
+     3
+    ],
+    [
+     "relaxed, still a crystal",
+     3
+    ],
+    [
+     "both again on the relaxed cell",
+     2
+    ]
+   ],
+   "how": "meidnet generate with the family model: compositions decoded inside the family, then built on its prototype cell.",
+   "id": "family-generation",
+   "not_assessed": 0,
+   "stable_share": 1.0,
+   "title": "Family generation"
+  },
+  {
+   "classes": {
+    "known in the reference set: its DFT value contradicts both models": 1,
+    "new composition (absent from the data and the reference set)": 1
+   },
+   "collapsed": [
+    {
+     "contact_ratio": 0.59,
+     "formula": "BiTe",
+     "target": 1.0
+    },
+    {
+     "contact_ratio": 0.5,
+     "formula": "Bi5Te4",
+     "target": 1.0
+    },
+    {
+     "contact_ratio": 0.28,
+     "formula": "RbYAlTeO4",
+     "target": 2.0
+    },
+    {
+     "contact_ratio": 0.3,
+     "formula": "Li3InO6",
+     "target": 3.0
+    },
+    {
+     "contact_ratio": 0.29,
+     "formula": "Li3InO6",
+     "target": 3.0
+    }
+   ],
+   "funnel": [
+    [
+     "candidates",
+     75
+    ],
+    [
+     "both models in the window",
+     10
+    ],
+    [
+     "relaxed, still a crystal",
+     5
+    ],
+    [
+     "both again on the relaxed cell",
+     2
+    ]
+   ],
+   "how": "The symmetry decoder proposes cells of any composition (generate_to_target), although S0 had said screening.",
+   "id": "family-free",
+   "not_assessed": 0,
+   "stable_share": 0.2,
+   "title": "Family-free generation"
+  }
+ ],
+ "schema": "meidnet-matter/study/1",
+ "sources": [
+  "meidnet_data/jarvis_dp/retest_pypi (the run of the published packages)",
+  "the independent user's package (journey and feedback)",
+  "journal entries 68–70"
+ ],
+ "stability": {
+  "agreement": 0.8333333333333334,
+  "agreement_without_outliers": 0.9090909090909091,
+  "mae_eV": 0.5019166666666667,
+  "mae_without_outliers": 0.02220909090909091,
+  "median_abs_error_eV": 0.021250000000000012,
+  "n": 12,
+  "outliers": [
+   "Cs2LiNdF6"
+  ],
+  "potential": "TensorNet",
+  "reference": "JARVIS-DFT 3D (12-12-2022)",
+  "spearman": 0.46616541353383456,
+  "spearman_without_outliers": 0.7660815572645986
+ },
+ "target_following": {
+  "accepted": 12,
+  "installed_from": "PyPI (meidnet-matter 0.6.1) and the release's engine wheel, in a fresh environment",
+  "judge": "MEGNet band gap, fidelity 0, qualified on the test split: MAE 0.82 eV (0.84 on non-zero gaps), Spearman 0.63 (n = 80)",
+  "new_compositions": 8,
+  "new_double_perovskites": 7,
+  "routes": 5,
+  "targets_eV": [
+   1.0,
+   2.0,
+   3.0
+  ],
+  "window_eV": 0.5
+ },
+ "title": "Double perovskites from public JARVIS-DFT data",
+ "verdicts": {
+  "S0": {
+   "grade": "FAIL",
+   "note": "48.5 compositions per element (rule 200): screening; family conformance 0.79"
+  },
+  "S1": {
+   "grade": "FAIL",
+   "note": "Target error relative to its spread 0.448 spreads; Target rank correlation 0.782 r"
+  },
+  "S2": {
+   "grade": "PASS",
+   "note": "Retrieval above chance 50 x chance"
+  },
+  "S3": {
+   "grade": "FAIL",
+   "note": "Composition recovered from the structure latent 4.17 %; Training to generation condition drop -3.12 points"
+  },
+  "S4": {
+   "grade": "INFO",
+   "note": "Sensitivity to latent length 2.43 spreads"
+  },
+  "S6": {
+   "grade": "PASS",
+   "note": "judge mae request 0.53; consensus yield 0.20 (all routes, relaxed cells)"
+  },
+  "S7": {
+   "grade": "INFO",
+   "note": "stable share 0.83 (all routes, relaxed cells)"
+  },
+  "S8": {
+   "grade": "PASS",
+   "note": "The judge's own error relative to the property spread 0.496 spreads"
+  },
+  "S9": {
+   "grade": "WARN",
+   "note": "Targets with enough support 3 targets; Measured label error on the held-out split 0.357 spreads"
+  }
+ },
+ "window_eV": 0.5
+}

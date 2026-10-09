@@ -32,6 +32,14 @@
    "mode": "generation, family-free (symmetry decoder)",
    "order": 4,
    "title": "MP-20"
+  },
+  {
+   "dataset": "JARVIS-DFT double perovskites",
+   "headline": "An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation returned 7 A₂BB′X₆ compositions absent from the data and from JARVIS-DFT inside the requested gap window, 6 of them within 0.1 eV/atom of the hull with one potential for every phase.",
+   "id": "jarvis-dp",
+   "mode": "screening (as S0 said), with family and family-free generation beside it",
+   "order": 5,
+   "title": "Double perovskites from public JARVIS-DFT data"
   }
  ]
 }
