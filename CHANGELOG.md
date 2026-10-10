@@ -4,7 +4,7 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
-## [0.10.0] - 2026-10-09
+## [0.10.0] - 2026-10-10
 
 One journey, Explore → Train → Generate, on one example dataset, with the research material kept whole one step away;
 the same three stages from Python.
@@ -41,9 +41,7 @@ the same three stages from Python.
 - The `/api/datasets/upload` and `/api/models/train` stubs (501) are gone: training exists at `/api/train`; upload stays
   off the shared server.
 
-## [0.9.1] - 2026-10-09
-
-### Changed
+### Changed (prepared as 0.9.1, which was not released on its own)
 - Grades read as measurements against a reference band, not as verdicts on the data: "Meets", "Borderline", "Not met",
   "Context" and "Partly met" in place of PASS, WARN, FAIL, INFO and PARTIAL (the API keeps the codes). S0, the gate
   before training, shows the route each dataset supports in place of its grade: generation, screening, or a set of
