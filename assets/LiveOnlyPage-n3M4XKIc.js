@@ -1,0 +1,1 @@
+import{j as r}from"./index-qLwj0C-V.js";import{M as s,L as t,S as n}from"./index-INDBHve8.js";import"./react-pEZgu8H0.js";import"./mirror-C1fwcVc9.js";function j({title:a,what:e,path:i}){return r.jsxs(r.Fragment,{children:[r.jsx(s,{}),r.jsx("main",{className:"wrap-narrow page",id:"main",children:r.jsx(t,{title:a,what:e,path:i})}),r.jsx(n,{})]})}export{j as default};

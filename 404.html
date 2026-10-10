@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MEIDNet Matter</title>
+<script>
+// GitHub Pages answers a path it does not have with this page.  A path inside the mirror (.../MEIDNet-Matter/studies/mp20)
+// is a route of the app, which the mirror keeps after '#' (.../MEIDNet-Matter/#/studies/mp20).
+(function () {
+  var path = location.pathname, base = '/';
+  if (path.indexOf('/MEIDNet-Matter/') === 0) base = '/MEIDNet-Matter/';
+  else if (/\.github\.io$/.test(location.hostname)) { var first = path.split('/')[1]; if (first) base = '/' + first + '/'; }
+  var rest = path.indexOf(base) === 0 ? path.slice(base.length) : path.replace(/^\//, '');
+  location.replace(base + '#/' + rest + location.search);
+})();
+</script>
+</head>
+<body><p>Opening <a href="./">MEIDNet Matter</a>…</p></body>
+</html>
