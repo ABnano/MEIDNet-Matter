@@ -8,7 +8,8 @@ serves, from the same engine and the same research artefacts.
 
 Written under OUT/static-api/: the pipeline blocks and every block, the component list and every
 component's source, the studies index, every study and every file a study lists, the checkpoints table and every
-checkpoint (their files are not copied: the links point to the GitHub release), the demo project's summary.  Also
+checkpoint (their files are not copied: the links point to the GitHub release), the demo project's summary, the Explore
+map and the dataset's histograms (a material's cell and neighbours are computed by the live server).  Also
 OUT/404.html (a path inside the mirror becomes its '#' route), OUT/.nojekyll and OUT/mirror.json (what was built).
 
 Usage: python scripts/build_mirror.py [--out build/mirror]
@@ -161,6 +162,9 @@ def prerender(out: str, log=print) -> dict:
         demo = get("/api/projects/perov5-demo", required=False)          # the privacy page names the demo's data
         if demo is not None:
             put("/api/projects/perov5-demo", demo)
+        # Explore: the map and the dataset's histograms are files; one material's cell and neighbours are computed live
+        put("/api/explore/perov5-demo", get("/api/explore/perov5-demo"))
+        put("/api/projects/perov5-demo/dataset", get("/api/projects/perov5-demo/dataset"))
 
     # nothing the pages follow may point at the server: a value starting with /api/ would be a dead link here
     dead = []

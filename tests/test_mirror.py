@@ -45,6 +45,13 @@ def test_every_read_the_pages_make_is_a_file(mirror):
             assert os.path.getsize(os.path.join(out, "static-api", "api", "studies", s["id"], "files", name)) == meta["bytes"], name
 
 
+def test_explore_reads_its_map_and_histograms_from_files(mirror):
+    out, _ = mirror
+    m = _json(out, "api/explore/perov5-demo.json")
+    assert len(m["points"]) > 10000 and m["columns"][:4] == ["material_id", "formula", "x", "y"]
+    assert "dir_gap" in _json(out, "api/projects/perov5-demo/dataset.json")["properties"]
+
+
 def test_the_mirror_holds_no_model_files_and_says_where_they_are(mirror):
     out, _ = mirror
     for c in _json(out, "api/checkpoints.json")["checkpoints"]:

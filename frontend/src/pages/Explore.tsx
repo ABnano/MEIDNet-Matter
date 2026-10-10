@@ -5,11 +5,12 @@ import { useResource } from '@/api/hooks';
 import { lab, pointsOf, type ExplorePayload, type ExplorePoint, type MaterialDetail } from '@/api/lab';
 import { Histogram } from '@/components/charts/Histogram';
 import { Scatter } from '@/components/charts/Scatter';
-import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ExternalLink, MarketingHeader, SiteFooter } from '@/components/shell';
 import { CellViewer } from '@/components/structure/CellViewer';
 import { ErrorNote, Segmented, Spinner } from '@/components/ui';
 import { explore as C } from '@/copy/research';
 import { explicitStructure } from '@/lib/lattice';
+import { SPACE_APP, STATIC_MIRROR } from '@/lib/mirror';
 
 const PROJECT = 'perov5-demo';
 type Colour = 'dir_gap' | 'heat_all';
@@ -25,8 +26,10 @@ export default function Explore() {
   const [onlyGapped, setOnlyGapped] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
-  const detail = useResource<MaterialDetail>(selected ? `material:${PROJECT}:${selected}` : null, (s) => lab.material(PROJECT, selected!, s));
+  // the static mirror has the map but not the server that reads a material's cell and finds its neighbours
+  const detail = useResource<MaterialDetail>(selected && !STATIC_MIRROR ? `material:${PROJECT}:${selected}` : null, (s) => lab.material(PROJECT, selected!, s));
   const points = useMemo(() => (map.data ? pointsOf(map.data) : []), [map.data]);
+  const picked = useMemo(() => (selected ? points.find((p) => p.material_id === selected) ?? null : null), [points, selected]);
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return points.filter((p) => (!onlyGapped || p.dir_gap > 0) && (!q || p.formula.toLowerCase().includes(q) || p.material_id.toLowerCase() === q));
@@ -38,6 +41,15 @@ export default function Explore() {
   }, [points, colour]);
   const hist = dataset.data?.properties?.dir_gap;
   const zero = hist && hist.zero_share != null && hist.n != null ? Math.round(hist.zero_share * hist.n) : null;
+  // typing a formula (or an id) opens that material; a partial name only narrows the map
+  const onQuery = (value: string) => {
+    setQuery(value);
+    const q = value.trim().toLowerCase();
+    if (!q) return;
+    const matches = points.filter((p) => (!onlyGapped || p.dir_gap > 0) && (p.formula.toLowerCase().includes(q) || p.material_id.toLowerCase() === q));
+    const hit = matches.find((p) => p.formula.toLowerCase() === q || p.material_id.toLowerCase() === q) ?? (matches.length === 1 ? matches[0] : null);
+    if (hit) setSelected(hit.material_id);
+  };
   const d = detail.data;
   const cell = useMemo(() => (d?.cell ? explicitStructure(d.cell.sites, d.cell.lattice) : null), [d]);
   return (
@@ -53,7 +65,7 @@ export default function Explore() {
               <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
                 <Segmented value={colour} label="Colour by" options={[{ value: 'dir_gap', label: 'Band gap' }, { value: 'heat_all', label: 'Formation enthalpy' }]} onChange={setColour} />
                 <label className="small"><input type="checkbox" checked={onlyGapped} onChange={(e) => setOnlyGapped(e.target.checked)} /> only non-zero gaps</label>
-                <input className="input" style={{ maxWidth: 180 }} placeholder="find a formula…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Find a formula" />
+                <input className="input" style={{ maxWidth: 180 }} placeholder="find a formula…" value={query} onChange={(e) => onQuery(e.target.value)} aria-label="Find a formula" />
               </div>
               <Scatter points={scatter} colour={{ min: domain.min, max: domain.max, label: LABEL[colour][0], unit: LABEL[colour][1] }} selected={selected} onSelect={setSelected}
                 xLabel="first principal component" yLabel="second principal component" width={620} height={460} />
@@ -62,6 +74,17 @@ export default function Explore() {
             <div className="stack" style={{ gap: 16 }}>
               <div className="card" data-testid="material-card">
                 {!selected && <><h3>A material</h3><p className="small muted">Click a point on the map, or type a formula, to see a material: its values, its cell and its nearest neighbours in the learned space.</p></>}
+                {STATIC_MIRROR && picked && (
+                  <>
+                    <h3 style={{ margin: 0 }}>{picked.formula}</h3>
+                    <div className="small muted">{picked.material_id} · training split{picked.site_key ? ` · sites ${picked.site_key.replace(/\|/g, ' · ')}` : ''}</div>
+                    <dl className="kv small" style={{ marginTop: 8 }}>
+                      <dt>direct band gap</dt><dd><span className="num">{picked.dir_gap.toFixed(3)}</span> eV (DFT, PBE)</dd>
+                      <dt>formation enthalpy</dt><dd><span className="num">{picked.heat_all.toFixed(3)}</span> eV/atom (DFT)</dd>
+                    </dl>
+                    <p className="small muted" style={{ marginTop: 8 }}>The cell, the model's readings and the nearest neighbours are computed by the live server. <ExternalLink href={`${SPACE_APP}/explore`}>Open Explore there</ExternalLink></p>
+                  </>
+                )}
                 {selected && detail.loading && <Spinner label="Loading the material" />}
                 {detail.error && <ErrorNote error={detail.error} retry={detail.reload} />}
                 {d && (

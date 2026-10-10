@@ -13,8 +13,9 @@ the same three stages from Python.
 - **Explore**: Perov-5 as a map of what the default model learned (its 11,356 training latents in two principal components,
   computed at build time, sign-fixed so a rebuild gives the same picture), coloured by band gap or formation enthalpy;
   click a point for the material's values, its cubic cell (rebuilt from a compact store of every cell) and its nearest
-  neighbours in the full latent space; the band-gap histogram with its zero spike drawn apart.
-  `GET /api/explore/{project}` and `GET /api/explore/{project}/materials/{id}`.
+  neighbours in the full latent space; the band-gap histogram with its zero spike drawn apart. Typing a formula opens
+  that material. `GET /api/explore/{project}` and `GET /api/explore/{project}/materials/{id}`. The static mirror carries
+  the map and the histograms; a material's cell and neighbours point to the live server there.
 - **Train Lite**: a real MEIDNet training on the server, small and fixed: 1,500 Perov-5 materials (30% with a non-zero
   gap, sampled from the training split; the validation 500 from the validation split; the test split untouched), the
   demo's own recipe, 10, 20 or 50 epochs, under a minute on two CPU cores. The page draws the training loss and the

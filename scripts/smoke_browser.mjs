@@ -124,7 +124,7 @@ try {
   await goto(`${BASE}/explore`);
   check('explore: the map and a material', await waitFor(`!!document.querySelector('canvas[aria-label*="points coloured"]')`, 30000));
   await ev(`document.querySelector('input[aria-label="Find a formula"]').focus()`);
-  check('explore: a material opens from its formula', (await type('input[aria-label="Find a formula"]', 'SrTiO3')) && await waitFor(`(document.querySelector('[data-testid="material-card"]')||{}).textContent?.includes('A material')`, 5000));
+  check('explore: a material opens from its formula', (await type('input[aria-label="Find a formula"]', 'SrTiO3')) && await waitFor(`(document.querySelector('[data-testid="material-card"]')||{}).textContent?.includes('SrTiO3') && document.querySelector('[data-testid="material-card"]').textContent.includes('nearest in the learned space')`, 15000));
   await goto(`${BASE}/train`);
   check('train: the experiment is described', await waitFor(`/1,500 Perov-5 materials/.test(document.body.textContent || '')`, 20000));
   const t2 = Date.now();
