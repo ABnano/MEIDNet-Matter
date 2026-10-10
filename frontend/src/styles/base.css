@@ -389,7 +389,7 @@ select.input { width: 100%; max-width: 100%; }
 }
 
 /* the animated tour in the hero: the same player as MEIDNet Prism's landing (ids and classes fixed by /tour/prism-tour.js) */
-.hero { grid-template-columns: 1fr 1.25fr; }
+@media (min-width: 900px) { .hero { grid-template-columns: 1fr 1.25fr; } }   /* the tour beside the words on wide screens; below it on phones (the rule at 899px) */
 .tour3d { border: 1px solid var(--line); border-top: 4px solid var(--t3c, var(--c-family, var(--p1))); border-radius: var(--r-3); background: var(--card); padding: var(--s-4) var(--s-4) var(--s-3); transition: border-color .3s; min-width: 0; }
 .tour3d .micro { margin-bottom: var(--s-2); }
 .t3-strip { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
