@@ -126,7 +126,8 @@ try {
   await ev(`document.querySelector('input[aria-label="Find a formula"]').focus()`);
   check('explore: a material opens from its formula', (await type('input[aria-label="Find a formula"]', 'SrTiO3')) && await waitFor(`(document.querySelector('[data-testid="material-card"]')||{}).textContent?.includes('SrTiO3') && document.querySelector('[data-testid="material-card"]').textContent.includes('nearest in the learned space')`, 15000));
   await goto(`${BASE}/train`);
-  check('train: the experiment is described', await waitFor(`/1,500 Perov-5 materials/.test(document.body.textContent || '')`, 20000));
+  // the page's opening paragraph names the 1,500 materials before the server's options arrive: wait for the epoch buttons too
+  check('train: the experiment is described', await waitFor(`/1,500 Perov-5 materials/.test(document.body.textContent || '') && [...document.querySelectorAll('button')].some(x => x.textContent === '10')`, 20000));
   const t2 = Date.now();
   check('train: start 10 epochs', (await ev(`(() => { const b = [...document.querySelectorAll('button')].find(x => x.textContent === '10'); if (!b) return false; b.click(); return true; })()`)) && await click('[data-testid="train-start"]'));
   check('train: the job page draws the curves', await waitFor(`!!document.querySelector('figure.linechart svg path')`, 60000));
