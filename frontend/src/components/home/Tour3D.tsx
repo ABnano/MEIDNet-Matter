@@ -1,56 +1,49 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { currentTheme } from '@/lib/theme';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useNavigate } from 'react-router';
 import { home as H } from '@/copy/research';
+import { loadScript } from './loadScript';
 
 /** The one-minute animated tour of MEIDNet (data → model → family → rules → targets → search → candidates), drawn live on
  *  a canvas by two plain scripts served from /tour/ (prism3d.js, the small 3D toolkit; prism-tour.js, the scenes and the
  *  player). They came from the MEIDNet Prism landing page and keep their own controls: play, chapters, a seek bar, the
- *  keyboard. The scripts find this markup by its ids and classes, so those names are fixed. */
+ *  keyboard. The player finds its parts in this markup by their classes, so those names are fixed. */
 const SCRIPTS = ['/tour/prism3d.js', '/tour/prism-tour.js'];
 
-declare global {
-  interface Window { prismTour?: { play: () => void; pause: () => void; go: (i: number) => void; seek: (ms: number) => void; redraw?: () => void }; PrismScenes?: unknown }
-}
+/** The handle PrismTour.mount returns for one #tour3d element. */
+export type TourPlayer = { play: () => void; pause: () => void; go: (i: number) => void; seek: (ms: number) => void; redraw?: () => void; destroy?: () => void };
 
-function loadScript(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[data-tour="${src}"]`);
-    if (existing) {
-      if (existing.dataset.loaded) resolve(); else existing.addEventListener('load', () => resolve(), { once: true });
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = src; s.async = false; s.dataset.tour = src;
-    s.onload = () => { s.dataset.loaded = '1'; resolve(); };
-    s.onerror = () => reject(new Error(`${src} did not load`));
-    document.head.appendChild(s);
-  });
+declare global {
+  interface Window { PrismTour?: { mount: (root: HTMLElement) => TourPlayer | null }; prismTour?: TourPlayer; PrismScenes?: unknown }
 }
 
 export function Tour3D() {
+  const root = useRef<HTMLElement>(null);
   const [failed, setFailed] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
+    // the page renders a new section each time it opens: the player is mounted on it, and stopped when the page closes
     let alive = true;
-    // the scripts attach to #tour3d once, on load; a later render of this component keeps the same element
+    let player: TourPlayer | null = null;
     (async () => {
       try {
-        if (!window.prismTour) { for (const src of SCRIPTS) await loadScript(src); }
+        for (const src of SCRIPTS) await loadScript(src);
+        if (alive && root.current) player = window.PrismTour?.mount(root.current) ?? null;
       } catch { if (alive) setFailed(true); }
     })();
-    return () => { alive = false; window.prismTour?.pause(); };
+    // the player redraws itself for the Prism page's own theme button only; this app's theme switch is forwarded to it
+    const obs = new MutationObserver(() => { player?.redraw?.(); });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => { alive = false; obs.disconnect(); player?.destroy?.(); };
   }, []);
-  // the player redraws itself when the site's theme switch is clicked (#theme); this app's toggle has no id, so a
-  // theme change is forwarded by redrawing through the player's own API
-  useEffect(() => {
-    const el = document.documentElement;
-    const obs = new MutationObserver(() => { window.prismTour?.redraw?.(); });
-    obs.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => obs.disconnect();
-  }, []);
-  const theme = currentTheme();
+  // the player points this link at the page of the chapter on screen; a plain click follows it inside the app
+  const follow = (e: MouseEvent<HTMLAnchorElement>) => {
+    const href = e.currentTarget.getAttribute('href') ?? '/explore';
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !href.startsWith('/')) return;
+    e.preventDefault();
+    navigate(href);
+  };
   return (
-    <section className="tour3d" id="tour3d" aria-labelledby="t3-title" data-theme-seen={theme}>
+    <section className="tour3d" id="tour3d" ref={root} aria-labelledby="t3-title">
       <div className="micro" id="t3-title">{H.tourTitle}</div>
       <ol className="t3-strip" aria-label="Chapters"></ol>
       <div className="t3-stage">
@@ -64,7 +57,7 @@ export function Tour3D() {
         <button type="button" className="t3-b" data-t3="next" aria-label="Next chapter">▶</button>
         <div className="t3-prog" role="slider" tabIndex={0} aria-label="Position in the tour, in seconds" aria-valuemin={0} aria-valuemax={63} aria-valuenow={0}><i></i></div>
         <span className="t3-time">0:00</span>
-        <Link className="t3-open" to="/explore">{H.tourOpen}</Link>
+        <a className="t3-open" href="/explore" onClick={follow}>{H.tourOpen}</a>
       </div>
     </section>
   );

@@ -4,6 +4,20 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+### Added
+- Home page: the one-minute animated tour of the MEIDNet Prism landing page (data, model, family, rules, targets,
+  search, candidates) in the hero, beside the headline, with its own controls; each chapter's link opens the page of
+  this app that does that step. The accepted-structure example moves just below the hero.
+- Home page: Prism's crystal, a cubic perovskite turning beside its crystal graph, the shared latent space and a
+  band-gap curve, with a few words on the method and a link to MEIDNet Prism, the library behind Matter.
+
+### Changed
+- The citation moves from the home page to the Methodology page (How to cite).
+
+### Fixed
+- The tour and the crystal start again each time the home page opens; they had stayed blank after a visit to another
+  page and back, because the scripts attached once, to the first page they saw.
+
 ## [0.10.2] - 2026-10-10
 
 ### Fixed

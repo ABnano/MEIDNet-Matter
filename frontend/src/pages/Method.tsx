@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { ExternalLink, MarketingHeader, SiteFooter } from '@/components/shell';
 import { ResearchLayout } from '@/components/research/ResearchNav';
 import { method as M } from '@/copy/research';
+import { landing as L } from '@/copy/landing';
 
 const MECHANISM: Array<[string, string]> = [
   ['Two encoders, one latent space', 'A structure encoder (an equivariant graph network over the cell) and a property encoder map a crystal and its property vector to points on the same unit sphere; a contrastive objective pulls matching pairs together. A decoder reads a point back into a cell, and a property head reads properties from a point.'],
@@ -104,6 +105,10 @@ m.download(m.urls.generate_zip(gen["job_id"]), "cells.zip")`}</pre>
             </table>
           </div>
           <p className="small muted" style={{ marginTop: 12 }}>The S.U.N. vocabulary (stable, unique, novel) follows LeMat-GenBench; novelty here is the AMD distance to the nearest training structure, uniqueness a structure match. <Link to="/pipeline">The blocks and their bands</Link> · <Link to="/studies">the studies</Link>.</p>
+        </section>
+        <section className="section" id="cite">
+          <h2>How to cite</h2>
+          <div className="card" data-testid="citation"><p className="small muted">{L.citation}</p><ExternalLink href={`https://doi.org/${L.doi}`} className="small">doi:{L.doi}</ExternalLink></div>
         </section>
       </ResearchLayout>
       <SiteFooter wide />

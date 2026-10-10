@@ -6,8 +6,8 @@ import { ErrorNote, Spinner } from '@/components/ui';
 import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
 import { HeroExample } from '@/components/home/HeroExample';
 import { Tour3D } from '@/components/home/Tour3D';
+import { Crystal3D } from '@/components/home/Crystal3D';
 import { home as H, researchNav as RN } from '@/copy/research';
-import { landing as L } from '@/copy/landing';
 
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
 const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) + (a.charge_balanced ? 2 : 0) + (a.requested >= 1 && a.requested <= 3 ? 3 : 0) + (a.flag ? -2 : 0);
@@ -47,6 +47,16 @@ export default function Home() {
           {mp20.data ? <HeroExample study={mp20.data} example={example} /> : <div className="hero-example">{mp20.loading && <Spinner label="Loading a result" />}{mp20.error && <ErrorNote error={mp20.error} />}</div>}
         </section>
 
+        <section className="section idea" id="idea">
+          <Crystal3D />
+          <div>
+            <div className="micro">{H.ideaMicro}</div>
+            <h2>{H.ideaTitle}</h2>
+            <p className="muted">{H.ideaText}</p>
+            <p className="small muted">{H.ideaPrism} <ExternalLink href={PRISM_SPACE}>{H.prismCta} ↗</ExternalLink></p>
+          </div>
+        </section>
+
         <section className="section" id="stages">
           <div className="cards-3 stages">
             {H.stages.map(([n, title, sub, text, to]) => (
@@ -84,10 +94,7 @@ export default function Home() {
         </section>
 
         <section className="section">
-          <div className="cards-2">
-            <div className="card"><h3>Open source</h3><p className="muted">The code of Matter is on GitHub under the MIT licence; the engine is the MEIDNet package, vendored here as a snapshot with its provenance recorded. The same three stages run from Python against this server (Method › Python).</p><ExternalLink href="https://github.com/ABnano/MEIDNet-Matter" className="btn">GitHub ↗</ExternalLink></div>
-            <div className="card"><h3>Citation</h3><p className="small muted">{L.citation}</p><ExternalLink href={`https://doi.org/${L.doi}`} className="small">doi:{L.doi}</ExternalLink></div>
-          </div>
+          <div className="card"><h3>Open source</h3><p className="muted">The code of Matter is on GitHub under the MIT licence; the engine is the MEIDNet package, vendored here as a snapshot with its provenance recorded. The same three stages run from Python against this server (Method › Python).</p><ExternalLink href="https://github.com/ABnano/MEIDNet-Matter" className="btn">GitHub ↗</ExternalLink></div>
         </section>
       </main>
       <SiteFooter />

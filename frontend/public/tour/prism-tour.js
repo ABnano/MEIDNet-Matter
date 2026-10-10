@@ -374,10 +374,14 @@
     index: function (block) { return SCENES.map(function (s) { return s.block; }).indexOf(block); }
   };
 
-  /* ── the player of the landing page ── */
-  var root = document.getElementById("tour3d");
-  if (!root) return;
-  var canvas = root.querySelector("canvas"), tctx = canvas.getContext("2d");
+  /* ── the player. Matter is a single-page app that renders a new #tour3d each time the home page opens, so the player
+       is a function the app calls on each one (PrismTour.mount); the handle it returns stops it (destroy). The body
+       keeps the indentation of the Prism original, so the two files still compare line by line. ── */
+  function mount(root) {
+  if (!root) return null;
+  if (root.__prismTour) return root.__prismTour;
+  var canvas = root.querySelector("canvas"), tctx = canvas && canvas.getContext("2d");
+  if (!tctx) return null;
   var TOTAL = SCENES.reduce(function (a, s) { return a + s.ms; }, 0);
   var S = {ms: 0, playing: false, last: 0, raf: 0, i: -1, visible: false, started: false, W: 0, H: 0, dpr: 1};
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -456,16 +460,31 @@
     if (e.target.closest && e.target.closest(".t3-prog")) return;
     if (e.key === "k" || (e.key === " " && e.target === canvas)) { e.preventDefault(); S.playing ? pause() : play(); }
   });
-  var th0 = document.getElementById("theme");
-  if (th0) th0.addEventListener("click", function () { setTimeout(function () { S.i = -1; draw(); }, 0); });
-  if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas); else window.addEventListener("resize", resize);
-  if (window.IntersectionObserver) new IntersectionObserver(function (es) {
-    S.visible = es[0].isIntersecting;
-    if (S.visible && !S.started && !reduce) { S.ms = 0; S.i = -1; play(); }   // starts the first time it is seen
-  }, {threshold: 0.35}).observe(canvas);
+  // a theme change: the app calls redraw() from its own switch (the Prism page's #theme button does not exist here)
+  var ro = null, io = null;
+  if (window.ResizeObserver) { ro = new ResizeObserver(resize); ro.observe(canvas); } else window.addEventListener("resize", resize);
+  if (window.IntersectionObserver) {
+    io = new IntersectionObserver(function (es) {
+      S.visible = es[0].isIntersecting;
+      if (S.visible && !S.started && !reduce) { S.ms = 0; S.i = -1; play(); }   // starts the first time it is seen
+    }, {threshold: 0.35});
+    io.observe(canvas);
+  }
   else { S.visible = true; if (!reduce) { S.ms = 0; play(); } }
   S.ms = SCENES[0].ms - 1;            // before it plays (or with reduced motion): the finished opening picture
   resize();
-  window.prismTour = {play: play, pause: pause, go: go, seek: function (ms) { S.ms = T.clamp(ms, 0, TOTAL); S.i = -1; draw(); }, redraw: function () { S.i = -1; draw(); },
-                      scenes: SCENES.map(function (s) { return {block: s.block, title: s.title, ms: s.ms}; })};
+  var api = {play: play, pause: pause, go: go, seek: function (ms) { S.ms = T.clamp(ms, 0, TOTAL); S.i = -1; draw(); }, redraw: function () { S.i = -1; draw(); },
+             scenes: SCENES.map(function (s) { return {block: s.block, title: s.title, ms: s.ms}; }),
+             destroy: function () {          // the page is left: stop the clock and let go of the observers
+               S.playing = false; if (S.raf) cancelAnimationFrame(S.raf); S.raf = 0;
+               if (ro) ro.disconnect(); else window.removeEventListener("resize", resize);
+               if (io) io.disconnect();
+               if (root.__prismTour === api) delete root.__prismTour;
+               if (window.prismTour === api) window.prismTour = undefined;
+             }};
+  root.__prismTour = api; window.prismTour = api;
+  return api;
+  }
+  window.PrismTour = {mount: mount};
+  mount(document.getElementById("tour3d"));
 })();

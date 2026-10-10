@@ -416,3 +416,11 @@ select.input { width: 100%; max-width: 100%; }
   .t3-open { margin-left: 0; width: 100%; }
   .hero-result .hero-example { grid-template-columns: 1fr; }
 }
+
+/* the crystal of MEIDNet Prism's landing page beside a few words on the method (drawn by /tour/prism-hero.js) */
+.idea { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--s-8); align-items: center; }
+.idea .scene { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1 / .86; margin: 0 auto; }
+.idea .scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+.idea .scene canvas.grabbing { cursor: grabbing; }
+.idea .scene figcaption { position: absolute; right: 4px; bottom: 0; font: 500 11.5px/1.3 var(--mono); color: var(--faint); letter-spacing: .02em; }
+@media (max-width: 899px) { .idea { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); } }
