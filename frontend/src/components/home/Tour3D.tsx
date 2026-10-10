@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { currentTheme } from '@/lib/theme';
 import { home as H } from '@/copy/research';
@@ -10,13 +10,16 @@ import { home as H } from '@/copy/research';
 const SCRIPTS = ['/tour/prism3d.js', '/tour/prism-tour.js'];
 
 declare global {
-  interface Window { prismTour?: { play: () => void; pause: () => void; go: (i: number) => void; seek: (ms: number) => void }; PrismScenes?: unknown }
+  interface Window { prismTour?: { play: () => void; pause: () => void; go: (i: number) => void; seek: (ms: number) => void; redraw?: () => void }; PrismScenes?: unknown }
 }
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[data-tour="${src}"]`);
-    if (existing) { existing.dataset.loaded ? resolve() : existing.addEventListener('load', () => resolve(), { once: true }); return; }
+    if (existing) {
+      if (existing.dataset.loaded) resolve(); else existing.addEventListener('load', () => resolve(), { once: true });
+      return;
+    }
     const s = document.createElement('script');
     s.src = src; s.async = false; s.dataset.tour = src;
     s.onload = () => { s.dataset.loaded = '1'; resolve(); };
@@ -26,7 +29,6 @@ function loadScript(src: string): Promise<void> {
 }
 
 export function Tour3D() {
-  const root = useRef<HTMLElement>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let alive = true;
@@ -42,7 +44,7 @@ export function Tour3D() {
   // theme change is forwarded by redrawing through the player's own API
   useEffect(() => {
     const el = document.documentElement;
-    const obs = new MutationObserver(() => { const t = window.prismTour; if (t) t.seek(((t as unknown as { _ms?: number })._ms ?? 0)); });
+    const obs = new MutationObserver(() => { window.prismTour?.redraw?.(); });
     obs.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
     return () => obs.disconnect();
   }, []);

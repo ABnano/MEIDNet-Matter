@@ -466,6 +466,6 @@
   else { S.visible = true; if (!reduce) { S.ms = 0; play(); } }
   S.ms = SCENES[0].ms - 1;            // before it plays (or with reduced motion): the finished opening picture
   resize();
-  window.prismTour = {play: play, pause: pause, go: go, seek: function (ms) { S.ms = T.clamp(ms, 0, TOTAL); S.i = -1; draw(); },
+  window.prismTour = {play: play, pause: pause, go: go, seek: function (ms) { S.ms = T.clamp(ms, 0, TOTAL); S.i = -1; draw(); }, redraw: function () { S.i = -1; draw(); },
                       scenes: SCENES.map(function (s) { return {block: s.block, title: s.title, ms: s.ms}; })};
 })();
