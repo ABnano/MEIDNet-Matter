@@ -1,6 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api/research', () => ({
   research: {
@@ -19,6 +19,8 @@ const at = (path: string) =>
   render(<MemoryRouter initialEntries={[path]}><ResearchLayout><h1>The page</h1></ResearchLayout></MemoryRouter>);
 const menu = () => screen.getByRole('navigation', { name: 'Research' });
 const linkNames = () => within(menu()).getAllByRole('link').map((a) => a.textContent);
+
+afterEach(cleanup);   // this project's vitest runs without globals, so Testing Library does not clean up by itself
 
 describe('research menu', () => {
   it('names the four sections, marks the page being read, and keeps the page in the main region', async () => {
