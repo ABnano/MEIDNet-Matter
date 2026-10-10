@@ -38,8 +38,8 @@ Three stages, one example dataset (Perov-5: 18,928 cubic perovskites with two DF
 1. **Explore.** The band-gap distribution and a map of the learned representation (the default model's training latents in
    two principal components); click a material to see its values, its cell and its nearest neighbours in the full latent
    space.
-2. **Train.** A real MEIDNet training on the server, small and fixed: 1,500 materials, the demo's own recipe, 10 to 50 epochs,
-   under a minute on two CPU cores. The curves epoch by epoch, the predictions against the reference values of 500 materials
+2. **Train.** A real MEIDNet training on the server, small and fixed: 1,500 materials, the demo's own recipe, 10 to 50 epochs
+   (about 25 s, a minute and two minutes on the public server's two CPU cores). The curves epoch by epoch, the predictions against the reference values of 500 materials
    the model never saw, the learned space, and the demo's full model measured on the same materials. The trained model, its
    recipe and the command that runs the same training at full size on your own computer are downloadable. The small model
    never drives generation on the server.

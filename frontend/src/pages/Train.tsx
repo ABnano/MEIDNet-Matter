@@ -5,6 +5,7 @@ import { lab, type TrainJob, type TrainOptions } from '@/api/lab';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { train as C } from '@/copy/research';
+import { seconds } from '@/lib/format';
 
 /** Stage 2: start a small, fixed MEIDNet training; the page of the job shows it learning. */
 export default function Train() {
@@ -37,7 +38,7 @@ export default function Train() {
                   <dt>data</dt><dd>{o.subset.train.toLocaleString()} Perov-5 materials to learn from, {o.subset.val} to measure on ({o.subset.nonzero_gap_train} and {o.subset.nonzero_gap_val} with a non-zero band gap)</dd>
                   <dt>recipe</dt><dd>{o.recipe}</dd>
                   <dt>model</dt><dd>MEIDNet: a graph encoder of the structure, a property encoder, one shared latent space, decoders for both; trained from scratch</dd>
-                  <dt>budget</dt><dd>up to {o.limits?.epochs} epochs and {Math.round((o.limits?.seconds ?? 0) / 60)} minutes on two CPU cores; about {o.seconds_per_epoch_estimate} s per epoch</dd>
+                  <dt>budget</dt><dd>up to {o.limits?.epochs} epochs and {Math.round((o.limits?.seconds ?? 0) / 60)} minutes per job; about {o.seconds_per_epoch_estimate} s per epoch on the public server's two CPU cores, several times less on a workstation</dd>
                 </dl>
               </div>
               <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -50,7 +51,7 @@ export default function Train() {
               {error && <ErrorNote error={error} />}
               <div className="row" style={{ gap: 12 }}>
                 <button type="button" className="btn btn-primary btn-lg" onClick={start} disabled={busy} data-testid="train-start">{busy ? 'Starting…' : `Train for ${epochs} epochs`}</button>
-                <span className="small muted">about {Math.round(10 + 0.6 * epochs)} s on this server</span>
+                {o.estimated_seconds?.[String(epochs)] != null && <span className="small muted">about {seconds(o.estimated_seconds[String(epochs)])} on the public server</span>}
               </div>
             </div>
             <div className="stack" style={{ gap: 16 }}>

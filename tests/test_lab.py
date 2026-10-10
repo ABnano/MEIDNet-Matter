@@ -43,6 +43,8 @@ def test_train_options_describe_the_fixed_experiment(client):
     o = client.get("/api/train/options").json()
     assert o["available"] and o["epochs"] == [10, 20, 50] and o["subset"]["train"] > 0 and o["subset"]["val"] > 0
     assert "val_mae" in o["full_model"] and o["full_model"]["model_id"] and o["limits"]["seconds"] > 0
+    est = [o["estimated_seconds"][str(e)] for e in o["epochs"]]          # measured on the public server: 23, 52, 133 s
+    assert est == sorted(est) and est[-1] < o["limits"]["seconds"]
 
 
 @needs_assets

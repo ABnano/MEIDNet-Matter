@@ -18,7 +18,7 @@ the same three stages from Python.
   the map and the histograms; a material's cell and neighbours point to the live server there.
 - **Train Lite**: a real MEIDNet training on the server, small and fixed: 1,500 Perov-5 materials (30% with a non-zero
   gap, sampled from the training split; the validation 500 from the validation split; the test split untouched), the
-  demo's own recipe, 10, 20 or 50 epochs, under a minute on two CPU cores. The page draws the training loss and the
+  demo's own recipe, 10, 20 or 50 epochs (23, 52 and 133 s measured on the public server's two CPU cores). The page draws the training loss and the
   validation error of each property after every epoch, then the predictions against the reference values, the small
   model's learned space, the error against the spread next to the demo's full model measured on the same 500 materials,
   and offers the checkpoint, the recipe and the command that runs the same training at full size locally. The small

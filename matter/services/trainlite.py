@@ -91,12 +91,17 @@ class Subset:
             return {"available": False}
         ref = self.reference
         return {"available": True, "epochs": list(EPOCH_OPTIONS), "subset": ref["subset"], "full_model": ref["full_model"],
-                "recipe": ref["recipe"], "seconds_per_epoch_estimate": 0.5, "limits": TRAIN_PUBLIC_LIMITS}
+                "recipe": ref["recipe"], "seconds_per_epoch_estimate": SECONDS_PER_EPOCH,
+                "estimated_seconds": {str(e): estimated_seconds(e) for e in EPOCH_OPTIONS}, "limits": TRAIN_PUBLIC_LIMITS}
+
+
+# Measured on the public Space (cpu-basic, two shared vCPUs), 2026-10-10: 10, 20 and 50 epochs took 23, 52 and 133 s,
+# about 2 s to build the model and 2.6 s per epoch with its validation pass.  A workstation is several times faster.
+SECONDS_SETUP, SECONDS_PER_EPOCH = 2.0, 2.6
 
 
 def estimated_seconds(epochs: int) -> int:
-    """Measured: 1,500 materials, 2 CPUs: about 0.2 s per epoch plus the model build; the validation pass each epoch adds a little."""
-    return int(10 + 0.6 * epochs)
+    return int(round(SECONDS_SETUP + SECONDS_PER_EPOCH * epochs))
 
 
 def execute_training(job_obj, job: dict, services) -> None:

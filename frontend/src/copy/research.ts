@@ -12,7 +12,7 @@ export const home = {
   example: 'Example dataset: Perov-5, 18,928 cubic perovskites with two DFT properties. No setup required.',
   stages: [
     ['01', 'Explore', 'Understand the data', 'The band-gap distribution, a map of the learned representation, and any material\'s cell and nearest neighbours.', '/explore'],
-    ['02', 'Train', 'Try a small experiment', 'A real MEIDNet training on 1,500 materials, in under a minute: the curves, the predictions against the reference values, the map forming, and the full model to compare with.', '/train'],
+    ['02', 'Train', 'Try a small experiment', 'A real MEIDNet training on 1,500 materials, about a minute at the default 20 epochs: the curves, the predictions against the reference values, the map forming, and the full model to compare with.', '/train'],
     ['03', 'Generate', 'Inspect candidates', 'Ask for a band gap and get cells read by two models, with their checks, their limits and the files to take further.', '/generate'],
   ] as Array<[string, string, string, string, string]>,
   after: 'Satisfied with the small run? The same recipe at full size runs on your own computer with one command, on your own data too.',

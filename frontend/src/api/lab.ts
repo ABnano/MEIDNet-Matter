@@ -16,7 +16,7 @@ export interface MaterialDetail {
 }
 
 export interface TrainOptions {
-  available: boolean; epochs?: number[]; seconds_per_epoch_estimate?: number; limits?: { epochs: number; seconds: number };
+  available: boolean; epochs?: number[]; seconds_per_epoch_estimate?: number; estimated_seconds?: Record<string, number>; limits?: { epochs: number; seconds: number };
   subset?: { train: number; val: number; seed: number; nonzero_gap_train: number; nonzero_gap_val: number; sampling: string; spread: Record<string, number>; spread_dir_gap_nonzero: number };
   full_model?: { model_id: string; training_rows: number | null; epochs: number | null; val_mae: Record<string, number>; val_mae_dir_gap_nonzero: number; val_r2: Record<string, number> };
   recipe?: string;
