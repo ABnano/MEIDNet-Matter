@@ -68,7 +68,7 @@ export default function Explore() {
                 <input className="input" style={{ maxWidth: 180 }} placeholder="find a formula…" value={query} onChange={(e) => onQuery(e.target.value)} aria-label="Find a formula" />
               </div>
               <Scatter points={scatter} frame={points} colour={{ min: domain.min, max: domain.max, label: LABEL[colour][0], unit: LABEL[colour][1] }} selected={selected} onSelect={setSelected}
-                xLabel="first principal component" yLabel="second principal component" width={620} height={460} />
+                xLabel="first principal component" yLabel="second principal component" width={620} height={460} equalAxes />
               <p className="small muted" style={{ marginTop: 8 }}>{C.mapNote} Model {map.data.model_id}; {Math.round(100 * (map.data.projection.explained_variance[0] + map.data.projection.explained_variance[1]))}% of the variance lies in these two axes.</p>
             </div>
             <div className="stack" style={{ gap: 16 }}>

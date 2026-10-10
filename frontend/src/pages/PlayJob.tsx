@@ -144,6 +144,7 @@ export default function PlayJob() {
   const cands = job?.candidates ?? [];
   const nBoth = cands.filter((c) => statusesOf(c).gap_window === 'both models').length;
   const nBalanced = cands.filter((c) => statusesOf(c).charge_balance === 'yes').length;
+  const nStrict = cands.filter((c) => statusesOf(c).gap_window === 'both models' && statusesOf(c).charge_balance === 'yes').length;
   return (
     <>
       <MarketingHeader />
@@ -172,15 +173,16 @@ export default function PlayJob() {
 
             {job.judge && (
               <p className="small muted" style={{ marginTop: 12 }}>
-                Judge, a second model that played no part in generation: {job.judge.name}{job.judge.qualification ? ` — on the dataset's test split MAE ${Number(job.judge.qualification.mae_eV).toFixed(2)} eV, Spearman ${Number(job.judge.qualification.spearman).toFixed(2)} (n = ${job.judge.qualification.n})` : ''}. Both readings estimate the PBE band gap MP-20 records; PBE gaps are usually smaller than measured ones.
+                Judge, a second model that played no part in generation: {job.judge.name}{job.judge.qualification ? ` — on the dataset's test split MAE ${Number(job.judge.qualification.mae_eV).toFixed(2)} eV${job.judge.qualification.mae_on_nonzero_eV != null ? ` (${Number(job.judge.qualification.mae_on_nonzero_eV).toFixed(2)} eV on the non-zero gaps${job.judge.qualification.share_zero_truth != null ? `; ${Math.round(100 * Number(job.judge.qualification.share_zero_truth))}% of the test materials have a zero gap` : ''})` : ''}, Spearman ${Number(job.judge.qualification.spearman).toFixed(2)} (n = ${job.judge.qualification.n})` : ''}. Both readings estimate the PBE band gap MP-20 records; PBE gaps are usually smaller than measured ones.
               </p>
             )}
 
             {cands.length > 0 && (
               <>
                 <h2 style={{ marginTop: 20 }}>Structures</h2>
+                <p data-testid="generation-strict"><b>{nStrict} of {cands.length}</b> placed inside the window by both models and charge balanced.</p>
                 <p className="small muted">
-                  <b>{cands.length} kept</b> by the label read from the structure · <b>{nBoth}</b> with both models inside the window · <b>{nBalanced}</b> charge balanced · <b>0</b> relaxed and re-judged (not in the live run).
+                  The rest are exploratory. <b>{cands.length} kept</b> by the label read from the structure · <b>{nBoth}</b> with both models inside the window · <b>{nBalanced}</b> charge balanced · <b>0</b> relaxed and re-judged (not in the live run).
                   {job.funnel && <> {job.funnel.attempted} draws were made in all.</>} The three statuses are separate: a structure can pass the gap window and still be charge-unbalanced, and nothing here is relaxed.
                 </p>
                 <div className="cards-2" style={{ alignItems: 'start' }}>

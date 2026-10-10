@@ -51,7 +51,7 @@ export const home = {
 export const explore = {
   h1: 'Explore the data',
   lead: 'Perov-5: 18,928 cubic ABX₃ perovskites (Castelli et al. 2012, the CDVAE split), each with a direct band gap and a formation enthalpy from DFT. The map places the 11,356 training materials by what the demo\'s model learned about their structures; click a point to see the material.',
-  mapNote: 'Two principal components of a 128-dimensional learned space: a projection for looking, not a measure of similarity. The nearest neighbours on the card are computed in the full space.',
+  mapNote: 'Two principal components of a 128-dimensional learned space: a projection for looking, not a measure of similarity. The nearest neighbours on the card are computed in the full space. The model stores every material at the same distance from the centre of that space, so the projection fills a disc; most zero-gap materials lie on its outer ring and those with large gaps near the centre. The ring is a property of the representation, not a physical map of materials.',
   histNote: '96% of the band gaps are exactly zero (metals at the PBE level), so the histogram draws the zero count apart; the readiness checks grade the band gap on the materials with a non-zero gap.',
   next: 'Seen enough of the data? Train a small model on 1,500 of these materials and watch it learn.',
 };
@@ -87,7 +87,7 @@ export const play = {
   familyPointer: 'Need a specific family (double perovskites, a halide variant, your own chemistry)? This generator is family-free and trained on MP-20. Train on your own data instead: Method › Run it on your data, which also has a screening command for small datasets.',
   familyLink: 'Method › Run it on your data',   // the part of familyPointer the page turns into a link
   h1: 'Generate structures for a band gap',
-  lead: 'Family-free generation with the MP-20 symmetry decoder. You ask for one to three band gaps; the server generates cells, reads each cell\'s label from its own structure, asks a second model that played no part in generation, and returns the ones both place inside your window. Both are machine-learning estimates of the PBE band gap MP-20 records, and PBE gaps are usually smaller than measured ones. Relaxation is not run here: download the cells and relax them locally with the command the result gives you.',
+  lead: 'Family-free generation with the MP-20 symmetry decoder. You ask for one to three band gaps; the server generates cells, reads each cell\'s label from its own structure, keeps the cells whose label falls inside your window, then asks a second model that played no part in generation to read every kept cell; the result shows which cells both place inside the window. Both are machine-learning estimates of the PBE band gap MP-20 records, and PBE gaps are usually smaller than measured ones. Relaxation is not run here: download the cells and relax them locally with the command the result gives you.',
   rangeNote: 'Measured on MP-20: accepted structures came back for 0.5–3 eV requests, with a slope of 0.71 and a precision of about ±0.7 eV per structure; it saturates above 3 eV. Expect few or no accepted structures there.',
   stabilityNote: 'Nothing here is called stable. The generated cell is a starting point; two potentials lower its energy by whole electron-volts per atom and move atoms by bond lengths. The relaxed cell is the product.',
   sharedHost: 'On this shared server a session runs one job at a time, up to three targets and ten structures each, within eight minutes. Results are removed after an hour.',

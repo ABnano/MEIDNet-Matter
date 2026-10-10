@@ -95,7 +95,7 @@ export default function TrainJob() {
                   <LineChart x={x} xLabel="epoch" yLabel="MAE" yMin={0}
                     series={[{ name: 'band gap (eV)', values: hist.map((h) => h.val_mae.dir_gap ?? null) }, { name: 'formation enthalpy (eV/atom)', values: hist.map((h) => h.val_mae.heat_all ?? null) }]}
                     reference={full ? { value: full.val_mae.dir_gap, label: `full model, band gap ${full.val_mae.dir_gap.toFixed(3)}` } : null} />
-                  <p className="small muted">Measured on the 500 validation materials after every epoch, in physical units. The dashed line is the demo's full model on the same materials.</p>
+                  <p className="small muted">Measured on all 500 validation materials after every epoch, zero gaps included, in physical units. The dashed line is the demo's full model on the same materials. The band-gap error in the summary below counts only the materials with a non-zero gap, so it is larger.</p>
                 </div>
               </div>
             )}
@@ -104,7 +104,7 @@ export default function TrainJob() {
               <>
                 <div className="stat-tiles" style={{ marginTop: 16 }}>
                   {Object.entries(res.against_spread).map(([c, a]) => (
-                    <div className="card" key={c}><div className="k">{PROP[c]?.[0] ?? c}</div><div className="v">{a.mae.toFixed(c === 'dir_gap' ? 2 : 3)} {PROP[c]?.[1]}</div>
+                    <div className="card" key={c}><div className="k">{PROP[c]?.[0] ?? c}{c === 'dir_gap' ? ' · non-zero gaps only' : ''}</div><div className="v">{a.mae.toFixed(c === 'dir_gap' ? 2 : 3)} {PROP[c]?.[1]}</div>
                       <div className="n">{WORD(a.ratio)}: {a.ratio == null ? '—' : a.ratio.toFixed(2)} of the spread ({a.basis}); the full model: {a.full_model_mae.toFixed(c === 'dir_gap' ? 2 : 3)} {PROP[c]?.[1]}</div></div>
                   ))}
                   <div className="card"><div className="k">Structure ↔ property retrieval</div><div className="v">{Math.round(100 * res.val.retrieval_top1)}%</div><div className="n">top-1 among the {res.n_val} validation materials: how often a property vector finds its own structure in the shared space</div></div>

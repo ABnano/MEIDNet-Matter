@@ -13,16 +13,19 @@ interface Props {
   identity?: boolean;
   /** The points whose extent fixes the axes (default: the points drawn), so a filtered map keeps its frame. */
   frame?: Array<{ x: number; y: number }>;
+  /** One data unit is drawn at the same length on both axes, so a round cloud looks round (a projection whose shape is read). */
+  equalAxes?: boolean;
 }
 
 const PAD = { l: 44, r: 12, t: 10, b: 32 };
 
 /** A canvas scatter of up to tens of thousands of points, coloured by one value; hover names a point, click selects it.
  *  Drawn on a canvas (an SVG with 11,000 nodes is slow); the axes and the legend are SVG so they scale with the text. */
-export function Scatter({ points, colour, selected, onSelect, xLabel, yLabel, width = 560, height = 420, identity, frame }: Props) {
+export function Scatter({ points, colour, selected, onSelect, xLabel, yLabel, width = 560, height = 420, identity, frame, equalAxes }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [hover, setHover] = useState<ScatterPoint | null>(null);
   const [dark, setDark] = useState(false);
+  const W = width - PAD.l - PAD.r, H = height - PAD.t - PAD.b;
   const box = useMemo(() => {
     const extent = frame?.length ? frame : points;
     if (!extent.length) return { x0: 0, x1: 1, y0: 0, y1: 1 };
@@ -30,9 +33,12 @@ export function Scatter({ points, colour, selected, onSelect, xLabel, yLabel, wi
     for (const p of extent) { if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x; if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y; }
     if (identity) { const lo = Math.min(x0, y0), hi = Math.max(x1, y1); x0 = y0 = lo; x1 = y1 = hi; }
     const mx = (x1 - x0 || 1) * 0.04, my = (y1 - y0 || 1) * 0.04;
-    return { x0: x0 - mx, x1: x1 + mx, y0: y0 - my, y1: y1 + my };
-  }, [points, frame, identity]);
-  const W = width - PAD.l - PAD.r, H = height - PAD.t - PAD.b;
+    const b = { x0: x0 - mx, x1: x1 + mx, y0: y0 - my, y1: y1 + my };
+    if (!equalAxes) return b;
+    // the larger units-per-pixel of the two axes for both, each axis centred on its data
+    const u = Math.max((b.x1 - b.x0) / W, (b.y1 - b.y0) / H), cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+    return { x0: cx - (u * W) / 2, x1: cx + (u * W) / 2, y0: cy - (u * H) / 2, y1: cy + (u * H) / 2 };
+  }, [points, frame, identity, equalAxes, W, H]);
   const X = (x: number) => PAD.l + ((x - box.x0) / (box.x1 - box.x0)) * W;
   const Y = (y: number) => PAD.t + H - ((y - box.y0) / (box.y1 - box.y0)) * H;
   const shade = (v: number, faint: boolean) => {
