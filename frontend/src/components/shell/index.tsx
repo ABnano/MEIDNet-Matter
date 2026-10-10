@@ -4,6 +4,7 @@ import { MatterMark, Wordmark } from '@/components/brand/MatterMark';
 import { currentTheme, framed, setTheme } from '@/lib/theme';
 import { useProject } from '@/features/project/useProject';
 import { MIRROR_URL, PRISM_MIRROR, SPACE_PAGE, STATIC_MIRROR } from '@/lib/mirror';
+import { researchNav } from '@/copy/research';
 import { MirrorBanner } from './Mirror';
 
 // Prism on its Space, or, from the mirror, Prism's own GitHub Pages mirror (the same pages, without the /docs prefix)
@@ -38,12 +39,13 @@ export function DirectAppLink() {
   return <a className="btn btn-ghost btn-sm" href={window.location.href} target="_blank" rel="noopener" title="The same page, outside the Hugging Face frame">Open the direct app ↗</a>;
 }
 
-export function MarketingHeader() {
+/** `wide`: the research pages, whose left menu widens the page; the header then spans menu and content alike. */
+export function MarketingHeader({ wide = false }: { wide?: boolean }) {
   return (
     <>
     <MirrorBanner />
     <header className="mhead">
-      <div className="wrap-narrow">
+      <div className={wide ? 'wrap-narrow wrap-research' : 'wrap-narrow'}>
         <Link to="/" className="brand"><MatterMark /><Wordmark /></Link>
         <nav aria-label="Sections">
           <NavLink to="/explore">Explore</NavLink><NavLink to="/train">Train</NavLink><NavLink to="/generate">Generate</NavLink><NavLink to="/research">Research</NavLink>
@@ -58,18 +60,18 @@ export function MarketingHeader() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ wide = false }: { wide?: boolean }) {
   return (
     <footer className="site">
-      <div className="wrap-narrow">
+      <div className={wide ? 'wrap-narrow wrap-research' : 'wrap-narrow'}>
         <span>MEIDNet Matter: explore a dataset, train a small model, generate candidates, with the evidence for each. MEIDNet is the engine.</span>
         <Link to="/explore">Explore</Link>
         <Link to="/train">Train</Link>
         <Link to="/generate">Generate</Link>
-        <Link to="/research">Research</Link>
-        <Link to="/studies">Studies</Link>
-        <Link to="/pipeline">Pipeline</Link>
-        <Link to="/method">Method</Link>
+        <Link to="/research">{researchNav.label}</Link>
+        <Link to="/studies">{researchNav.studies}</Link>
+        <Link to="/pipeline">{researchNav.pipeline}</Link>
+        <Link to="/method">{researchNav.method}</Link>
         <ExternalLink href={GITHUB}>Code</ExternalLink>
         {STATIC_MIRROR ? <ExternalLink href={SPACE_PAGE}>Live app (Hugging Face)</ExternalLink> : <ExternalLink href={MIRROR_URL}>Mirror for restricted networks</ExternalLink>}
         <ExternalLink href={PRISM}>MEIDNet Prism</ExternalLink>

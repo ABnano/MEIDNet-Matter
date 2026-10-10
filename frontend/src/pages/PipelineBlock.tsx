@@ -3,10 +3,11 @@ import { Link, useParams } from 'react-router';
 import { research, type BlocksPayload } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { CodeViewer, VerdictText } from '@/components/research';
 import { BlockFlow } from '@/components/pipeline/Flow';
-import { pipeline as P } from '@/copy/research';
+import { pipeline as P, researchNav } from '@/copy/research';
 
 const fmt = (v: number | null | undefined) => (v === null || v === undefined ? '—' : Number.isInteger(v) ? String(v) : v.toFixed(v < 1 ? 3 : 2));
 
@@ -19,15 +20,15 @@ export default function PipelineBlock() {
   const configs = data ? Object.keys(data.configs) : [];
   return (
     <>
-      <MarketingHeader />
-      <main className="wrap-narrow page" id="main">
+      <MarketingHeader wide />
+      <ResearchLayout>
         {error && <ErrorNote error={error} retry={reload} />}
         {loading && <Spinner label="Loading the block" />}
         {data && !b && <div className="page-head"><h1>No block {id}</h1><Link to="/pipeline">All blocks</Link></div>}
         {b && (
           <>
             <div className="page-head">
-              <div className="micro"><Link to="/pipeline">Pipeline</Link> · block {b.id} · runs {b.when}</div>
+              <div className="micro"><Link to="/pipeline">{researchNav.pipeline}</Link> · block {b.id} · runs {b.when}</div>
               <h1>{b.id} · {b.name}</h1>
               <p><b>{b.question}</b> {b.purpose}</p>
               <p className="small muted">Verdict rule: {b.verdict_rule}.</p>
@@ -97,8 +98,8 @@ export default function PipelineBlock() {
             </div>
           </>
         )}
-      </main>
-      <SiteFooter />
+      </ResearchLayout>
+      <SiteFooter wide />
     </>
   );
 }

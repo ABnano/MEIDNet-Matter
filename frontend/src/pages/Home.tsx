@@ -4,7 +4,7 @@ import { useResource } from '@/api/hooks';
 import { ExternalLink, MarketingHeader, PRISM_SPACE, SiteFooter } from '@/components/shell';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { HeroExample } from '@/components/home/HeroExample';
-import { home as H } from '@/copy/research';
+import { home as H, researchNav as RN } from '@/copy/research';
 import { landing as L } from '@/copy/landing';
 
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
@@ -53,10 +53,10 @@ export default function Home() {
           <h2>{H.researchTitle}</h2>
           <p className="muted">{H.researchLead}</p>
           <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
-            <Link to="/research" className="btn btn-primary">Research hub</Link>
-            <Link to="/studies" className="btn">Studies</Link>
-            <Link to="/pipeline" className="btn">Pipeline</Link>
-            <Link to="/method" className="btn">Method</Link>
+            <Link to="/research" className="btn btn-primary">{RN.overview}</Link>
+            <Link to="/studies" className="btn">{RN.studies}</Link>
+            <Link to="/pipeline" className="btn">{RN.pipeline}</Link>
+            <Link to="/method" className="btn">{RN.method}</Link>
           </div>
           <p className="small muted" style={{ marginTop: 12 }}>{H.prism} <ExternalLink href={PRISM_SPACE}>{H.prismCta} ↗</ExternalLink></p>
         </section>

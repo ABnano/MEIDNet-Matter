@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { research, type Accepted, type BlocksPayload, type Study, type StudyIndexEntry } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { Funnel, Num } from '@/components/research';
 import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
@@ -26,9 +27,9 @@ export default function Research() {
   const example = [...accepted].sort((a, b) => score(b) - score(a)).find((a) => a.structure) ?? null;
   return (
     <>
-      <MarketingHeader />
-      <main className="wrap-narrow page" id="main">
-        <div className="page-head"><h1>{H.researchTitle}</h1><p>{H.researchLead}</p></div>
+      <MarketingHeader wide />
+      <ResearchLayout>
+        <div className="page-head"><h1>{H.overviewTitle}</h1><p>{H.researchLead}</p></div>
         {mp20.error && <ErrorNote error={mp20.error} retry={mp20.reload} />}
         {mp20.loading && <Spinner label="Loading the studies" />}
 
@@ -96,10 +97,10 @@ export default function Research() {
               ))}
             </div>
           )}
-          <p style={{ marginTop: 12 }}><Link to="/method">Mechanism, strengths and limits →</Link></p>
+          <p style={{ marginTop: 12 }}><Link to="/method">Methodology: mechanism, strengths and limits →</Link></p>
         </section>
-      </main>
-      <SiteFooter />
+      </ResearchLayout>
+      <SiteFooter wide />
     </>
   );
 }

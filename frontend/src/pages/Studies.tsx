@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { research, type CheckpointInfo, type StudyIndexEntry } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { studies as S } from '@/copy/research';
 
@@ -12,8 +13,8 @@ export default function Studies() {
   const ck = useResource<{ release: string; checkpoints: CheckpointInfo[] }>('checkpoints', (s) => research.checkpoints(s));
   return (
     <>
-      <MarketingHeader />
-      <main className="wrap-narrow page" id="main">
+      <MarketingHeader wide />
+      <ResearchLayout>
         <div className="page-head"><h1>{S.h1}</h1><p>{S.lead}</p></div>
         {idx.error && <ErrorNote error={idx.error} retry={idx.reload} />}
         {idx.loading && <Spinner label="Loading the studies" />}
@@ -59,8 +60,8 @@ export default function Studies() {
             </div>
           )}
         </section>
-      </main>
-      <SiteFooter />
+      </ResearchLayout>
+      <SiteFooter wide />
     </>
   );
 }

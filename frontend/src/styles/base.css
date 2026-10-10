@@ -365,3 +365,25 @@ select.input { width: 100%; max-width: 100%; }
   .flow-arrow::before { content: '↓'; }
   .flow-node { max-width: 100%; }
 }
+
+/* research section: a left menu beside the content. .wrap-research widens .wrap-narrow by exactly the menu and its gap, so the
+   content keeps the width it had; the header and footer of these pages take the same width, so all three line up. */
+.wrap-research { max-width: calc(1100px + 232px + var(--s-8)); }
+.research-layout { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: var(--s-8); align-items: start; }
+.research-nav { position: sticky; top: 0; max-height: 100vh; overflow-y: auto; padding-block: var(--s-6); font-size: var(--fs-app); }
+.research-nav .micro { padding: 0 10px; margin-bottom: var(--s-2); }
+.research-nav ul { list-style: none; margin: 0; padding: 0; }
+.research-nav a { display: block; padding: 6px 10px; border-radius: var(--r-1); color: var(--muted); font-weight: 600; line-height: 1.35; }
+.research-nav a:hover { background: var(--tint); color: var(--ink); text-decoration: none; }
+.research-nav a.active { background: var(--tint); color: var(--ink); box-shadow: inset 2px 0 0 var(--p1); }
+.research-nav li.open > a { color: var(--ink); }
+.research-nav ul ul { margin: 2px 0 6px 10px; padding-left: 6px; border-left: 1px solid var(--line); }
+.research-nav ul ul a { font-weight: 400; font-size: var(--fs-small); padding: 4px 10px; }
+.research-nav-foot { margin-top: var(--s-4); padding: var(--s-4) 10px 0; border-top: 1px solid var(--line); font-size: var(--fs-small); }
+@media (max-width: 1199px) { .research-layout { grid-template-columns: 200px minmax(0, 1fr); gap: var(--s-6); } }
+@media (max-width: 899px) {
+  .research-layout { grid-template-columns: 1fr; gap: 0; }
+  .research-nav { position: static; max-height: none; overflow: visible; padding-block: var(--s-3); border-bottom: 1px solid var(--line); }
+  .research-nav > ul { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+  .research-nav ul ul, .research-nav-foot { display: none; }
+}

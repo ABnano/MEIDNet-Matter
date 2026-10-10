@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { ExternalLink, MarketingHeader, SiteFooter } from '@/components/shell';
+import { ResearchLayout } from '@/components/research/ResearchNav';
 import { method as M } from '@/copy/research';
 
 const MECHANISM: Array<[string, string]> = [
@@ -43,8 +44,8 @@ const RUN_STEPS: Array<[string, string, string]> = [
 export default function Method() {
   return (
     <>
-      <MarketingHeader />
-      <main className="wrap-narrow page" id="main">
+      <MarketingHeader wide />
+      <ResearchLayout>
         <div className="page-head"><h1>{M.h1}</h1><p>{M.lead}</p></div>
         <section id="mechanism">
           <h2>Mechanism</h2>
@@ -104,8 +105,8 @@ m.download(m.urls.generate_zip(gen["job_id"]), "cells.zip")`}</pre>
           </div>
           <p className="small muted" style={{ marginTop: 12 }}>The S.U.N. vocabulary (stable, unique, novel) follows LeMat-GenBench; novelty here is the AMD distance to the nearest training structure, uniqueness a structure match. <Link to="/pipeline">The blocks and their bands</Link> · <Link to="/studies">the studies</Link>.</p>
         </section>
-      </main>
-      <SiteFooter />
+      </ResearchLayout>
+      <SiteFooter wide />
     </>
   );
 }

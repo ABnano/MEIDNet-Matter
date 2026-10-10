@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import { AppShell } from '@/components/shell';
 import { Spinner } from '@/components/ui';
 import { STATIC_MIRROR } from '@/lib/mirror';
-import { STUDY_DATASETS } from '@/copy/research';
+import { STUDY_DATASETS, home, researchNav } from '@/copy/research';
 
 const CreateProject = lazy(() => import('@/pages/CreateProject'));
 const ComingNext = lazy(() => import('@/pages/ComingNext'));
@@ -40,11 +40,11 @@ const DEMO = 'The Perov-5 demo: set a goal, check the readiness of the data and 
 /** Every page's own title, so tabs, history and bookmarks say where they lead. */
 const STUDY_TITLE = Object.fromEntries(STUDY_DATASETS) as Record<string, string>;
 const TITLES: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
-  [/^\/pipeline\/(S\d)$/, (m) => `Block ${m[1]} · Pipeline`], [/^\/pipeline$/, () => 'Pipeline'],
-  [/^\/studies\/([\w-]+)$/, (m) => `${STUDY_TITLE[m[1]] ?? m[1]} study`], [/^\/studies$/, () => 'Studies'],
+  [/^\/pipeline\/(S\d)$/, (m) => `Block ${m[1]} · ${researchNav.pipeline}`], [/^\/pipeline$/, () => researchNav.pipeline],
+  [/^\/studies\/([\w-]+)$/, (m) => `${STUDY_TITLE[m[1]] ?? m[1]} study`], [/^\/studies$/, () => researchNav.studies],
   [/^\/(play|generate)\/[\w-]+$/, () => 'Generation job'], [/^\/(play|generate)$/, () => 'Generate for a band gap'],
-  [/^\/explore$/, () => 'Explore the data'], [/^\/train\/[\w-]+$/, () => 'Training job'], [/^\/train$/, () => 'Train a small model'], [/^\/research$/, () => 'Research'],
-  [/^\/method$/, () => 'Method'], [/^\/privacy$/, () => 'Privacy'], [/^\/new$/, () => 'A new project'],
+  [/^\/explore$/, () => 'Explore the data'], [/^\/train\/[\w-]+$/, () => 'Training job'], [/^\/train$/, () => 'Train a small model'], [/^\/research$/, () => home.overviewTitle],
+  [/^\/method$/, () => researchNav.method], [/^\/privacy$/, () => 'Privacy'], [/^\/new$/, () => 'A new project'],
   [/^\/start-with-my-data$/, () => 'Start with my data'],
   [/^\/p\/[\w-]+\/goal$/, () => 'Goal · Perov-5 demo'], [/^\/p\/[\w-]+\/readiness$/, () => 'Readiness · Perov-5 demo'],
   [/^\/p\/[\w-]+\/runs$/, () => 'Searches · Perov-5 demo'], [/^\/p\/[\w-]+\/runs\/[\w-]+\/export$/, () => 'Validate and export · Perov-5 demo'],

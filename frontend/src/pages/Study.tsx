@@ -2,12 +2,11 @@ import { Link, useParams } from 'react-router';
 import { research, type BlocksPayload, type Calibration, type CheckpointInfo, type Study as StudyT, type StudyRoute, type StudyStability } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { Funnel, KV, Num, ResponseCurve, VerdictText } from '@/components/research';
-import { studies as S } from '@/copy/research';
+import { BLOCKS, BLOCK_NAMES, researchNav, studies as S } from '@/copy/research';
 
-const BLOCKS = ['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'];
-const BLOCK_NAMES: Record<string, string> = { S0: 'Data gate', S1: 'Encoder', S2: 'Alignment', S3: 'Decoder', S4: 'Labels', S5: 'Search', S6: 'End to end', S7: 'Validation', S8: 'Judges', S9: 'Readiness' };
 const str = (v: unknown) => (v === null || v === undefined ? '—' : typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(2)) : Array.isArray(v) ? v.join(', ') : String(v));
 
 function CalibrationPanel({ cal, study }: { cal: Calibration; study: StudyT }) {
@@ -94,15 +93,15 @@ export default function Study() {
   const tf = (s?.target_following ?? {}) as Record<string, unknown>;
   return (
     <>
-      <MarketingHeader />
-      <main className="wrap-narrow page" id="main">
+      <MarketingHeader wide />
+      <ResearchLayout>
         {error && <ErrorNote error={error} retry={reload} />}
         {loading && <Spinner label="Loading the study" />}
         {s && (
           <>
             <div className="page-head study-head">
               <div>
-                <div className="micro"><Link to="/studies">Studies</Link> · {s.dataset.name} · {s.mode}</div>
+                <div className="micro"><Link to="/studies">{researchNav.studies}</Link> · {s.dataset.name} · {s.mode}</div>
                 <h1>{s.title}</h1>
                 <p>{s.headline}</p>
               </div>
@@ -220,8 +219,8 @@ export default function Study() {
             </section>
           </>
         )}
-      </main>
-      <SiteFooter />
+      </ResearchLayout>
+      <SiteFooter wide />
     </>
   );
 }

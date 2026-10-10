@@ -2,6 +2,20 @@
 
 /** The executed studies, in reading order, with the short name a table column uses. */
 export const STUDY_DATASETS: Array<[string, string]> = [['perov5', 'Perov-5'], ['mp-perovskites', 'MP perovskites'], ['user-246', 'Upload (246)'], ['mp20', 'MP-20'], ['jarvis-dp', 'JARVIS DP']];
+
+/** The names of the research section: its left menu, the home page's links to it, the footer and the browser tabs. */
+export const researchNav = {
+  label: 'Research',
+  overview: 'Overview',
+  studies: 'Case studies',
+  pipeline: 'Evaluation pipeline',
+  method: 'Methodology',
+  prism: 'MEIDNet Prism',
+};
+
+/** The ten blocks of the pipeline with their short names, as the study pages and the research menu list them. */
+export const BLOCKS = ['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'];
+export const BLOCK_NAMES: Record<string, string> = { S0: 'Data gate', S1: 'Encoder', S2: 'Alignment', S3: 'Decoder', S4: 'Labels', S5: 'Search', S6: 'End to end', S7: 'Validation', S8: 'Judges', S9: 'Readiness' };
 export const home = {
   eyebrow: 'MEIDNet Matter · inverse materials design, hands on',
   h1: 'Explore materials. Train a small model. Discover candidates.',
@@ -16,9 +30,10 @@ export const home = {
     ['03', 'Generate', 'Inspect candidates', 'Ask for a band gap and get cells read by two models, with their checks, their limits and the files to take further.', '/generate'],
   ] as Array<[string, string, string, string, string]>,
   after: 'Satisfied with the small run? The same recipe at full size runs on your own computer with one command, on your own data too.',
-  researchTitle: 'The evidence behind it',
-  researchLead: 'The studies this site is built on, the ten-block pipeline with its bands and code, and the method with its limits. Kept whole, one step away.',
-  prism: 'Matter is the application half of MEIDNet. The method itself, its benchmarks, the documentation and the Studio for your own tables live in MEIDNet Prism.',
+  researchTitle: 'Research',
+  overviewTitle: 'Research overview',
+  researchLead: 'The case studies, the ten-block evaluation pipeline and the methodology behind every result on this site, with their data, code and limits.',
+  prism: 'MEIDNet Prism, the companion site of the MEIDNet method, holds its benchmarks, its documentation and the Studio for your own tables.',
   prismCta: 'Open MEIDNet Prism',
   plain: 'New to the field? A band gap is the energy a material needs before its electrons can move freely. It decides whether a material behaves as a metal, a semiconductor or an insulator, so asking for a band gap is asking for a kind of behaviour. The app proposes crystal structures that two machine-learning models of different lineage expect to have the gap you asked for, at the level of theory the data was computed with (PBE).',
   discoveriesTitle: 'What the generator has delivered',
@@ -51,7 +66,7 @@ export const train = {
 
 export const pipeline = {
   gradeLegend: 'Meets: inside the reference band · Borderline: near its edge · Not met: outside it · Context: measured, not graded. S0 shows the route each dataset supports: generation, screening, or a set of candidates per target; a measurement outside a band is a finding about the data or the model, with its remedy on the block\'s page.',
-  h1: 'The staged pipeline',
+  h1: 'Evaluation pipeline',
   lead: 'Ten blocks, S0 to S9. Each asks one question of a dataset and a model and reads the answer against a reference band validated on configurations of known quality: meets, borderline or not met. S0, the gate before training, answers with the route the data supports instead: generation, screening, or a set of candidates per target. A block\'s verdict is the weakest grade of its graded metrics; a metric that only predicts a quantity becomes context once that quantity is measured.',
   howToRead: 'How to read a band: the meets and borderline columns are thresholds on the metric; the reference columns give the value each known configuration reached, with its grade. "control" is the recipe without the structure losses, "fixed" the repaired model and search, "final" the best configuration, "mp" the Materials Project perovskites.',
   flowLead: 'Left to right: what the block receives, the programs that compute it (click one to read its code), the metrics it grades, and its verdict on each dataset. Metric boxes jump to their definition below.',
@@ -61,8 +76,8 @@ export const pipeline = {
 };
 
 export const studies = {
-  h1: 'Executed studies',
-  lead: 'Four datasets, in the order they were run. Each page gives the facts of the dataset, the verdict of every block, how target following was measured and what it returned, the checkpoints to download and the commands that reproduce the result.',
+  h1: 'Case studies',
+  lead: 'The datasets, in the order they were run. Each page gives the facts of the dataset, the verdict of every block, how target following was measured and what it returned, the checkpoints to download and the commands that reproduce the result.',
   verdictNote: 'Verdicts are results against the reference bands, written as text. "documented" marks a "not met" that is the finding itself, with its reason recorded.',
   checkpointsTitle: 'Checkpoints',
   checkpointsLead: 'Trained models you can download and run with the engine. Each entry carries its checksum, size and training configuration; the download verifies the checksum.',
@@ -79,6 +94,6 @@ export const play = {
 };
 
 export const method = {
-  h1: 'Mechanism, strengths and limits',
+  h1: 'Methodology',
   lead: 'What the engine does, what the measurements showed it does well, and where it stops.',
 };

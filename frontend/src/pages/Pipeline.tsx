@@ -3,6 +3,7 @@ import { STUDY_DATASETS } from '@/copy/research';
 import { research, type BlocksPayload } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
+import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { VerdictText } from '@/components/research';
 import { PipelineOverview } from '@/components/pipeline/Flow';
@@ -14,8 +15,8 @@ export default function Pipeline() {
   const { data, error, loading, reload } = useResource<BlocksPayload>('pipeline/blocks', (s) => research.blocks(s));
   return (
     <>
-      <MarketingHeader />
-      <main className="wrap-narrow page" id="main">
+      <MarketingHeader wide />
+      <ResearchLayout>
         <div className="page-head"><h1>{P.h1}</h1><p>{P.lead}</p><p className="small muted">Each block page shows its metrics, bands, meaning and the code that computes it. To run the blocks on your own data, follow <Link to="/method#run">the steps on the Method page</Link>.</p></div>
         {error && <ErrorNote error={error} retry={reload} />}
         {loading && <Spinner label="Loading the blocks" />}
@@ -67,8 +68,8 @@ export default function Pipeline() {
             </section>
           </>
         )}
-      </main>
-      <SiteFooter />
+      </ResearchLayout>
+      <SiteFooter wide />
     </>
   );
 }
