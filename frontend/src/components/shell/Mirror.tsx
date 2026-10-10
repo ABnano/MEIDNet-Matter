@@ -41,9 +41,9 @@ export function useSpaceReach(): Reach {
 const SECURE_DNS = 'turn on secure DNS in the browser (Chrome and Edge: Settings → Privacy and security → Security → Use secure DNS; Firefox: Settings → Privacy & Security → DNS over HTTPS), or use another network';
 
 function ReachLine({ reach }: { reach: Reach }) {
-  if (reach === 'checking') return <span className="muted">checking whether the live server is reachable from this network…</span>;
-  if (reach === 'reachable') return <span>the live server is reachable from this network: <a href={SPACE_APP} target="_blank" rel="noopener">open the live app ↗</a></span>;
-  return <span>this network does not reach the live server (*.hf.space); to use it, {SECURE_DNS}.</span>;
+  if (reach === 'checking') return <span className="muted">Checking whether the live server is reachable from this network…</span>;
+  if (reach === 'reachable') return <span>The live server is reachable from this network: <a href={SPACE_APP} target="_blank" rel="noopener">open the live app ↗</a></span>;
+  return <span>This network does not reach the live server (*.hf.space); to use it, {SECURE_DNS}.</span>;
 }
 
 /** One line at the top of every page of the mirror: where the visitor is, and whether the live parts are reachable. */
@@ -52,7 +52,7 @@ export function MirrorBanner() {
   if (!STATIC_MIRROR) return null;
   return (
     <div className="banner banner-info mirror-banner" role="note">
-      <b>Mirror on GitHub Pages.</b> Everything here can be read and explored on any network; live generation and the demo search run on the
+      <b>Mirror on GitHub Pages.</b> Everything here can be read and explored on any network; training, generation and the demo search run on the
       {' '}<a href={SPACE_PAGE} target="_blank" rel="noopener">Hugging Face Space</a>. <ReachLine reach={reach} />
     </div>
   );

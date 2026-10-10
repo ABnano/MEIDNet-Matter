@@ -11,24 +11,27 @@ interface Props {
   xLabel?: string; yLabel?: string; width?: number; height?: number;
   /** When set, x and y are the same quantity (a predicted-versus-reference plot) and the identity line is drawn. */
   identity?: boolean;
+  /** The points whose extent fixes the axes (default: the points drawn), so a filtered map keeps its frame. */
+  frame?: Array<{ x: number; y: number }>;
 }
 
 const PAD = { l: 44, r: 12, t: 10, b: 32 };
 
 /** A canvas scatter of up to tens of thousands of points, coloured by one value; hover names a point, click selects it.
  *  Drawn on a canvas (an SVG with 11,000 nodes is slow); the axes and the legend are SVG so they scale with the text. */
-export function Scatter({ points, colour, selected, onSelect, xLabel, yLabel, width = 560, height = 420, identity }: Props) {
+export function Scatter({ points, colour, selected, onSelect, xLabel, yLabel, width = 560, height = 420, identity, frame }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [hover, setHover] = useState<ScatterPoint | null>(null);
   const [dark, setDark] = useState(false);
   const box = useMemo(() => {
-    if (!points.length) return { x0: 0, x1: 1, y0: 0, y1: 1 };
+    const extent = frame?.length ? frame : points;
+    if (!extent.length) return { x0: 0, x1: 1, y0: 0, y1: 1 };
     let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-    for (const p of points) { if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x; if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y; }
+    for (const p of extent) { if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x; if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y; }
     if (identity) { const lo = Math.min(x0, y0), hi = Math.max(x1, y1); x0 = y0 = lo; x1 = y1 = hi; }
     const mx = (x1 - x0 || 1) * 0.04, my = (y1 - y0 || 1) * 0.04;
     return { x0: x0 - mx, x1: x1 + mx, y0: y0 - my, y1: y1 + my };
-  }, [points, identity]);
+  }, [points, frame, identity]);
   const W = width - PAD.l - PAD.r, H = height - PAD.t - PAD.b;
   const X = (x: number) => PAD.l + ((x - box.x0) / (box.x1 - box.x0)) * W;
   const Y = (y: number) => PAD.t + H - ((y - box.y0) / (box.y1 - box.y0)) * H;
