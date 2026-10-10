@@ -4,9 +4,9 @@
 (upstream commit 26a0387862 plus the uncommitted work of the staged-evaluation rounds), and `meidnet_eval/` holds the
 evaluation components (the ten blocks and their bands in `stages.py`, the generation, judging, relaxation and
 calibration scripts).  Install with `pip install ./engine` **before** `pip install -e .`; the distribution is named
-`meidnet` (2.4.0.dev3) so the application's `meidnet>=2.2.0,<3` dependency resolves to it and nothing is fetched from PyPI.
+`meidnet` (2.4.0.dev4) so the application's `meidnet>=2.2.0,<3` dependency resolves to it and nothing is fetched from PyPI.
 
-On PyPI, `meidnet` 2.4.0.dev3 is this snapshot, uploaded by MEIDNet-Matter's release workflow so that `pip install meidnet-matter`
+On PyPI, `meidnet` 2.4.0.dev4 is this snapshot, uploaded by MEIDNet-Matter's release workflow so that `pip install meidnet-matter`
 resolves without a clone; the upstream MEIDNet release 2.4.0 (https://github.com/ABnano/MEIDNet) will replace it.
 
 Snapshot taken 2026-10-09.  To refresh it: `python scripts/vendor_engine.py --src <checkout>`.  The upstream release of this

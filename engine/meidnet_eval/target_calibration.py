@@ -84,7 +84,7 @@ def structure_labels(lm, structures, gap_col: str = "band_gap") -> list:
     """The model's own label read from each structure: (value or None, note).  A cell the encoder cannot read (more
     atoms than its max_sites) gets None and the reason, never a value borrowed from the search latent."""
     import torch
-    from meidnet.data import featurize
+    from meidnet.data import featurize, fit_to_max_sites
     cols = list(lm.stats.columns)
     if gap_col not in cols:
         raise SystemExit(f"the model predicts {cols}, not {gap_col}")
@@ -92,7 +92,7 @@ def structure_labels(lm, structures, gap_col: str = "band_gap") -> list:
     out = []
     for s in structures:
         try:
-            dense = featurize(s, lm.model.max_sites)
+            dense = featurize(fit_to_max_sites(s, lm.model.max_sites), lm.model.max_sites)
             with torch.no_grad():
                 zc, _ = lm.model.encode_crystal(torch.from_numpy(dense).float().unsqueeze(0))
                 v = lm.stats.denormalize_tensor(lm.model.property_decoder(zc))[0]
@@ -102,6 +102,28 @@ def structure_labels(lm, structures, gap_col: str = "band_gap") -> list:
         except Exception as e:
             out.append((None, type(e).__name__))
     return out
+
+
+def select_label_only(df: pd.DataFrame, per: dict, window: float) -> pd.DataFrame:
+    """Candidates whose structure-read label lies within `window` of the request, when no independent judge exists for
+    the property.  One model's reading of its own output: weaker evidence than a consensus, and labelled as such."""
+    keep = []
+    for _, r in df.iterrows():
+        label = per.get(r["file"], {}).get("reencoded_gap")
+        if label is None or (isinstance(label, float) and np.isnan(label)):
+            continue
+        if abs(float(label) - float(r["target"])) <= window:
+            row = dict(r)
+            row["independent_gap"] = float("nan")
+            row["label_structure_gap"] = round(float(label), 3)
+            try:
+                from pymatgen.core import Composition
+                row["charge_balanced"] = bool(Composition(r["formula"]).oxi_state_guesses(max_sites=-1))
+            except Exception:
+                row["charge_balanced"] = None
+            row["judge"] = "none: selected on the structure-read label alone"
+            keep.append(row)
+    return pd.DataFrame(keep, columns=list(df.columns) + ["independent_gap", "label_structure_gap", "charge_balanced", "judge"])
 
 
 def select_consensus(df: pd.DataFrame, per: dict, window: float, min_gap: float, judge_text: str) -> pd.DataFrame:
@@ -211,6 +233,14 @@ def main():
         print(f"CONSENSUS ({a.select} eV, both judges): {len(out)} of {len(df)} candidates")
         for tgt, g in out.groupby("target") if len(out) else []:
             print(f"   {tgt:4.1f} eV: {len(g):2d}  " + ", ".join(list(g['formula'])[:8]))
+    elif a.select is not None and a.judge == "reencode":
+        # no independent judge (a property MEGNet cannot read): the selection rests on the structure-read label alone,
+        # and the file says so in its `judge` column, so a reader never mistakes it for a two-model consensus
+        out = select_label_only(df, per, a.select)
+        out.to_csv(os.path.join(a.results, "candidates_consensus.csv"), index=False)
+        print(f"SELECTED ({a.select} {a.gap_col}, structure-read label only, no independent judge): {len(out)} of {len(df)} candidates")
+        for tgt, g in out.groupby("target") if len(out) else []:
+            print(f"   {tgt:6.2f}: {len(g):2d}  " + ", ".join(list(g['formula'])[:8]))
 
 
 if __name__ == "__main__":

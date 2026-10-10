@@ -116,18 +116,26 @@ def known_values(intake, gap, stability_col=None):
 
 
 def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", relax_steps=150, hull_reference=None,
-          hull_cache=None, workers=4, stability_col=None, py_model=sys.executable, py_judge=None, log=print):
-    """Stages 1-7 on OUT/candidates.csv (standard layout).  Returns the report dict."""
+          hull_cache=None, workers=4, stability_col=None, py_model=sys.executable, py_judge=None, log=print, judge="megnet"):
+    """Stages 1-7 on OUT/candidates.csv (standard layout).  Returns the report dict.
+
+    judge="none": the property has no independent model (MEGNet reads band gaps only), so the selection rests on the
+    structure-read label alone and the report says so; everything else (relaxation, re-encoding, hull, novelty) runs."""
     py_judge = py_judge or py_model
     test_csv = test_csv or os.path.join(intake, "test.csv")
     gen = pd.read_csv(os.path.join(out, "candidates.csv"))
     report = {"targets": sorted(float(t) for t in gen["target"].unique()), "window_eV": window, "stages": {"1_candidates": int(len(gen))}}
-    # 1 the label read from each returned cell; 2 the qualified judge and the two-model consensus
-    run(py_model, "target_calibration.py", out, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, log=log)
-    run(py_judge, "target_calibration.py", out, "--test-csv", test_csv, "--gap-col", gap, "--judge", "megnet",
-        "--qualify-n", 80, "--select", window, log=log)
+    report["judge_used"] = judge
+    # 1 the label read from each returned cell; 2 the qualified judge and the two-model consensus (or, without a judge,
+    #   the selection on the structure-read label alone)
+    if judge == "none":
+        run(py_model, "target_calibration.py", out, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, "--select", window, log=log)
+    else:
+        run(py_model, "target_calibration.py", out, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, log=log)
+        run(py_judge, "target_calibration.py", out, "--test-csv", test_csv, "--gap-col", gap, "--judge", "megnet",
+            "--qualify-n", 80, "--select", window, log=log)
     cal = json.load(open(os.path.join(out, "calibration.json")))
-    report["judge"] = cal.get("judge_qualification")
+    report["judge"] = cal.get("judge_qualification") if judge != "none" else None
     cons = os.path.join(out, "candidates_consensus.csv")
     c0 = pd.read_csv(cons) if os.path.exists(cons) else pd.DataFrame()
     report["stages"]["2_two_model_consensus"] = int(len(c0))
@@ -170,9 +178,12 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
         report["collapsed_on_relaxation"] = collapsed
         report["not_bulk_on_relaxation"] = not_bulk
         if len(c1):
-            run(py_model, "target_calibration.py", rel, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, log=log)
-            run(py_judge, "target_calibration.py", rel, "--test-csv", test_csv, "--gap-col", gap, "--judge", "megnet",
-                "--qualify-n", 80, "--select", window, log=log)
+            if judge == "none":
+                run(py_model, "target_calibration.py", rel, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, "--select", window, log=log)
+            else:
+                run(py_model, "target_calibration.py", rel, "--judge", "reencode", "--ckpt", ckpt, "--gap-col", gap, log=log)
+                run(py_judge, "target_calibration.py", rel, "--test-csv", test_csv, "--gap-col", gap, "--judge", "megnet",
+                    "--qualify-n", 80, "--select", window, log=log)
             fin = os.path.join(rel, "candidates_consensus.csv")
             final = pd.read_csv(fin) if os.path.exists(fin) else pd.DataFrame()
             # the input of Prism's `meidnet score`: every relaxed cell, the window that was asked for, the judge's value
@@ -180,8 +191,9 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
             q1 = rc.get("judge_qualification") or {}
             trows = [{"file": os.path.basename(r["file"]), f"{gap}_target": float(r["target"]),
                       f"{gap}_min": max(0.0, float(r["target"]) - window), f"{gap}_max": float(r["target"]) + window,
-                      f"{gap}_value": rc.get("per_candidate", {}).get(r["file"], {}).get("independent_gap"),
-                      "source": f"MEGNet fidelity {q1.get('fidelity')} judge on the relaxed cell"} for _, r in c1.iterrows()]
+                      f"{gap}_value": rc.get("per_candidate", {}).get(r["file"], {}).get("independent_gap" if judge != "none" else "reencoded_gap"),
+                      "source": f"MEGNet fidelity {q1.get('fidelity')} judge on the relaxed cell" if judge != "none"
+                      else "the model's own label read from the relaxed cell (no independent judge)"} for _, r in c1.iterrows()]
             pd.DataFrame(trows).to_csv(os.path.join(rel, "targets.csv"), index=False)
             # 5 stability, one potential for every phase (all relaxed cells, so the stable share is measured, not just the winners')
             if hull_reference:
@@ -228,7 +240,8 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
         else:
             cls = "new composition" + (" (absent from the data and the reference set)" if "reference_id" in r else "")
         rows.append(dict(target=float(r["target"]), formula=r["formula"], cls=cls,
-                         label=float(r.get("label_structure_gap", r.get("label_gap"))), judge=float(r["independent_gap"]),
+                         label=float(r.get("label_structure_gap", r.get("label_gap"))),
+                         judge=float(r["independent_gap"]) if "independent_gap" in r and r["independent_gap"] == r["independent_gap"] else float("nan"),
                          drop_tensornet=m.get("tensornet_drop_per_atom"), drop_chgnet=m.get("chgnet_drop_per_atom"),
                          spacegroup=f"{m.get('spacegroup_designed')}->{m.get('tensornet_spacegroup_relaxed')}/{m.get('chgnet_spacegroup_relaxed')}",
                          charge_balanced=r.get("charge_balanced"), e_hull=r.get("e_hull"), reference_id=rid if has_ref else None,
@@ -255,6 +268,9 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
     if q:
         L += ["", f"Judge: MEGNet fidelity {q.get('fidelity')}, qualified on {q.get('split')}: MAE {q.get('mae', float('nan')):.2f} eV, "
                   f"Spearman {q.get('spearman', float('nan')):.2f} (n = {q.get('n')})."]
+    elif report.get("judge_used") == "none":
+        L += ["", "Judge: none. No independent model reads this property (MEGNet reads band gaps only), so every selection here "
+                  "rests on the model's own label read from the cell: one model's reading of its own output, not a consensus."]
     h = report.get("hull") or {}
     if h:
         v = h.get("validation") or {}
@@ -272,7 +288,7 @@ def check(out, ckpt, intake, gap, window=0.5, test_csv=None, relax="tensornet", 
         return "" if v is None or (isinstance(v, float) and v != v) else f"{v:.{d}f}"
     for r in rows:
         eh = f2(r["e_hull"], 3) + (" †" if r["e_hull_note"] else "")
-        L.append(f"| {r['target']:.1f} | {r['formula']} | {r['cls']} | {r['label']:.2f} | {r['judge']:.2f} | {f2(r['drop_tensornet'])} / {f2(r['drop_chgnet'])} | "
+        L.append(f"| {r['target']:.1f} | {r['formula']} | {r['cls']} | {r['label']:.2f} | {f2(r['judge']) or 'none'} | {f2(r['drop_tensornet'])} / {f2(r['drop_chgnet'])} | "
                  f"{r['spacegroup']} | {r['charge_balanced']} | {eh} | {r['known']} | {f2(r['amd_nearest'], 3)} |")
     noted = [r for r in rows if r["e_hull_note"]]
     if noted:
@@ -303,11 +319,19 @@ def main(argv=None):
     ap.add_argument("--workers", type=int, default=min(4, os.cpu_count() or 1))
     ap.add_argument("--stability-col", default=None, help="the data's DFT hull column: known materials then calibrate the hull estimate")
     ap.add_argument("--python", default=sys.executable); ap.add_argument("--python-judge", default=None)
+    ap.add_argument("--judge", choices=["megnet", "none"], default="megnet",
+                    help="the independent judge. MEGNet reads band gaps only, so for a column not named as a gap pass "
+                         "'none' (re-encode, relax and report without a judge) or --judge-anyway")
+    ap.add_argument("--judge-anyway", action="store_true", help="use the band-gap judge on a column that is not named as a gap")
     a = ap.parse_args(argv)
+    if a.judge == "megnet" and "gap" not in a.gap.lower() and not a.judge_anyway:
+        raise SystemExit(f"the independent judge (MEGNet) reads band gaps, and `{a.gap}` is not named as one: its reading would be "
+                         f"compared against a {a.gap} target, which is meaningless. Pass --judge none to check without a judge, "
+                         f"or --judge-anyway if {a.gap} really is a band gap.")
     os.makedirs(a.out, exist_ok=True)
     standard_pool(a.table, a.cifs_dir or os.path.dirname(os.path.abspath(a.table)), a.out, a.gap, a.target_col, a.label_col)
     check(a.out, a.ckpt, a.intake, a.gap, a.window, a.test_csv, a.relax, a.relax_steps, a.hull_reference, a.hull_cache,
-          a.workers, a.stability_col, a.python, a.python_judge)
+          a.workers, a.stability_col, a.python, a.python_judge, judge=a.judge)
     return 0
 
 

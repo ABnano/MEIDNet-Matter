@@ -195,9 +195,39 @@ def cmd_init(a):
         text = TEMPLATE_CUSTOM.format(name=a.name, table=a.table, id_column=a.id_column, cif_column=a.cif_column,
                                       properties=pl, family=a.family, variant=a.variant or "null",
                                       objectives=ol, targets=tl)
+    text, note = _match_structure_source(text, a.table, a.cif_column, a.structures_dir)
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)
+    if note:
+        print(note)
     print(f"wrote {path}\nnext: meidnet check {path}")
+
+
+def _match_structure_source(text: str, table: str, cif_column: str, structures_dir: str | None):
+    """The written config names where the structures are.  A table without the CIF column, next to a folder of
+    <id>.cif files, is the common case for a user's own data: the config then points at that folder instead of at a
+    column that is not there (a first external test ended with 0 usable rows for this reason)."""
+    sdir = structures_dir
+    if sdir is None and os.path.exists(table):
+        try:
+            from meidnet.data import read_table
+            cols = list(read_table(table).columns)
+        except Exception:
+            cols = None
+        if cols is not None and cif_column not in cols:
+            for cand in ("structures", "cifs", "cif", "poscars"):
+                d = os.path.join(os.path.dirname(os.path.abspath(table)), cand)
+                if os.path.isdir(d):
+                    sdir = cand
+                    break
+    if not sdir:
+        return text, None
+    text = text.replace(f"  cif_column: {cif_column}       # column holding CIF text ... or use structures_dir\n"
+                        "  # structures_dir: structures/  # folder of <id>.cif files (set cif_column: null)\n",
+                        f"  cif_column: null               # the table has no CIF column; the structures are files\n"
+                        f"  structures_dir: {sdir}/        # folder of <id>.cif files, one per row of the table\n")
+    return text, (f"the table has no `{cif_column}` column; {sdir}/ next to it holds the structures, so the config points there "
+                  f"(cif_column: null, structures_dir: {sdir}/)")
 
 
 def cmd_check(a):
@@ -208,7 +238,12 @@ def cmd_check(a):
     print(f"\n{rep.kept} of {rep.rows} materials usable.")
     for reason, n in rep.skipped.most_common():
         print(f"  skipped {n:>6}  {reason}   e.g. {', '.join(rep.examples.get(reason, []))}")
+    if rep.reduced_to_primitive:
+        print(f"  {rep.reduced_to_primitive} structures larger than max_sites were read as their primitive cell (the same crystal)")
     print(f"report: {info['report_path']}")
+    if rep.kept == 0:
+        # a process exit code is what a script or a newcomer reads first: nothing usable is a failure, not a report
+        sys.exit("no material is usable: fix the problems above (and in the report) before training")
 
 
 def cmd_train(a):
@@ -271,12 +306,24 @@ def _annotate_generation(cfg):
         if val and val[-1].get("mae"):
             print("validation error of this model (held-out, from training): " + ", ".join(f"{k} {v:.3g}" for k, v in val[-1]["mae"].items())
                   + ".  A candidate's predicted value is an estimate with that error.")
-        gap = next((p.column for p in cfg.data.properties if "gap" in p.column.lower()), cfg.data.properties[0].column)
+        gap = next((p.column for p in cfg.data.properties if "gap" in p.column.lower()), None)
         intake = os.path.dirname(os.path.abspath(cfg.resolve(cfg.data.table)))
         model = cfg.model_path if getattr(cfg, "model_path", None) else cfg.checkpoint_path
-        print("the independent check (label read from each cell, qualified judge, two potentials, re-judge, novelty):\n"
-              f"  python -m meidnet_eval.check_candidates {out} --ckpt {model} --intake {intake} --gap {gap} "
-              f"--out {os.path.join(cfg.out_dir, 'check')}")
+        check_out = os.path.join(cfg.out_dir, "check")
+        if gap:
+            print("the independent check (label read from each cell, qualified judge, two potentials, re-judge, novelty):\n"
+                  f"  python -m meidnet_eval.check_candidates {out} --ckpt {model} --intake {intake} --gap {gap} --out {check_out}")
+        else:
+            # MEGNet reads band gaps only: for any other property the check runs without an independent judge
+            print("the check (label read from each cell, two potentials, re-encode after relaxation, novelty), without an "
+                  "independent judge: the MEGNet judge reads band gaps only and none of "
+                  + ", ".join(p.column for p in cfg.data.properties) + " is one:\n"
+                  f"  python -m meidnet_eval.check_candidates {out} --ckpt {model} --intake {intake} "
+                  f"--gap {cfg.data.properties[0].column} --judge none --out {check_out}")
+        if not os.path.exists(os.path.join(intake, "test.csv")):
+            print(f"  ({intake}/test.csv does not exist: the check qualifies its judge and measures novelty on an intake with "
+                  f"train/val/test splits; make one with\n   python -m meidnet_eval.intake <table.csv> <intake_dir> "
+                  f"--id {cfg.data.id_column} --cif {cfg.data.cif_column or 'cif'} --props {' '.join(p.column for p in cfg.data.properties)})")
     except Exception as e:
         print(f"(validation error not read: {e})")
 
@@ -409,6 +456,7 @@ def main(argv=None):
     s.add_argument("--table", default="materials.csv")
     s.add_argument("--id-column", default="material_id")
     s.add_argument("--cif-column", default="cif")
+    s.add_argument("--structures-dir", default=None, help="folder of <id>.cif files, when the table holds no CIF text")
     s.add_argument("--properties", nargs="*", help="property column names")
     s.add_argument("--family", default="perovskite_abx3")
     s.add_argument("--variant", default=None)

@@ -219,6 +219,23 @@ def scale_lattice(a, b, c, alpha, beta, gamma) -> np.ndarray:
     return np.array([a / 20.0, b / 20.0, c / 20.0, alpha / 180.0, beta / 180.0, gamma / 180.0], dtype=np.float32)
 
 
+def fit_to_max_sites(struct: Structure, max_sites: int) -> Structure:
+    """The structure itself when it has at most ``max_sites`` atoms, else its primitive cell when that fits.
+
+    A conventional cell is often a multiple of what the model needs: the 40-atom conventional cell of a rock-salt ordered
+    double perovskite is four 10-atom primitive cells, the same crystal.  Reducing it changes nothing physical, so a
+    user's file and a generated cell are read instead of refused.  A crystal whose primitive cell is still too large is
+    returned unchanged, and the caller reports it.
+    """
+    if len(struct) <= max_sites:
+        return struct
+    try:
+        prim = struct.get_primitive_structure()
+    except Exception:
+        return struct
+    return prim if len(prim) <= max_sites else struct
+
+
 def featurize(struct: Structure, max_sites: int = 20, cutoff: float = 4.0) -> np.ndarray:
     """
     Fixed-length vector for one structure:
@@ -329,6 +346,7 @@ class DataReport:
     site_counts: Counter = field(default_factory=Counter)
     elements: Counter = field(default_factory=Counter)
     aligned: int = 0
+    reduced_to_primitive: int = 0        # cells larger than max_sites that were read as their primitive cell
 
     def skip(self, reason: str, material_id: str):
         self.skipped[reason] += 1
@@ -412,8 +430,11 @@ def load_records(df: pd.DataFrame, data_cfg, base_resolve, family=None, source: 
             continue
         report.site_counts[len(s)] += 1
         if len(s) > data_cfg.max_sites:
-            report.skip(f"more than max_sites={data_cfg.max_sites} atoms", mid)
-            continue
+            s = fit_to_max_sites(s, data_cfg.max_sites)        # a conventional cell is read as its primitive cell
+            if len(s) > data_cfg.max_sites:
+                report.skip(f"more than max_sites={data_cfg.max_sites} atoms (also as its primitive cell)", mid)
+                continue
+            report.reduced_to_primitive += 1
         if not s.is_ordered:        # doped / solid-solution CIFs: one element per site is needed
             report.skip("partially occupied site (doped or solid solution): one element per site is needed", mid)
             continue

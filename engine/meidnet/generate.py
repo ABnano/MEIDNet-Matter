@@ -37,7 +37,7 @@ from pymatgen.io.cif import CifWriter
 
 from meidnet.chem import ELEMENTS, NUM_SPECIES, element_index, ionic_radius
 from meidnet.constraints import build_candidate, evaluate
-from meidnet.data import featurize
+from meidnet.data import featurize, fit_to_max_sites
 from meidnet.terms import SearchContext, build_terms, build_transforms, softmax_temp
 
 
@@ -556,7 +556,9 @@ class Designer:
                             continue
                     k = len(tlog.saved) + 1
                     path = os.path.join(cif_dir, f"{prefix}_T{idx}_R{rnd}_{k}.cif")
-                    CifWriter(cand.structure).write_file(path)
+                    # the symmetry refinement returns the conventional cell, which for a double perovskite holds 40 atoms;
+                    # the model reads at most max_sites, so the file carries the same crystal as its primitive cell
+                    CifWriter(fit_to_max_sites(cand.structure, self.lm.model.max_sites)).write_file(path)
                     flags = self._flags(preds, z_i, ranges)
                     sc = SavedCandidate(idx, rnd, os.path.relpath(path, out_dir), dict(cand.elements), cand.formula(),
                                         float(cand.lattice_a), preds, [r.to_dict() for r in cand.results],
