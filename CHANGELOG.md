@@ -4,6 +4,15 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-10-10
+
+### Fixed
+- The application requires the engine at `>=2.4.0.dev4`, the snapshot it ships with. 0.10.1 asked for `>=2.4.0.dev0`,
+  so a PyPI install could pair it with an older engine from the cache (a fresh install did: 2.4.0.dev3, without the
+  four engine fixes). The floor moves with every engine change from now on.
+- Home page: the structures the generator has delivered (the strip and its two summary lines) are back on the front
+  door, between the three stages and the research block; the research overview keeps the walkthrough and the studies.
+
 ## [0.10.1] - 2026-10-10
 
 Engine snapshot 2.4.0.dev4: what two independent tests of the command-line route found (a double-perovskite upload,

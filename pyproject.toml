@@ -27,7 +27,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "meidnet>=2.4.0.dev0,<3",  # installed from ./engine (the vendored snapshot), not from PyPI
+    "meidnet>=2.4.0.dev4,<3",  # the vendored snapshot in ./engine, also on PyPI; the floor moves with every engine change, so a PyPI install never pairs the app with an older engine
     "fastapi>=0.115",
     "uvicorn>=0.30",
     "pydantic>=2.5",
