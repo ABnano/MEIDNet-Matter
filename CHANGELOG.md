@@ -4,7 +4,45 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
-### Fixed
+## [0.10.1] - 2026-10-10
+
+Engine snapshot 2.4.0.dev4: what two independent tests of the command-line route found (a double-perovskite upload,
+a JARVIS set without band gaps), and the first impressions of the app brought in line with its evidence.
+
+### Fixed (engine, 2.4.0.dev4)
+- A cell larger than the model's `max_sites` is read as its primitive cell, the same crystal, instead of refused: at
+  intake (`meidnet check` counts and reports it; a user's 40-atom conventional cells no longer give 0 usable rows), in
+  the CIF the family search writes (a rock-salt double perovskite's refined cell holds 40 atoms; the file now holds its
+  10-atom primitive cell, so the label can be read from the returned structure as promised), and in the re-encoding of
+  candidates (`target_calibration --judge reencode`, `check_candidates`). Measured on the tester's data: 38 of 40
+  oversized files read, 12 of 12 earlier 40-atom candidates re-encoded, fresh exports 10 atoms.
+- `meidnet check` exits non-zero when no material is usable; it exited 0 before, and a reader of the exit code went on
+  to train on nothing.
+- The independent judge is for band gaps only: `check_candidates` refuses `--gap` for a column not named as a gap
+  (formation energy, bulk modulus) unless `--judge none`, which runs the check without a judge (re-encode, relax, hull,
+  novelty; selection on the structure-read label, stated as such in `candidates_consensus.csv` and the report) or
+  `--judge-anyway`. `meidnet generate` prints the fitting command, and says when the intake has no `test.csv` and how
+  the `intake` component makes one.
+- `meidnet init` writes `cif_column: null` and `structures_dir:` when the table holds no CIF column and a `structures/`
+  (`cifs/`, `cif/`, `poscars/`) folder sits beside it, or when `--structures-dir` names one; it wrote `cif_column: cif`
+  for such data before, and the check then found no usable row.
+
+### Changed (app)
+- Generate: the introduction says what the server does (keeps cells by their own structure-read label, then has the
+  second model read every kept cell); the result leads with the strict count, placed inside the window by both models
+  and charge balanced, before the exploratory totals. The judge's error on the non-zero gaps and the share of zero-gap
+  test materials stand beside its overall error.
+- Perov-5 search results: the count supported by the structure-based prediction leads; the search-filter total follows,
+  marked exploratory.
+- Explore: the map has equal scales on both axes, and its caption says why the projection is a disc (every material is
+  stored at the same distance from the centre of the learned space) and that the ring mostly separates zero-gap from
+  gapped materials, not a physical map.
+- Train: the chart's error covers all 500 validation materials, the summary's band-gap error only the non-zero gaps;
+  both say so.
+- Research pages carry a left menu (overview, case studies, evaluation pipeline, methodology) with plainer names, on one
+  header width; on phones it folds into a row of links.
+
+### Fixed (app)
 - Generate page: the family pointer repeated "instead: Method › Run it on your data" after its link, because the sentence
   was split around the wrong words. The page now splits at the link text itself (`play.familyLink`), and a copy test
   checks that the link text occurs once and the sentence reads whole.

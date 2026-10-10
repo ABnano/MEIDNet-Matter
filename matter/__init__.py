@@ -7,4 +7,4 @@ searches candidate structures and returns them with their evidence and provenanc
 copies it.
 """
 
-__version__ = "0.10.0"
+__version__ = "0.10.1"

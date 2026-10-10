@@ -1,15 +1,15 @@
 {
  "files": {
-  "README.md": "11c05b9b6a2bed108ddf35003d843c83f3a42e8646250cf1cf309908ceb14513",
-  "meidnet/__init__.py": "131730f4aa0c0790b5ea067e5771e52e0340258f3b3785dd937baf8d4e91ac6d",
+  "README.md": "8e26f2732cbd9cb127e79385c596c4b1bade8b88013965fe6d325a92d6a4d387",
+  "meidnet/__init__.py": "8bdc2b34561cdf005122c31b5e8722404a85ca3c4c34b93e8c46b4c8d9983875",
   "meidnet/__main__.py": "ef2fc3486868284905420980d816656964541b146d13b286af8e7ce62dd71b78",
   "meidnet/benchmark.py": "847468f3212510596243620d64d5a7e1939bdb9b92c090668f026b9e79dc7e7f",
   "meidnet/checkpoint.py": "026506233d016729df6749dd988a0c621ef8808ab7667efca43ed6863aed6c16",
   "meidnet/chem.py": "f430119ade90ff24b8c0a7619445e98415bdd56dc131ab1d6cb2a38af34edd5c",
-  "meidnet/cli.py": "0d331608d13adb586306c56339f22ab060ccbfecf148c31701b3438fd2d0d17f",
+  "meidnet/cli.py": "ec4c679698b9b34ce48e9d2b0718e3c6526a30a17d2494c6c13b2cb1c2995286",
   "meidnet/config.py": "ea08d8adbdf01be814af69ba3ca593a7bf419d5e57678f3f35cfd668a976963d",
   "meidnet/constraints.py": "d7a99769448b08c891027e1789e72319aa96c0603b71fc1186eb5448f1895ae2",
-  "meidnet/data.py": "b82005b04d10bbbb74b3c269ccf72cac6fc849ef7ad167f06356dd685542c087",
+  "meidnet/data.py": "02a391a903804d559688922bdda8b00c29aa62748e966b99c972f1b4f60cd66a",
   "meidnet/designspace.py": "a7e35df55ec7841fbe618d2feca6264e88e751557f42d1cab2f78eb43873d1fe",
   "meidnet/element_features_cgcnn.json": "cb90bd2257dbf8cfc4e6b2b6d4348d4616e8e9680f1339b1461137032e0f1894",
   "meidnet/families/auto_mp_perovskite.yaml": "00b8fd235629f730c121a781d711e99a9ca54bdf4456b462957f77effa4464f0",
@@ -22,7 +22,7 @@
   "meidnet/families/perovskite_abx3.yaml": "44e8162307d314ec217d4998cb8650b2b29045d3a4585c774d63caf1470ec6ae",
   "meidnet/families/u246_dp.yaml": "5277336043d21670d3f0485d3cf79e8895afc1702239aef83782aedc6bf2b1ac",
   "meidnet/family.py": "8563dfc5617610b6e878045c47c081a13a7387e7ba70d46a3ebd6a719295b811",
-  "meidnet/generate.py": "787de0ad3ddf993229a5a6453688bb957b01d24bac21d1b18b179d9786d32348",
+  "meidnet/generate.py": "6d3e3195ce08ed038f9fda85b82e528774a7ac873087eb506000464d3c292634",
   "meidnet/model.py": "9a5f5f3209e6c283c4914b20514b1029deb6a57b92b9366bff8cc38d08bba1d2",
   "meidnet/pipeline.py": "e2bc5ede1cd48b9b8e2c8a9ff8d35b104d742cc5a99501a19187441c4c9539ef",
   "meidnet/registry.py": "c45abedab89ccc56c58d44b26789d658d6f0f9c21d01c286ba7ce406eafdf68f",
@@ -41,7 +41,7 @@
   "meidnet_eval/__init__.py": "7b51a5ebc4ca41383dff6d6b55984c34f65aac866a564561624d49275d333a9b",
   "meidnet_eval/auto_family.py": "69e8d2fcce91f46afe7df4e2a55f41ad0ea26372c36a4041255ab64be472495c",
   "meidnet_eval/candidate_cells.py": "da085769e4ac01604a4c92c005d6f50fc462ad85d701d0b4266a211322793b12",
-  "meidnet_eval/check_candidates.py": "4daea0a4577c1963548a721cfd71f8aaa35e00fbb6598aaf19a9d0584b633232",
+  "meidnet_eval/check_candidates.py": "06ac9d5104a2609be8ca6607b54c722506efae5d5c6a0236af28ea1eaefccc16",
   "meidnet_eval/component_report.py": "86f449e8cb7607733cafdc423d443cfd73733cd2e0242f04cc8fba9dd7687b5b",
   "meidnet_eval/conditional_generate.py": "e674bbce379ea9c1e0519e5658ce525fcde1865e966087485fe8b6abe4a91783",
   "meidnet_eval/d1_demo.py": "d26336d971d940dd709e493642645554a1ff11c3d07b9d2f46d52bc648d2dc9f",
@@ -84,15 +84,16 @@
   "meidnet_eval/stages.py": "16c54db556204eeba618793f8dd8f5736acb6c75db8e7606dd2e4fce6e4b54be",
   "meidnet_eval/steer_test.py": "9e862830ea125de590f4986937701d21b35e1f5e48470dbe88f624f82cdc9ef9",
   "meidnet_eval/sun_validate.py": "0dc266c64d3f28ce761e642fae0920e86dc4ced83cf4fbaec2b6894d0aab1d59",
-  "meidnet_eval/target_calibration.py": "2b3b8cd9f658f0c3a16798d737fcfa3e0b53aaa5ef95878c7316d8aac2bf4168",
+  "meidnet_eval/target_calibration.py": "159f5ec93f11bc73cd5f4625b5a7231e2ed6f05906573e7d03d15269fbb39cf8",
   "meidnet_eval/unseen_element_test.py": "3d960f656241347a71023bd6f5467865b219ca735022c9e4231d6d450d662281",
   "meidnet_eval/wyckoff_targets.py": "c9788710f6b17dd4bdb145df5a273275166f09ecdc14b57549098a2bd1cf59be",
-  "pyproject.toml": "93e739f67c7f5621c989991c4d4498eac057adca18383f546d2b43249c86fdbf"
+  "pyproject.toml": "08ee07439b0b62a0f88c74ef787133357ec843e5a3e4da5ea367b524ddda41f7"
  },
  "n_files": 88,
+ "note": "2.4.0.dev4 edits the snapshot in this repository (data.py, generate.py, cli.py, target_calibration.py, check_candidates.py: cells larger than max_sites read as their primitive cell, check exit code, no band-gap judge for other properties, init with a structures folder); hashes updated for those files",
  "schema": "meidnet-matter/engine-snapshot/1",
  "snapshot_date": "2026-10-09",
  "source": "meidnet_fix",
  "source_commit": "26a03878629b95f7226e59c53600237dfee6de67",
- "version": "2.4.0.dev3"
+ "version": "2.4.0.dev4"
 }
