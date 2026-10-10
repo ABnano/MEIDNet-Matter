@@ -388,16 +388,25 @@ select.input { width: 100%; max-width: 100%; }
   .research-nav ul ul, .research-nav-foot { display: none; }
 }
 
-/* the animated tour in the hero: the same player as MEIDNet Prism's landing (ids and classes fixed by /tour/prism-tour.js) */
-@media (min-width: 900px) { .hero { grid-template-columns: 1fr 1.25fr; } }   /* the tour beside the words on wide screens; below it on phones (the rule at 899px) */
-.tour3d { border: 1px solid var(--line); border-top: 4px solid var(--t3c, var(--c-family, var(--p1))); border-radius: var(--r-3); background: var(--card); padding: var(--s-4) var(--s-4) var(--s-3); transition: border-color .3s; min-width: 0; }
-.tour3d .micro { margin-bottom: var(--s-2); }
+/* the hero: the words beside the crystal of MEIDNet Prism's landing page (drawn by /tour/prism-hero.js); on phones the
+   crystal comes below the words (the rule at 899px) */
+@media (min-width: 900px) { .hero { grid-template-columns: 1fr 1fr; } }
+.scene { position: relative; width: 100%; max-width: 600px; aspect-ratio: 1 / .86; margin: 0 auto; }
+.scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+.scene canvas.grabbing { cursor: grabbing; }
+.scene figcaption { position: absolute; right: 4px; bottom: 0; font: 500 11.5px/1.3 var(--mono); color: var(--faint); letter-spacing: .02em; }
+
+/* how it works: a few words, then the one-minute tour (the same player as MEIDNet Prism's landing; ids and classes fixed
+   by /tour/prism-tour.js), as wide as the page and without a frame, so it sits in the page like the crystal; no wider
+   than the window's height allows, so the controls stay in view */
+.how-head { max-width: 72ch; margin-bottom: var(--s-6); }
+.tour3d { width: 100%; max-width: min(100%, calc((100vh - 240px) * 16 / 9)); margin: 0 auto; min-width: 0; }
 .t3-strip { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .t3-strip button { position: relative; width: 100%; border: 1.5px solid var(--bc); background: var(--card); color: color-mix(in oklab, var(--bc) 78%, var(--ink)); border-radius: var(--r-pill); padding: 6px 2px; font: 700 12px/1 var(--display); cursor: pointer; overflow: hidden; }
 .t3-strip button.on { background: var(--bc); color: #fff; }
 .t3-strip button:hover { box-shadow: 0 4px 14px -8px var(--bc); }
 .t3-strip button i { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: rgba(255, 255, 255, .9); }
-.t3-stage { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-2); overflow: hidden; border: 1px solid var(--line); background: radial-gradient(60% 70% at 72% 40%, rgba(99, 102, 241, .08), transparent 70%), radial-gradient(50% 60% at 20% 80%, rgba(20, 184, 166, .07), transparent 70%), var(--bg); }
+.t3-stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: radial-gradient(closest-side at 72% 42%, rgba(99, 102, 241, .1), transparent), radial-gradient(closest-side at 22% 70%, rgba(20, 184, 166, .08), transparent); }   /* glows that fade out before the edges: no frame */
 .t3-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .t3-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); text-align: center; }
 .t3-cap { font-size: var(--fs-small); line-height: 1.5; margin: var(--s-3) 2px; min-height: 3.2em; color: var(--muted); }
@@ -416,11 +425,3 @@ select.input { width: 100%; max-width: 100%; }
   .t3-open { margin-left: 0; width: 100%; }
   .hero-result .hero-example { grid-template-columns: 1fr; }
 }
-
-/* the crystal of MEIDNet Prism's landing page beside a few words on the method (drawn by /tour/prism-hero.js) */
-.idea { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--s-8); align-items: center; }
-.idea .scene { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1 / .86; margin: 0 auto; }
-.idea .scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
-.idea .scene canvas.grabbing { cursor: grabbing; }
-.idea .scene figcaption { position: absolute; right: 4px; bottom: 0; font: 500 11.5px/1.3 var(--mono); color: var(--faint); letter-spacing: .02em; }
-@media (max-width: 899px) { .idea { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); } }

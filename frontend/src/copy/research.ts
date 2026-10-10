@@ -34,7 +34,6 @@ export const home = {
   tourAria: 'Animated tour of MEIDNet in three dimensions: data, model, family, rules, targets, search and candidates. The caption below gives each step in words.',
   tourFallback: 'The animated tour could not load. The six-step walkthrough on the research overview tells the same story.',
   tourOpen: 'Start exploring →',
-  ideaMicro: 'the idea behind it',
   ideaTitle: 'One material, two views, one shared space',
   ideaText: 'MEIDNet reads a crystal as a graph of atoms and bonds, and its properties, such as the band gap, as a second view of the same material. It learns one space in which the two views of each material sit together. A requested band gap is then a place in that space, and a decoder turns that place back into a crystal structure.',
   ideaPrism: 'The method and its library are MEIDNet Prism; Matter puts them to work on real data.',

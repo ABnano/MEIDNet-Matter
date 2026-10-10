@@ -12,7 +12,8 @@ import { home as H, researchNav as RN } from '@/copy/research';
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
 const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) + (a.charge_balanced ? 2 : 0) + (a.requested >= 1 && a.requested <= 3 ? 3 : 0) + (a.flag ? -2 : 0);
 
-/** The front door: one headline, one example, the three stages, and the research one step away. */
+/** The front door: the headline beside MEIDNet Prism's turning crystal, then the one-minute tour of how it works, then a
+ *  real result, the three stages, and the research one step away. */
 export default function Home() {
   const mp20 = useResource<Study>('studies/mp20', (s) => research.study('mp20', s));
   const dp = useResource<Study>('studies/jarvis-dp', (s) => research.study('jarvis-dp', s));
@@ -40,21 +41,21 @@ export default function Home() {
             <div className="scope-line">{H.example} <Link to="/p/perov5-demo/goal" data-testid="cta-demo">{H.ctaDemo} →</Link></div>
             <p className="plain">{H.plain}</p>
           </div>
+          <Crystal3D />
+        </section>
+
+        <section className="section how" id="how">
+          <div className="how-head">
+            <div className="micro">{H.tourTitle}</div>
+            <h2>{H.ideaTitle}</h2>
+            <p className="muted">{H.ideaText}</p>
+            <p className="small muted">{H.ideaPrism} <ExternalLink href={PRISM_SPACE}>{H.prismCta} ↗</ExternalLink></p>
+          </div>
           <Tour3D />
         </section>
 
         <section className="section hero-result" id="result">
           {mp20.data ? <HeroExample study={mp20.data} example={example} /> : <div className="hero-example">{mp20.loading && <Spinner label="Loading a result" />}{mp20.error && <ErrorNote error={mp20.error} />}</div>}
-        </section>
-
-        <section className="section idea" id="idea">
-          <Crystal3D />
-          <div>
-            <div className="micro">{H.ideaMicro}</div>
-            <h2>{H.ideaTitle}</h2>
-            <p className="muted">{H.ideaText}</p>
-            <p className="small muted">{H.ideaPrism} <ExternalLink href={PRISM_SPACE}>{H.prismCta} ↗</ExternalLink></p>
-          </div>
         </section>
 
         <section className="section" id="stages">

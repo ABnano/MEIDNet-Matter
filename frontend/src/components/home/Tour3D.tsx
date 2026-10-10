@@ -43,8 +43,7 @@ export function Tour3D() {
     navigate(href);
   };
   return (
-    <section className="tour3d" id="tour3d" ref={root} aria-labelledby="t3-title">
-      <div className="micro" id="t3-title">{H.tourTitle}</div>
+    <section className="tour3d" id="tour3d" ref={root} aria-label={H.tourTitle}>
       <ol className="t3-strip" aria-label="Chapters"></ol>
       <div className="t3-stage">
         <canvas tabIndex={0} role="img" aria-label={H.tourAria}></canvas>
