@@ -1605,6 +1605,7 @@
    "S2": "PASS",
    "S3": "FAIL",
    "S4": "INFO",
+   "S5": "—",
    "S6": "PASS",
    "S7": "INFO",
    "S8": "PASS",

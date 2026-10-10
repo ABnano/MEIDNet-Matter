@@ -4,6 +4,14 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 
 ## [Unreleased]
 
+### Fixed
+- Generate page: the family pointer repeated "instead: Method › Run it on your data" after its link, because the sentence
+  was split around the wrong words. The page now splits at the link text itself (`play.familyLink`), and a copy test
+  checks that the link text occurs once and the sentence reads whole.
+- Study "Double perovskites from public JARVIS-DFT data": block S5 is listed as not assessed, with the reason, instead of
+  missing from the verdict table (the search checks were not run on the study's models). The build script writes the same
+  entry, so a rebuild reproduces it.
+
 ## [0.10.0] - 2026-10-10
 
 One journey, Explore → Train → Generate, on one example dataset, with the research material kept whole one step away;

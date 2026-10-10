@@ -595,6 +595,10 @@ def build_jarvis_dp(a, out: str) -> dict:
     for blk, vals in measured.items():
         g, _ = stages.BY_ID[blk].verdict(vals)
         verdicts[blk] = {"grade": g, "note": "; ".join(f"{k.replace('_', ' ')} {v:.2f}" for k, v in vals.items()) + " (all routes, relaxed cells)"}
+    # S5 grades the search itself (pipeline_checkup with its search stage), which was not run on this study's models: the
+    # block is stated as not assessed, so the table shows all ten blocks instead of silently leaving one out
+    verdicts["S5"] = {"grade": "—", "note": "not assessed: the search checks were not run on this study's models (S0 routed the "
+                                            "data to screening; the generation routes are judged by their results in S6 and S7)"}
     new = [r for r in accepted if r["class"].startswith("new composition")]
     dp_re = re.compile(r"^[A-Z][a-z]?2[A-Z][a-z]?[A-Z][a-z]?[A-Z][a-z]?6$")
     new_dp = [r for r in new if dp_re.match(r["formula"])]

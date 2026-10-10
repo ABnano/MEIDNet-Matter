@@ -18,4 +18,11 @@ describe('site copy', () => {
   it('does not compare paper numbers against reruns', () => {
     for (const s of all) expect(s).not.toMatch(/paper (reports|reported|claims)/i);
   });
+  it('the Generate page links its family pointer once, without repeating the sentence', () => {
+    const { familyPointer, familyLink } = research.play;
+    const parts = familyPointer.split(familyLink);
+    expect(parts).toHaveLength(2);                     // the link text occurs exactly once
+    expect(parts[0] + familyLink + parts[1]).toBe(familyPointer);
+    expect(parts[1]).not.toMatch(/Method ›/);           // the text after the link does not repeat it
+  });
 });

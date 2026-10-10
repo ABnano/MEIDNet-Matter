@@ -2443,6 +2443,10 @@
    "grade": "INFO",
    "note": "Sensitivity to latent length 2.43 spreads"
   },
+  "S5": {
+   "grade": "—",
+   "note": "not assessed: the search checks were not run on this study's models (S0 routed the data to screening; the generation routes are judged by their results in S6 and S7)"
+  },
   "S6": {
    "grade": "PASS",
    "note": "judge mae request 0.53; consensus yield 0.20 (all routes, relaxed cells)"
