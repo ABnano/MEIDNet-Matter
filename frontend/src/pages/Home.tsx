@@ -5,6 +5,7 @@ import { ExternalLink, MarketingHeader, PRISM_SPACE, SiteFooter } from '@/compon
 import { ErrorNote, Spinner } from '@/components/ui';
 import { DiscoveryStrip } from '@/components/home/DiscoveryStrip';
 import { HeroExample } from '@/components/home/HeroExample';
+import { Tour3D } from '@/components/home/Tour3D';
 import { home as H, researchNav as RN } from '@/copy/research';
 import { landing as L } from '@/copy/landing';
 
@@ -39,6 +40,10 @@ export default function Home() {
             <div className="scope-line">{H.example} <Link to="/p/perov5-demo/goal" data-testid="cta-demo">{H.ctaDemo} →</Link></div>
             <p className="plain">{H.plain}</p>
           </div>
+          <Tour3D />
+        </section>
+
+        <section className="section hero-result" id="result">
           {mp20.data ? <HeroExample study={mp20.data} example={example} /> : <div className="hero-example">{mp20.loading && <Spinner label="Loading a result" />}{mp20.error && <ErrorNote error={mp20.error} />}</div>}
         </section>
 

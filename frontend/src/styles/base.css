@@ -387,3 +387,32 @@ select.input { width: 100%; max-width: 100%; }
   .research-nav > ul { display: flex; flex-wrap: wrap; gap: 2px 4px; }
   .research-nav ul ul, .research-nav-foot { display: none; }
 }
+
+/* the animated tour in the hero: the same player as MEIDNet Prism's landing (ids and classes fixed by /tour/prism-tour.js) */
+.hero { grid-template-columns: 1fr 1.25fr; }
+.tour3d { border: 1px solid var(--line); border-top: 4px solid var(--t3c, var(--c-family, var(--p1))); border-radius: var(--r-3); background: var(--card); padding: var(--s-4) var(--s-4) var(--s-3); transition: border-color .3s; min-width: 0; }
+.tour3d .micro { margin-bottom: var(--s-2); }
+.t3-strip { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.t3-strip button { position: relative; width: 100%; border: 1.5px solid var(--bc); background: var(--card); color: color-mix(in oklab, var(--bc) 78%, var(--ink)); border-radius: var(--r-pill); padding: 6px 2px; font: 700 12px/1 var(--display); cursor: pointer; overflow: hidden; }
+.t3-strip button.on { background: var(--bc); color: #fff; }
+.t3-strip button:hover { box-shadow: 0 4px 14px -8px var(--bc); }
+.t3-strip button i { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: rgba(255, 255, 255, .9); }
+.t3-stage { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-2); overflow: hidden; border: 1px solid var(--line); background: radial-gradient(60% 70% at 72% 40%, rgba(99, 102, 241, .08), transparent 70%), radial-gradient(50% 60% at 20% 80%, rgba(20, 184, 166, .07), transparent 70%), var(--bg); }
+.t3-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.t3-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); text-align: center; }
+.t3-cap { font-size: var(--fs-small); line-height: 1.5; margin: var(--s-3) 2px; min-height: 3.2em; color: var(--muted); }
+.t3-cap b { color: var(--ink); }
+.t3-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.t3-b { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: var(--r-2); padding: 7px 10px; font: 600 13px/1 var(--body); cursor: pointer; }
+.t3-b:hover { box-shadow: 0 4px 14px -8px rgba(0, 0, 0, .5); }
+.t3-b.primary { background: var(--p1); border-color: var(--p1); color: #fff; min-width: 92px; }
+.t3-prog { flex: 1 1 120px; height: 8px; border-radius: 4px; background: var(--line); cursor: pointer; overflow: hidden; }
+.t3-prog i { display: block; height: 100%; width: 0; background: var(--t3c, var(--p1)); }
+.t3-time { font: 500 12px/1 var(--mono); color: var(--muted); }
+.t3-open { font-weight: 700; margin-left: auto; font-size: var(--fs-small); }
+.hero-result .hero-example { grid-template-columns: 1fr 1fr; }
+@media (max-width: 899px) {
+  .t3-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .t3-open { margin-left: 0; width: 100%; }
+  .hero-result .hero-example { grid-template-columns: 1fr; }
+}
