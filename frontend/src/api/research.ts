@@ -84,6 +84,8 @@ export interface Study {
   lessons?: string[];
   /** A study with several routes to its candidates (0.7.0). */
   routes?: StudyRoute[]; stability?: StudyStability; cross_checks?: string[]; window_eV?: number;
+  /** The judge's own error on the test split (MAE, eV) for a study without a calibration (0.10.3), read next to the window. */
+  judge_mae_eV?: number;
 }
 
 export interface CheckpointInfo {

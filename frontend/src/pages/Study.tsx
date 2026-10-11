@@ -1,11 +1,12 @@
 import { Link, useParams } from 'react-router';
-import { research, type BlocksPayload, type Calibration, type CheckpointInfo, type Study as StudyT, type StudyRoute, type StudyStability } from '@/api/research';
+import { research, type Accepted, type BlocksPayload, type Calibration, type CheckpointInfo, type Study as StudyT, type StudyRoute, type StudyStability } from '@/api/research';
 import { useResource } from '@/api/hooks';
 import { MarketingHeader, SiteFooter } from '@/components/shell';
 import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { Funnel, KV, Num, ResponseCurve, VerdictText } from '@/components/research';
 import { BLOCKS, BLOCK_NAMES, researchNav, studies as S } from '@/copy/research';
+import { groupOf, hasFailures, type AcceptedGroup } from '@/lib/accepted';
 
 const str = (v: unknown) => (v === null || v === undefined ? '—' : typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(2)) : Array.isArray(v) ? v.join(', ') : String(v));
 
@@ -84,6 +85,39 @@ function RoutesPanel({ routes, stability }: { routes: StudyRoute[]; stability?: 
   );
 }
 
+/** The groups of a study whose accepted structures include failures (see groupOf), in reading order. */
+const ACCEPTED_GROUPS: Array<[AcceptedGroup[], string, string, string]> = [
+  [['candidate'], 'accepted-candidates', 'Awaiting validation', 'Both models place them inside the window on the relaxed cell, and their compositions are charge balanced. None has been checked by DFT yet: each is a reason to compute, not a result.'],
+  [['rediscovered'], 'accepted-found', 'Found again', 'Compounds of the data or of the reference set, returned at their recorded DFT gap.'],
+  [['contradicted', 'implausible'], 'accepted-failures', 'Failure analysis', 'Both models accepted them, and they are wrong or implausible: a DFT value of the data or of the reference set contradicts both readings, or the composition is not charge balanced. They stay here as the record of how the check fails, and are left out of every count on the home page.'],
+];
+
+/** One table of accepted structures. */
+function AcceptedTable({ s, rows }: { s: StudyT; rows: Accepted[] }) {
+  return (
+    <div className="table-wrap">
+      <table className="table">
+        <thead><tr><th scope="col">requested</th><th scope="col">formula</th>{s.routes && <th scope="col">route</th>}<th scope="col">label from the structure</th><th scope="col">judge</th>{s.stability && <th scope="col">above the hull (eV/atom)</th>}<th scope="col">AMD</th><th scope="col">class</th><th scope="col">recorded gaps</th><th scope="col">charge balance</th><th scope="col">relaxation drop</th><th scope="col">space group</th><th scope="col">cell</th></tr></thead>
+        <tbody>
+          {rows.map((a) => (
+            <tr key={a.file}>
+              <td className="num">{a.requested.toFixed(1)}</td><td><b>{a.formula}</b>{a.flag && <div className="small faint">{a.flag}</div>}</td>
+              {s.routes && <td className="small">{a.route}</td>}
+              <td className="num"><Num v={a.label_structure_gap} /></td><td className="num"><Num v={a.judge_gap} /></td>
+              {s.stability && <td className="num"><Num v={a.e_hull} d={3} />{a.e_hull_note ? ' †' : ''}</td>}
+              <td className="num"><Num v={a.amd_nearest} d={3} /></td>
+              <td className="small">{a.class}</td><td className="small num">{a.recorded_gaps.length ? a.recorded_gaps.map((g) => g.toFixed(2)).join(', ') : '—'}</td>
+              <td className="small">{a.charge_balanced === null ? '—' : a.charge_balanced ? 'yes' : 'no'}</td><td className="num"><Num v={a.relaxation_drop_eV_atom} /></td>
+              <td className="small mono">{a.spacegroup_designed}→{a.spacegroup_relaxed}</td>
+              <td><a className="small" href={research.studyFileUrl(s.id, a.file)} download>CIF</a></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function Study() {
   const { id = 'mp20' } = useParams();
   const { data: s, error, loading, reload } = useResource<StudyT>(`studies/${id}`, (sig) => research.study(id, sig));
@@ -91,6 +125,8 @@ export default function Study() {
   const blocks = useResource<BlocksPayload>('pipeline/blocks', (sig) => research.blocks(sig));
   const mine = ck.data?.checkpoints.filter((c) => s?.checkpoints.includes(c.id)) ?? [];
   const tf = (s?.target_following ?? {}) as Record<string, unknown>;
+  const win = s?.calibration?.window_eV ?? s?.window_eV ?? null;
+  const judgeMae = s?.calibration?.judge?.mae ?? s?.judge_mae_eV ?? null;
   return (
     <>
       <MarketingHeader wide />
@@ -111,6 +147,7 @@ export default function Study() {
               <div className="card">
                 <h3>The dataset</h3>
                 <KV rows={Object.entries(s.dataset).filter(([k]) => k !== 'name').map(([k, v]) => [k.replace(/_/g, ' '), str(v)])} />
+                {(s.id === 'perov5' || s.id === 'mp20') && <p className="small" style={{ marginTop: 8, marginBottom: 0 }}><Link to={`/research#${s.id}`}>What this dataset is, in plain words →</Link></p>}
               </div>
               <div className="card">
                 <h3>Block verdicts</h3>
@@ -175,27 +212,17 @@ export default function Study() {
             {s.accepted && s.accepted.length > 0 && (
               <section className="section" id="accepted">
                 <h2>Accepted structures</h2>
-                <p className="muted">Both judges within {s.calibration?.window_eV ?? s.window_eV} eV of the request on the relaxed cell; a judged metal never satisfies a non-zero request. Classes: {Object.entries(s.accepted_classes ?? {}).map(([k, v]) => `${v} ${k}`).join('; ')}.</p>
-                <div className="table-wrap">
-                  <table className="table">
-                    <thead><tr><th scope="col">requested</th><th scope="col">formula</th>{s.routes && <th scope="col">route</th>}<th scope="col">label from the structure</th><th scope="col">judge</th>{s.stability && <th scope="col">above the hull (eV/atom)</th>}<th scope="col">AMD</th><th scope="col">class</th><th scope="col">recorded gaps</th><th scope="col">charge balance</th><th scope="col">relaxation drop</th><th scope="col">space group</th><th scope="col">cell</th></tr></thead>
-                    <tbody>
-                      {s.accepted.map((a) => (
-                        <tr key={a.file}>
-                          <td className="num">{a.requested.toFixed(1)}</td><td><b>{a.formula}</b>{a.flag && <div className="small faint">{a.flag}</div>}</td>
-                          {s.routes && <td className="small">{a.route}</td>}
-                          <td className="num"><Num v={a.label_structure_gap} /></td><td className="num"><Num v={a.judge_gap} /></td>
-                          {s.stability && <td className="num"><Num v={a.e_hull} d={3} />{a.e_hull_note ? ' †' : ''}</td>}
-                          <td className="num"><Num v={a.amd_nearest} d={3} /></td>
-                          <td className="small">{a.class}</td><td className="small num">{a.recorded_gaps.length ? a.recorded_gaps.map((g) => g.toFixed(2)).join(', ') : '—'}</td>
-                          <td className="small">{a.charge_balanced === null ? '—' : a.charge_balanced ? 'yes' : 'no'}</td><td className="num"><Num v={a.relaxation_drop_eV_atom} /></td>
-                          <td className="small mono">{a.spacegroup_designed}→{a.spacegroup_relaxed}</td>
-                          <td><a className="small" href={research.studyFileUrl(s.id, a.file)} download>CIF</a></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <p className="muted">Both judges within {win} eV of the request on the relaxed cell; a judged metal never satisfies a non-zero request.{judgeMae !== null && <> The judge's own error, measured on the dataset's test split, is <b data-testid="judge-mae">{judgeMae.toFixed(2)} eV</b> (MAE){win !== null && judgeMae > win ? ': wider than the window, so the agreement of the two models supports a candidate without proving it.' : '.'}</>} Classes: {Object.entries(s.accepted_classes ?? {}).map(([k, v]) => `${v} ${k}`).join('; ')}.</p>
+                {hasFailures(s.accepted) ? ACCEPTED_GROUPS.map(([groups, id, title, lead]) => {
+                  const rows = s.accepted!.filter((a) => groups.includes(groupOf(a)));
+                  return rows.length === 0 ? null : (
+                    <div key={id} id={id} style={{ marginTop: 20 }}>
+                      <h3>{title} ({rows.length})</h3>
+                      <p className="small muted">{lead}</p>
+                      <AcceptedTable s={s} rows={rows} />
+                    </div>
+                  );
+                }) : <AcceptedTable s={s} rows={s.accepted} />}
                 {s.accepted.some((a) => a.e_hull_note) && <ul className="small muted" style={{ marginTop: 8 }}>{s.accepted.filter((a) => a.e_hull_note).map((a) => <li key={a.file}>† {a.formula}: {a.e_hull_note}</li>)}</ul>}
                 {s.cross_checks && s.cross_checks.length > 0 && <div className="note" style={{ marginTop: 12 }}><b>Checked against other sources.</b><ul className="small" style={{ margin: '6px 0 0 18px' }}>{s.cross_checks.map((c) => <li key={c}>{c}</li>)}</ul></div>}
               </section>

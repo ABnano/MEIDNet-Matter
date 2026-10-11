@@ -3,7 +3,7 @@
   {
    "amd_nearest": 0.018,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0,
    "e_hull_note": "0.61 eV/atom below every known phase of its system, deeper than a new ground state plausibly lies; the reference set has no Br-Cs, Cs-Fe, Cs-In, Fe-In compound (try --reference mp)",
    "file": "accepted/Cs2InFeBr6_screen-halide-nontoxic.cif",
@@ -125,7 +125,7 @@
   {
    "amd_nearest": 0.006,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0248,
    "e_hull_note": "",
    "file": "accepted/K2LiScI6_family-generation.cif",
@@ -487,7 +487,7 @@
   {
    "amd_nearest": 0.061,
    "charge_balanced": true,
-   "class": "known in the data: its DFT value contradicts both models",
+   "class": "known in the dataset: its DFT value contradicts both models",
    "e_hull": 0.0,
    "e_hull_note": "",
    "file": "accepted/Rb2InSbI6_screen-halide.cif",
@@ -611,7 +611,7 @@
   {
    "amd_nearest": 0.012,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0,
    "e_hull_note": "",
    "file": "accepted/Rb2LiFeBr6_screen-halide.cif",
@@ -733,7 +733,7 @@
   {
    "amd_nearest": 0.015,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0,
    "e_hull_note": "",
    "file": "accepted/Rb2NaFeBr6_screen-halide.cif",
@@ -855,7 +855,7 @@
   {
    "amd_nearest": 0.534,
    "charge_balanced": false,
-   "class": "known in the reference set: its DFT value contradicts both models",
+   "class": "known in JARVIS-DFT: its DFT value contradicts both models",
    "e_hull": 0.8205,
    "e_hull_note": "",
    "file": "accepted/SbTeO3_family-free.cif",
@@ -1059,7 +1059,7 @@
   {
    "amd_nearest": 0.39,
    "charge_balanced": false,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0989,
    "e_hull_note": "",
    "file": "accepted/Tl2Br_family-free.cif",
@@ -1197,7 +1197,7 @@
   {
    "amd_nearest": 0.007,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0778,
    "e_hull_note": "",
    "file": "accepted/Tl2InSbI6_screen-halide.cif",
@@ -1319,7 +1319,7 @@
   {
    "amd_nearest": 0.025,
    "charge_balanced": true,
-   "class": "known in the data: its DFT value contradicts both models",
+   "class": "known in the dataset: its DFT value contradicts both models",
    "e_hull": 0.0003,
    "e_hull_note": "",
    "file": "accepted/Rb2InSbCl6_screen-halide.cif",
@@ -1443,7 +1443,7 @@
   {
    "amd_nearest": 0.004,
    "charge_balanced": true,
-   "class": "known in the data: its DFT value confirms (rediscovery)",
+   "class": "known in the dataset: its DFT value confirms (rediscovery)",
    "e_hull": 0.0,
    "e_hull_note": "",
    "file": "accepted/Ba2MgWO6_screen-oxide.cif",
@@ -1567,11 +1567,11 @@
   {
    "amd_nearest": 0.018,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0,
    "e_hull_note": "",
    "file": "accepted/Rb2KInCl6_screen-halide.cif",
-   "flag": "",
+   "flag": "also in the Materials Project (mp-aaacehuv, a theoretical entry)",
    "formula": "Rb2KInCl6",
    "judge_gap": 3.37,
    "known_formula": false,
@@ -1689,7 +1689,7 @@
   {
    "amd_nearest": 0.009,
    "charge_balanced": true,
-   "class": "new composition (absent from the data and the reference set)",
+   "class": "new composition (in neither the dataset nor JARVIS-DFT)",
    "e_hull": 0.0074,
    "e_hull_note": "",
    "file": "accepted/Tl2InSbF6_family-generation.cif",
@@ -2050,10 +2050,10 @@
   }
  ],
  "accepted_classes": {
-  "known in the data: its DFT value confirms (rediscovery)": 1,
-  "known in the data: its DFT value contradicts both models": 2,
-  "known in the reference set: its DFT value contradicts both models": 1,
-  "new composition (absent from the data and the reference set)": 8
+  "known in JARVIS-DFT: its DFT value contradicts both models": 1,
+  "known in the dataset: its DFT value confirms (rediscovery)": 1,
+  "known in the dataset: its DFT value contradicts both models": 2,
+  "new composition (in neither the dataset nor JARVIS-DFT)": 8
  },
  "checkpoints": [],
  "cross_checks": [
@@ -2086,9 +2086,9 @@
  },
  "files": {
   "accepted.csv": {
-   "bytes": 2827,
+   "bytes": 2855,
    "media": "text/csv",
-   "sha256": "01330be8820040dddf9f249fd8705f96d76b2a9e7c8c22738d4cb68e861abf4d"
+   "sha256": "92f01b981f15c075cb29cf2632f2f2ebdf1ecb9bfd88c6d5585327d70eaf5ed2"
   },
   "accepted/Ba2MgWO6_screen-oxide.cif": {
    "bytes": 1175,
@@ -2156,8 +2156,9 @@
    "sha256": "8191fd054c9482d6b837dd5227b67cb451a277ee0fefa4d1d137cf2c6826b0ec"
   }
  },
- "headline": "An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation returned 7 A₂BB′X₆ compositions absent from the data and from JARVIS-DFT inside the requested gap window, 6 of them within 0.1 eV/atom of the hull with one potential for every phase.",
+ "headline": "An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation returned 7 charge-balanced A₂BB′X₆ compositions that are in neither the dataset nor JARVIS-DFT and that both models place inside the requested gap window, 6 of them within 0.1 eV/atom of the hull with one potential for every phase; they await a DFT check, and one is a theoretical entry of the Materials Project. One known compound came back at its recorded gap, and 4 accepted structures failed: 3 contradicted by a DFT value, 1 not charge balanced.",
  "id": "jarvis-dp",
+ "judge_mae_eV": 0.82,
  "lessons": [
   "S0 predicted screening before any training (48.5 compositions per element against a rule of 200); the trained decoder confirmed it (S3).",
   "A known compound's own DFT value outranks two machine-learned readings: Rb₂InSbCl₆ and Rb₂InSbI₆ are in the data at 0.58 and 0.00 eV, and both models were wrong about them.",
@@ -2201,8 +2202,8 @@
  "routes": [
   {
    "classes": {
-    "known in the data: its DFT value contradicts both models": 2,
-    "new composition (absent from the data and the reference set)": 4
+    "known in the dataset: its DFT value contradicts both models": 2,
+    "new composition (in neither the dataset nor JARVIS-DFT)": 4
    },
    "collapsed": [],
    "funnel": [
@@ -2235,8 +2236,8 @@
   },
   {
    "classes": {
-    "known in the data: its DFT value contradicts both models": 2,
-    "new composition (absent from the data and the reference set)": 4
+    "known in the dataset: its DFT value contradicts both models": 2,
+    "new composition (in neither the dataset nor JARVIS-DFT)": 4
    },
    "collapsed": [],
    "funnel": [
@@ -2269,7 +2270,7 @@
   },
   {
    "classes": {
-    "known in the data: its DFT value confirms (rediscovery)": 1
+    "known in the dataset: its DFT value confirms (rediscovery)": 1
    },
    "collapsed": [],
    "funnel": [
@@ -2302,7 +2303,7 @@
   },
   {
    "classes": {
-    "new composition (absent from the data and the reference set)": 2
+    "new composition (in neither the dataset nor JARVIS-DFT)": 2
    },
    "collapsed": [],
    "funnel": [
@@ -2331,8 +2332,8 @@
   },
   {
    "classes": {
-    "known in the reference set: its DFT value contradicts both models": 1,
-    "new composition (absent from the data and the reference set)": 1
+    "known in JARVIS-DFT: its DFT value contradicts both models": 1,
+    "new composition (in neither the dataset nor JARVIS-DFT)": 1
    },
    "collapsed": [
     {

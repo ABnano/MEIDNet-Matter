@@ -14,6 +14,8 @@ const PRISM_DOCS = STATIC_MIRROR ? PRISM_MIRROR.replace(/\/$/, '') : `${PRISM}/d
 export const PRISM_METHOD = `${PRISM_DOCS}/understand/how-it-works.html`;
 export const PRISM_SCORE = `${PRISM_DOCS}/benchmarks/compatibility.html`;
 export const PRISM_ECOSYSTEM = `${PRISM_DOCS}/ecosystem.html`;
+export const PRISM_LIMITS = `${PRISM_DOCS}/understand/limits.html`;
+export const PRISM_PEROV5 = `${PRISM_DOCS}/benchmarks/perov5.html`;
 export const GITHUB = 'https://github.com/ABnano/MEIDNet-Matter';
 export const ENGINE = 'https://github.com/ABnano/MEIDNet';
 

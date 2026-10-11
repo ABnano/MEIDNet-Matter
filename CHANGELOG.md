@@ -10,8 +10,34 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   page; then the animated tour of the Prism landing page (data, model, family, rules, targets, search, candidates), as
   wide as the page and without a frame, with its own controls, each chapter's link opening the page of this app that
   does that step; then the accepted-structure example.
+- The datasets in plain words, on the research overview (#data): what Perov-5 is (18,928 DFT-computed cubic ABX₃
+  perovskites, 56 elements, seven anion mixes, the heat of formation and the GLLB-SC direct gap, 4% non-zero gaps), where
+  it comes from (Castelli et al. 2012; the CDVAE split 11,356 / 3,787 / 3,785), why the site uses it and what it is not,
+  with links to browse it in Explore, its case study, the CDVAE split files, the original CMR database and its Prism
+  benchmarks; and MP-20, the generator's dataset, in one paragraph. The home page ("What is Perov-5?"), the Explore page
+  and the Perov-5 and MP-20 study pages link to it.
+- Methodology says which engine it describes: the vendored development snapshot meidnet 2.4.0.dev4 (the MP-20 symmetry
+  decoder, sampling at the target's anchor), not the released package MEIDNet Prism documents (2.3: gradient descent in
+  the latent space, compositions placed on a family prototype), with a link to Prism's scope and limits page.
 
 ### Changed
+- The line under the hero says which data each stage runs on: Explore and Train on Perov-5, Generate on a separate model
+  trained on MP-20, your own data on your computer. The Generate card says so too.
+- The double perovskites are counted by what they are. A study whose accepted structures include failures splits them:
+  awaiting validation (both models in the window, charge balanced, no DFT yet), found again, and failure analysis (a DFT
+  value of the dataset or of JARVIS-DFT contradicts both models, or a new composition is not charge balanced). The home
+  page counts and shows only the first two: 7 new double perovskites awaiting DFT, 1 compound found again; Tl₂Br (not
+  charge balanced) leaves the strip of delivered structures, and the 4 failures stay on the study page. "New" says
+  against what: in neither the dataset nor JARVIS-DFT; Rb₂KInCl₆ carries its Materials Project entry (mp-aaacehuv, a
+  theoretical one).
+- The accepted structures of a study state the judge's own error next to the window: 0.82 eV on the double perovskites,
+  wider than the ±0.5 eV window, and 0.10 eV on MP-20.
+- The result on the home page says what its fit and MAE are measured on: the 13 relaxed cells that passed the contact
+  and bulk tests.
+- Counts that differed between pages are explained where they appear: the Perov-5 runs validated on 1,419 materials,
+  against 3,787 in the CDVAE validation split; the upload had 246 entries, of which 236 matched between structures and
+  properties (the 10 others were reported, not guessed). "Stable" in the Perov-5 headline and on Methodology means
+  within 0.1 eV/atom of a convex hull computed with a machine-learning potential, never a formation energy alone.
 - A new Matter logo in the MEIDNet Prism family: target-property streams enter Prism's glass octahedron, and a soft
   spectrum leaves it into a glass crystal unit cell. It is the header and footer mark, the browser-tab icon (with a
   simpler drawing for 16 px) and, as the full logo with the wordmark, the social preview and Hugging Face card image.
@@ -28,6 +54,8 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   website (https://babu09-meidnet-matter.hf.space/) and to MEIDNet Prism (https://babu09-meidnet-prism.hf.space/).
 
 ### Fixed
+- Perov-5's band gaps are GLLB-SC values, not PBE: the Explore page's note on the zero gaps and Methodology's note on the
+  judges said PBE (it is PBE for MP-20).
 - The static mirror on GitHub Pages draws the crystal and the tour: their scripts are addressed relative to the app's
   base; they were requested from the site root, which is outside the mirror's sub-path (404).
 - The tour and the crystal start again each time the home page opens; they had stayed blank after a visit to another

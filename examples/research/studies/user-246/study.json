@@ -14,6 +14,7 @@
   "source": "a colleague's dataset of perovskite-type compounds (ABX₃, A₂BB′X₆ double perovskites and elpasolites): hybrid-functional gaps and dielectric constants; aggregates only are published",
   "test": 34,
   "train": 166,
+  "uploaded": "246 entries; 236 matched between the structure folder and the property table, by composition, and the 10 that did not were reported rather than guessed",
   "val": 36,
   "zero_share": 0.0
  },

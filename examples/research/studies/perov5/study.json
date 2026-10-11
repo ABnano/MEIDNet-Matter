@@ -485,6 +485,7 @@
   "prototypes": 1,
   "shared_profile_share": 0.93,
   "source": "Castelli et al. 2012; CDVAE split",
+  "split_note": "train and test are the CDVAE splits; the validation table of these runs holds 1,419 materials, against 3,787 in the CDVAE validation split",
   "test": 3785,
   "train": 11356,
   "val": 1419,
@@ -502,7 +503,7 @@
    "sha256": "22a1cf7b314dd425a504715da3de9b0a385deb7564cc2c69974fad38652bff32"
   }
  },
- "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable, unique and novel candidates; known compounds returned at their measured gaps.",
+ "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable (within 0.1 eV/atom of the hull), unique and novel candidates; known compounds returned at their measured gaps.",
  "id": "perov5",
  "judges": {
   "cgcnn_p5": {

@@ -6,6 +6,7 @@ import { ResearchLayout } from '@/components/research/ResearchNav';
 import { ErrorNote, Spinner } from '@/components/ui';
 import { Funnel, Num } from '@/components/research';
 import { Explainer } from '@/components/home/Explainer';
+import { DatasetPrimer } from '@/components/research/DatasetPrimer';
 import { home as H } from '@/copy/research';
 
 const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) + (a.charge_balanced ? 2 : 0) + (a.requested >= 1 && a.requested <= 3 ? 3 : 0) + (a.flag ? -2 : 0);
@@ -31,6 +32,8 @@ export default function Research() {
           <p className="muted">{H.walkthroughLead}</p>
           {example && <Explainer example={example} />}
         </section>
+
+        <DatasetPrimer />
 
         <section className="section" id="featured">
           <h2>{H.featuredTitle}</h2>

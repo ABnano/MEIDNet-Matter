@@ -8,6 +8,7 @@ import { HeroExample } from '@/components/home/HeroExample';
 import { Tour3D } from '@/components/home/Tour3D';
 import { Crystal3D } from '@/components/home/Crystal3D';
 import { home as H, researchNav as RN } from '@/copy/research';
+import { groupOf } from '@/lib/accepted';
 
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
 const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) + (a.charge_balanced ? 2 : 0) + (a.requested >= 1 && a.requested <= 3 ? 3 : 0) + (a.flag ? -2 : 0);
@@ -25,6 +26,11 @@ export default function Home() {
   const polymorphs = accepted.filter((a) => a.class.startsWith('new polymorph')).length;
   const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
   const example = [...accepted].sort((a, b) => score(b) - score(a)).find((a) => a.structure) ?? null;
+  // the double perovskites: candidates awaiting validation and compounds found again count; failures stay on the study page
+  const dpAccepted = dp.data?.accepted ?? [];
+  const dpNew = dpAccepted.filter((a) => groupOf(a) === 'candidate' && a.class.startsWith('new composition'));
+  const dpFound = dpAccepted.filter((a) => groupOf(a) === 'rediscovered');
+  const dpFailed = dpAccepted.filter((a) => groupOf(a) === 'contradicted' || groupOf(a) === 'implausible');
   return (
     <>
       <MarketingHeader />
@@ -38,7 +44,7 @@ export default function Home() {
               <Link to="/explore" className="btn btn-primary btn-lg" data-testid="cta-explore">{H.ctaExplore}</Link>
               <Link to="/generate" className="btn btn-lg">{H.ctaGenerate}</Link>
             </div>
-            <div className="scope-line">{H.example} <Link to="/p/perov5-demo/goal" data-testid="cta-demo">{H.ctaDemo} →</Link></div>
+            <div className="scope-line">{H.scope} <Link to="/research#perov5" data-testid="what-perov5">{H.scopeWhat}</Link> · <Link to="/p/perov5-demo/goal" data-testid="cta-demo">{H.ctaDemo} →</Link></div>
           </div>
           <Crystal3D />
         </section>
@@ -70,9 +76,9 @@ export default function Home() {
           <h2>{H.discoveriesTitle}</h2>
           <p className="muted">{H.discoveriesLead}</p>
           {perov5.error && <ErrorNote error={perov5.error} />}
-          <DiscoveryStrip items={[...accepted.map((a) => ({ ...a, study: 'mp20' })), ...(dp.data?.accepted ?? []).filter((a) => a.class.startsWith('new composition')).map((a) => ({ ...a, study: 'jarvis-dp' }))]} />
+          <DiscoveryStrip items={[...accepted.map((a) => ({ ...a, study: 'mp20' })), ...dpNew.map((a) => ({ ...a, study: 'jarvis-dp' }))]} />
           {cal && <p className="small muted" style={{ marginTop: 10 }}>{cal.funnel.final} of {cal.funnel.generated} generated cells accepted{cal.funnel.collapsed_on_relaxation || cal.funnel.not_bulk_on_relaxation ? ` (after relaxation ${cal.funnel.collapsed_on_relaxation ?? 0} cells collapsed and ${cal.funnel.not_bulk_on_relaxation ?? 0} were slabs or sparse cells; all set aside)` : ''} · {plural(newComp, 'new composition')} · {plural(polymorphs, 'new polymorph')} of known formulas{redisc.length > 0 ? ` · ${plural(redisc.length, 'known structure')} found again at its recorded gap (${redisc.map((r) => r.formula).join(', ')})` : ''}{perov5.data ? ` · Perov-5 target following ρ ${(perov5.data.target_following.rho_range as number[])[0]}–${(perov5.data.target_following.rho_range as number[])[1]}` : ''}. <Link to="/studies/mp20#accepted">Every accepted structure, with its evidence.</Link></p>}
-          {dp.data?.accepted && <p className="small muted" style={{ marginTop: 4 }}>Double perovskites on public JARVIS-DFT data: {dp.data.accepted.length} accepted across {dp.data.routes?.length ?? 0} routes, {dp.data.accepted.filter((a) => a.class.startsWith('new composition')).length} of them compositions absent from the data and from JARVIS-DFT. <Link to="/studies/jarvis-dp#accepted">The case study →</Link></p>}
+          {dp.data?.accepted && <p className="small muted" style={{ marginTop: 4 }}>Double perovskites on public JARVIS-DFT data, across {dp.data.routes?.length ?? 0} routes: {plural(dpNew.length, 'charge-balanced new composition')} that both models place in the requested window and that are in neither the dataset nor JARVIS-DFT, awaiting a DFT check{dpFound.length > 0 ? `, and ${plural(dpFound.length, 'known compound')} found again at its recorded gap` : ''}.{dpFailed.length > 0 ? ` ${dpFailed.length} more accepted ${dpFailed.length === 1 ? 'structure is' : 'structures are'} kept on the study page as failures: a DFT value contradicts both models, or the composition is not charge balanced.` : ''} <Link to="/studies/jarvis-dp#accepted">The case study →</Link></p>}
         </section>
 
         <section className="section" id="research">

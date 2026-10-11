@@ -221,9 +221,11 @@ def build_perov5(a, out: str) -> dict:
         "schema": "meidnet-matter/study/1", "id": "perov5", "title": "Perov-5", "order": 1,
         "dataset": {"name": "Perov-5", "train": 11356, "val": 1419, "test": 3785, "elements": 56, "prototypes": 1,
                     "compositions_per_element": 218, "shared_profile_share": 0.93, "zero_share": 0.96,
-                    "source": "Castelli et al. 2012; CDVAE split", "properties": ["heat_all", "dir_gap"]},
+                    "source": "Castelli et al. 2012; CDVAE split", "properties": ["heat_all", "dir_gap"],
+                    "split_note": "train and test are the CDVAE splits; the validation table of these runs holds 1,419 materials, "
+                                  "against 3,787 in the CDVAE validation split"},
         "mode": "generation (family: cubic ABX3)",
-        "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable, unique and novel candidates; known compounds returned at their measured gaps.",
+        "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable (within 0.1 eV/atom of the hull), unique and novel candidates; known compounds returned at their measured gaps.",
         "verdicts": verdicts,
         "target_following": {"method": "DFT of the whole grid as truth", "rho_range": [0.90, 0.98], "hit_rate_pct_range": [57, 83],
                              "random_hit_pct": 7.7, "label_error_eV_range": [0.18, 0.49], "sun_count": int(dr["SUN"].sum()),
@@ -298,7 +300,9 @@ def build_user246(a, out: str) -> dict:
                     "test": audit["split_sizes"].get("test"), "elements": audit["elements"], "prototypes": audit["prototypes"],
                     "compositions_per_element": finite(prev["values"]["density"]), "shared_profile_share": finite(prev["values"]["shared_profile"]),
                     "zero_share": finite(prev["values"]["zero_share"]), "source": "a colleague's dataset of perovskite-type compounds (ABX\u2083, A\u2082BB\u2032X\u2086 double perovskites and elpasolites): hybrid-functional gaps and dielectric constants; aggregates only are published",
-                    "properties": ["band gap (hybrid functional)", "dielectric constant"]},
+                    "properties": ["band gap (hybrid functional)", "dielectric constant"],
+                    "uploaded": "246 entries; 236 matched between the structure folder and the property table, by composition, "
+                                "and the 10 that did not were reported rather than guessed"},
         "mode": "screening",
         "headline": "The best encoder of any dataset on the smallest training set (0.19 spreads, r 0.97); the decoder cannot generate (0%), as the preview predicted; screening returned 13 metastable, formula-novel candidates in known structure types.",
         "verdicts": verdicts,
@@ -504,6 +508,20 @@ DP_ROUTES = [  # run folder, id, title, how it proposes candidates
 DP_GAP = "Band_gap_OptB88vdW_eV"
 
 
+# The check's classes name "the data" and "the reference set"; in this study they are the user's dataset (every split) and
+# JARVIS-DFT 3D, and the page says so.
+DP_CLASS_WORDS = [("absent from the data and the reference set", "in neither the dataset nor JARVIS-DFT"),
+                  ("known in the data:", "known in the dataset:"), ("known in the reference set:", "known in JARVIS-DFT:")]
+# Found by hand in the Materials Project (crosscheck.json): new against the dataset and JARVIS-DFT, but not unknown.
+DP_ALSO_IN_MP = {"Rb2KInCl6": "also in the Materials Project (mp-aaacehuv, a theoretical entry)"}
+
+
+def dp_class(c: str) -> str:
+    for old, new in DP_CLASS_WORDS:
+        c = c.replace(old, new)
+    return c
+
+
 def build_jarvis_dp(a, out: str) -> dict:
     """The double-perovskite study from the run of the published packages (meidnet_data/jarvis_dp/retest_pypi): the
     independent user's data (public JARVIS-DFT), the two models they trained, every route through the same check."""
@@ -546,7 +564,7 @@ def build_jarvis_dp(a, out: str) -> dict:
                          "spearman": v.get("spearman"), "outliers": [o.split(" (")[0] for o in v.get("reference_outliers", [])],
                          "mae_without_outliers": v.get("mae_eV_without_outliers"), "spearman_without_outliers": v.get("spearman_without_outliers"),
                          "agreement_without_outliers": v.get("agreement_without_outliers")}
-        routes.append({"id": rid, "title": title, "how": how, "funnel": funnel, "classes": rep.get("classes", {}),
+        routes.append({"id": rid, "title": title, "how": how, "funnel": funnel, "classes": {dp_class(k): v for k, v in rep.get("classes", {}).items()},
                        "collapsed": [{"formula": c["formula"], "target": c["target"], "contact_ratio": c["contact_ratio"]} for c in rep.get("collapsed_on_relaxation", [])],
                        "stable_share": h.get("stable_share"), "not_assessed": int(h.get("not_assessed", 0))})
         pooled["candidates"] += st["1_candidates"]; pooled["consensus"] += st["2_two_model_consensus"]
@@ -578,12 +596,13 @@ def build_jarvis_dp(a, out: str) -> dict:
             accepted.append({
                 "requested": float(x["target"]), "formula": shown, "label_structure_gap": round(float(x["label"]), 3), "judge_gap": round(float(x["judge"]), 3),
                 "amd_nearest": None if x.get("amd_nearest") is None else round(float(x["amd_nearest"]), 3), "known_formula": k in known,
-                "recorded_gaps": sorted(gaps), "class": x["cls"], "charge_balanced": x.get("charge_balanced"),
+                "recorded_gaps": sorted(gaps), "class": dp_class(x["cls"]), "charge_balanced": x.get("charge_balanced"),
                 "relaxation_drop_eV_atom": m.get("tensornet_drop_per_atom"), "spacegroup_designed": m.get("spacegroup_designed"),
                 "spacegroup_relaxed": m.get("tensornet_spacegroup_relaxed"), "natoms": len(stc), "file": name,
                 "structure": {"lattice": [[round(float(v), 4) for v in row_] for row_ in stc.lattice.matrix],
                               "sites": [{"element": str(site.specie.symbol), "frac": [round(float(v), 4) for v in site.frac_coords]} for site in stc]},
-                "flag": "judges disagree" if abs(float(x["label"]) - float(x["judge"])) > 0.5 else "",
+                "flag": "; ".join((["judges disagree"] if abs(float(x["label"]) - float(x["judge"])) > 0.5 else [])
+                                  + ([DP_ALSO_IN_MP[shown]] if shown in DP_ALSO_IN_MP else [])),
                 "route": title, "e_hull": None if x.get("e_hull") is None or x["e_hull"] != x["e_hull"] else round(float(x["e_hull"]), 4),
                 "e_hull_note": note, "reference_id": x.get("reference_id")})
     accepted.sort(key=lambda r: (r["requested"], r["formula"]))
@@ -603,6 +622,14 @@ def build_jarvis_dp(a, out: str) -> dict:
     dp_re = re.compile(r"^[A-Z][a-z]?2[A-Z][a-z]?[A-Z][a-z]?[A-Z][a-z]?6$")
     new_dp = [r for r in new if dp_re.match(r["formula"])]
     stable_dp = [r for r in new_dp if r["e_hull"] is not None and r["e_hull"] <= 0.1 and not r["e_hull_note"]]
+    # what counts and what failed (frontend lib/accepted.ts): a DFT value contradicting both models, or a new composition
+    # that is not charge balanced, is a failure of the check and is named as one
+    new_cb = [r for r in new_dp if r["charge_balanced"]]
+    contradicted = [r for r in accepted if "contradicts" in r["class"]]
+    not_balanced = [r for r in new if r["charge_balanced"] is False]
+    found = [r for r in accepted if "confirms" in r["class"]]
+    in_mp = [r for r in new_cb if r["formula"] in DP_ALSO_IN_MP]
+    assert len(found) == 1 and len(in_mp) == 1, "the headline words 'one known compound' and 'one is a theoretical entry' need updating"
     xc_path = os.path.join(D, "crosscheck.json")                      # written and verified by hand: other databases, Prism scoring
     cross = json.load(open(xc_path))["lines"] if os.path.exists(xc_path) else []
     tab = pd.DataFrame([{k: v for k, v in r.items() if k not in ("structure",)} for r in accepted])
@@ -621,9 +648,13 @@ def build_jarvis_dp(a, out: str) -> dict:
                     "source": "JARVIS-DFT 3D (release 12-12-2022), A₂BB′X₆ compounds after a structural filter; chosen, prepared and modelled by an independent user who followed the Method page",
                     "properties": ["band gap (OptB88vdW)", "formation energy", "energy above the hull"]},
         "mode": "screening (as S0 said), with family and family-free generation beside it",
-        "headline": (f"An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation "
-                     f"returned {len(new_dp)} A₂BB′X₆ compositions absent from the data and from JARVIS-DFT inside the requested gap window, "
-                     f"{len(stable_dp)} of them within 0.1 eV/atom of the hull with one potential for every phase."),
+        "headline": (f"An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and "
+                     f"family generation returned {len(new_cb)} charge-balanced A₂BB′X₆ compositions that are in neither the dataset nor JARVIS-DFT and "
+                     f"that both models place inside the requested gap window, {len(stable_dp)} of them within 0.1 eV/atom of the hull with one potential "
+                     f"for every phase; they await a DFT check, and one is a theoretical entry of the Materials Project. One known compound came "
+                     f"back at its recorded gap, and {len(contradicted) + len(not_balanced)} accepted structures failed: {len(contradicted)} contradicted by a DFT value, "
+                     f"{len(not_balanced)} not charge balanced."),
+        "judge_mae_eV": round(float(judge["mae_all"]), 2) if judge else None,
         "verdicts": verdicts,
         "target_following": {"targets_eV": [1.0, 2.0, 3.0], "window_eV": 0.5,
                              "judge": (f"{judge['name']}, qualified on the test split: MAE {judge['mae_all']:.2f} eV ({judge['mae_nonzero']:.2f} on non-zero gaps), "

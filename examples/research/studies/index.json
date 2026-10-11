@@ -3,7 +3,7 @@
  "studies": [
   {
    "dataset": "Perov-5",
-   "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable, unique and novel candidates; known compounds returned at their measured gaps.",
+   "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable (within 0.1 eV/atom of the hull), unique and novel candidates; known compounds returned at their measured gaps.",
    "id": "perov5",
    "mode": "generation (family: cubic ABX3)",
    "order": 1,
@@ -35,7 +35,7 @@
   },
   {
    "dataset": "JARVIS-DFT double perovskites",
-   "headline": "An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation returned 7 A₂BB′X₆ compositions absent from the data and from JARVIS-DFT inside the requested gap window, 6 of them within 0.1 eV/atom of the hull with one potential for every phase.",
+   "headline": "An independent user's journey on public data: S0 said screen, not generate, and the trained decoder agreed. Screening and family generation returned 7 charge-balanced A₂BB′X₆ compositions that are in neither the dataset nor JARVIS-DFT and that both models place inside the requested gap window, 6 of them within 0.1 eV/atom of the hull with one potential for every phase; they await a DFT check, and one is a theoretical entry of the Materials Project. One known compound came back at its recorded gap, and 4 accepted structures failed: 3 contradicted by a DFT value, 1 not charge balanced.",
    "id": "jarvis-dp",
    "mode": "screening (as S0 said), with family and family-free generation beside it",
    "order": 5,

@@ -23,11 +23,13 @@ export const home = {
   ctaExplore: 'Explore materials',
   ctaGenerate: 'Inverse design',
   ctaDemo: 'Search within the Perov-5 family',
-  example: 'Example dataset: Perov-5 · 18,928 crystal structures · DFT properties.',
+  // which data each stage runs on, under the hero; its link opens the plain-words page of the datasets
+  scope: 'Explore and Train run on Perov-5, a public set of 18,928 DFT-computed perovskites; Generate runs on a separate model trained on MP-20; your own data runs on your computer.',
+  scopeWhat: 'What is Perov-5?',
   stages: [
     ['01', 'Explore', 'Structures and properties', 'Property distributions, the learned representation of the dataset, and each material with its nearest neighbours.', '/explore'],
     ['02', 'Train', 'Predictive models', 'A MEIDNet model trained on a Perov-5 subset and evaluated against the full model.', '/train'],
-    ['03', 'Generate', 'Inverse design', 'Candidate structures for a target band gap, each read by two independent models, with its checks and limits.', '/generate'],
+    ['03', 'Generate', 'Inverse design', 'Candidate structures for a target band gap from a separate model trained on MP-20, each read by two independent models, with its checks and limits.', '/generate'],
   ] as Array<[string, string, string, string, string]>,
   after: 'The same workflow runs on your own data with the meidnet-matter package.',
   tourTitle: 'How it works, in one minute',
@@ -57,8 +59,27 @@ export const explore = {
   h1: 'Explore the data',
   lead: 'Perov-5: 18,928 cubic ABX₃ perovskites (Castelli et al. 2012, the CDVAE split), each with a direct band gap and a formation enthalpy from DFT. The map places the 11,356 training materials by what the demo\'s model learned about their structures; click a point to see the material.',
   mapNote: 'Two principal components of a 128-dimensional learned space: a projection for looking, not a measure of similarity. The nearest neighbours on the card are computed in the full space. The model stores every material at the same distance from the centre of that space, so the projection fills a disc; most zero-gap materials lie on its outer ring and those with large gaps near the centre. The ring is a property of the representation, not a physical map of materials.',
-  histNote: '96% of the band gaps are exactly zero (metals at the PBE level), so the histogram draws the zero count apart; the readiness checks grade the band gap on the materials with a non-zero gap.',
+  histNote: '96% of the band gaps are exactly zero (metals at the level of theory the data was computed with, GLLB-SC), so the histogram draws the zero count apart; the readiness checks grade the band gap on the materials with a non-zero gap.',
   next: 'Seen enough of the data? Train a small model on 1,500 of these materials and watch it learn.',
+  what: 'What Perov-5 is, in plain words →',
+};
+
+/** The two datasets behind the three stages, in words a newcomer can follow. The research overview shows them; the home
+ *  page's scope line and the Explore page link there. Every number was checked against the data. */
+export const datasets = {
+  title: 'The data behind Explore, Train and Generate',
+  lead: 'Two public datasets of computed crystals. A model learns from one dataset, and what it can do depends on that dataset.',
+  perov5Title: 'Perov-5, the example dataset',
+  perov5: [
+    'A public set of 18,928 perovskites whose properties were computed with density functional theory (DFT), not measured. Every entry has the same cubic structure of five atoms, ABX₃: an A cation on the corners of the cell, a B cation at its centre and three anion sites on its faces. Only the occupants change: 56 elements fill the cation sites, and the anion sites hold one of seven mixes of oxygen, nitrogen, fluorine and sulfur (O₃, O₂N, ON₂, N₃, O₂F, ONF, O₂S).',
+    'Each entry gives the structure and two numbers: the heat of formation (eV per atom; the lower, the more favourable the compound is to form from its elements) and the direct band gap (eV, computed with the GLLB-SC functional). Only 4% of the entries have a non-zero gap; the others are metals at that level of theory.',
+    'Castelli and co-workers at DTU computed the set in 2012 to search for materials that split water with sunlight. The CDVAE benchmark (Xie et al., 2022) fixed its split, 11,356 training, 3,787 validation and 3,785 test materials, and generative models of crystals such as CDVAE and DiffCSP report results on it. The published MEIDNet model was trained on it, so Explore and Train use it here.',
+    'What it is not: one structure type only, so a model trained on it chooses the occupants of the sites but no new arrangement of atoms; mostly hypothetical compounds; DFT values, not measurements.',
+  ],
+  perov5Sources: 'Castelli et al., Energy Environ. Sci. 5, 5814 (2012); Xie et al., ICLR 2022 (CDVAE).',
+  mp20Title: 'MP-20, the dataset of the generator',
+  mp20: 'Generate runs on a separate model trained on MP-20: 45,229 crystals from the Materials Project with at most 20 atoms per cell, 89 elements and thousands of structure types, each with a formation energy and a PBE band gap from DFT (CDVAE split 27,136 / 9,047 / 9,046). Its breadth, 817 compositions per element, is what lets the generator work without a structural family.',
+  others: 'The case studies add two more datasets: double perovskites from the public JARVIS-DFT database, and an independent user\'s upload.',
 };
 
 export const train = {

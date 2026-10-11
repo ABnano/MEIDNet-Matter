@@ -56,7 +56,7 @@ export default function Explore() {
     <>
       <MarketingHeader />
       <main className="wrap-narrow page" id="main">
-        <div className="page-head"><div className="micro">Stage 1 of 3 · Explore</div><h1>{C.h1}</h1><p>{C.lead}</p></div>
+        <div className="page-head"><div className="micro">Stage 1 of 3 · Explore</div><h1>{C.h1}</h1><p>{C.lead} <Link to="/research#perov5" data-testid="explore-what-perov5">{C.what}</Link></p></div>
         {map.error && <ErrorNote error={map.error} retry={map.reload} />}
         {map.loading && <Spinner label="Loading the map" />}
         {map.data && (
