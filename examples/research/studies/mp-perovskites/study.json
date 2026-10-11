@@ -116,7 +116,9 @@
   }
  },
  "limits": [
-  "634 training structures, 73 prototypes: too sparse for the decoder; screening is the measured mode."
+  "634 training structures, 73 prototypes: too sparse for the decoder; screening is the measured mode.",
+  "The 19 oxide candidates were checked by relaxation only (two potentials agree on 16 of 16 relaxed space groups): no judge reading, no hull, no DFT. They include Ac, Tl, Hg, Cd and As compounds.",
+  "The checkup table was graded with the bands of the time; the block verdicts above use today's bands (structure → band gap at 0.64 of the spread now meets its band)."
  ],
  "mode": "screening",
  "model_metrics": {

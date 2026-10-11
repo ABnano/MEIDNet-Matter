@@ -28,7 +28,12 @@
   "Novelty is judged on the reduced composition, which is layout independent."
  ],
  "limits": [
-  "Aggregates only: the structures, the property table and the trained checkpoint are the data owner's and are not published."
+  "Aggregates only: the structures, the property table and the trained checkpoint are the data owner's and are not published.",
+  "Too sparse to generate: 11.3 compositions per element; the decoder rebuilt none of the test compositions, as the data gate predicted, so every candidate comes from screening known structure types.",
+  "The property error, 0.19 of the gap spread, is 0.65 eV, measured on 34 test structures (roughly 0.48–0.81 eV); metal/non-metal accuracy 1.0 is uninformative, since the data has no zero gaps.",
+  "The judge is a CGCNN trained on the same data (0.59 eV): it shares the data's blind spots, so its agreement is weaker evidence than a DFT value.",
+  "7 of the 13 shortlisted candidates contain thallium; no candidate has been checked by DFT.",
+  "Two counts come from different stages of the run and are not reconciled here: 58 cells compared by the two potentials against 42 relaxed in the funnel, and 13 shortlisted against 10 within 1 eV of the target."
  ],
  "mode": "screening",
  "order": 3,

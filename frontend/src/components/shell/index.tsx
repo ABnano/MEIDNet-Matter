@@ -74,6 +74,7 @@ export function SiteFooter({ wide = false }: { wide?: boolean }) {
         <Link to="/studies">{researchNav.studies}</Link>
         <Link to="/pipeline">{researchNav.pipeline}</Link>
         <Link to="/method">{researchNav.method}</Link>
+        <Link to="/limits">{researchNav.limits}</Link>
         <ExternalLink href={GITHUB}>Code</ExternalLink>
         {STATIC_MIRROR ? <ExternalLink href={SPACE_PAGE}>Live app (Hugging Face)</ExternalLink> : <ExternalLink href={MIRROR_URL}>Mirror for restricted networks</ExternalLink>}
         <ExternalLink href={PRISM}>MEIDNet Prism</ExternalLink>

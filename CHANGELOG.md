@@ -5,6 +5,15 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 ## [Unreleased]
 
 ### Added
+- Scope and limits (/limits, in the research menu, the footer and the line under the hero): how to read a result (DFT
+  value, model reading, ML hull, proposal), what a dataset needs for each goal with what worked and what did not (a few
+  hundred structures train a property model, not a generator: the 246-entry upload as the worked example), what each of
+  the five studies checked and against what, which crystal structures each route produces (every shipped family is
+  cubic; the MP-20 generator is not), what the measurements support, the pipeline's known open issues (the generation
+  threshold is provisional: its anchor, 218, counts rows per cation element where the gate counts compositions per
+  element, 549 on the same split; judge qualification picks its head on the reporting rows; verdicts carry no interval;
+  averaged ionic radii make CsPbBr₃ and CsPbCl₃ fail the octahedral factor) and what the site does not do.
+- Each study page says what the study checked and what it did not, with a link to the five side by side.
 - Home page, kept minimal and in this order: the pitch beside Prism's crystal, a cubic perovskite turning beside its
   crystal graph, the shared latent space and a band-gap curve, filling the right of the hero as on the Prism landing
   page; then the animated tour of the Prism landing page (data, model, family, rules, targets, search, candidates), as
@@ -54,6 +63,19 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   website (https://babu09-meidnet-matter.hf.space/) and to MEIDNet Prism (https://babu09-meidnet-prism.hf.space/).
 
 ### Fixed
+- Corrections: 52 elements fill Perov-5's cation sites (56 in all); the JARVIS-DFT data record OptB88vdW gaps, not PBE;
+  the best property model is the best of five datasets, not four; relaxation lowered the energy of MP-20's 13 sound cells
+  by 1.2–17 eV/atom (median 5.4) and moved atoms by up to 0.4–9.7 Å (the page said 1.3–8.7 eV/atom and 1.4–2.3 Å, figures
+  from an earlier pool; the study builder now computes them); Cs₂InFeBr₆'s hull column reads 'not assessed'; the JARVIS
+  verdict notes lead with the metric that decided them (S1: metal/non-metal accuracy 0.823, not met).
+- Claims narrowed to their evidence: Perov-5's target following is among compositions already in its grid, and random
+  proposals with the same label filter reach rho 0.98; its novel candidates and its eight 'known compounds' all carry a
+  lanthanide absent from Perov-5, and the rediscovery table says its MEGNet column is not qualified on Perov-5 and its
+  literature column is a record, not a measured gap; 'Nothing here is called stable' becomes 'Stability is a
+  machine-learning screen'; judge errors are given per study (0.10, 0.82 and 0.59 eV) and called optimistic; the data
+  table on Methodology says 'can be enough', adds stability and the JARVIS shortfall; the hero result shows its R².
+- The limits of the upload, MP perovskites, MP-20 and JARVIS studies state what a reader needs (the upload: too sparse to
+  generate, 0.65 eV on 34 test structures, a judge trained on the same data, thallium, unreconciled counts).
 - Perov-5's band gaps are GLLB-SC values, not PBE: the Explore page's note on the zero gaps and Methodology's note on the
   judges said PBE (it is PBE for MP-20).
 - The static mirror on GitHub Pages draws the crystal and the tour: their scripts are addressed relative to the app's

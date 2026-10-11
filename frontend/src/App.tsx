@@ -24,6 +24,7 @@ const Study = lazy(() => import('@/pages/Study'));
 const Play = lazy(() => import('@/pages/Play'));
 const PlayJob = lazy(() => import('@/pages/PlayJob'));
 const Method = lazy(() => import('@/pages/Method'));
+const Limits = lazy(() => import('@/pages/Limits'));
 const Research = lazy(() => import('@/pages/Research'));
 const Explore = lazy(() => import('@/pages/Explore'));
 const Train = lazy(() => import('@/pages/Train'));
@@ -113,6 +114,7 @@ export default function App() {
         <Route path="/play/:jobId" element={live(<PlayJob />, 'Generate for a band gap', GENERATE, '/generate')} />
         <Route path="/research" element={<Research />} />
         <Route path="/method" element={<Method />} />
+        <Route path="/limits" element={<Limits />} />
         <Route path="/new" element={live(<CreateProject />, 'A new project', DEMO, '/new')} />
         <Route path="/start-with-my-data" element={<ComingNext />} />
         <Route path="/privacy" element={<Privacy />} />

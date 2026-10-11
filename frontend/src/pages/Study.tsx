@@ -7,6 +7,7 @@ import { ErrorNote, Spinner } from '@/components/ui';
 import { Funnel, KV, Num, ResponseCurve, VerdictText } from '@/components/research';
 import { BLOCKS, BLOCK_NAMES, researchNav, studies as S } from '@/copy/research';
 import { groupOf, hasFailures, type AcceptedGroup } from '@/lib/accepted';
+import { STUDY_EVIDENCE } from '@/copy/limits';
 
 const str = (v: unknown) => (v === null || v === undefined ? '—' : typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(2)) : Array.isArray(v) ? v.join(', ') : String(v));
 
@@ -104,7 +105,7 @@ function AcceptedTable({ s, rows }: { s: StudyT; rows: Accepted[] }) {
               <td className="num">{a.requested.toFixed(1)}</td><td><b>{a.formula}</b>{a.flag && <div className="small faint">{a.flag}</div>}</td>
               {s.routes && <td className="small">{a.route}</td>}
               <td className="num"><Num v={a.label_structure_gap} /></td><td className="num"><Num v={a.judge_gap} /></td>
-              {s.stability && <td className="num"><Num v={a.e_hull} d={3} />{a.e_hull_note ? ' †' : ''}</td>}
+              {s.stability && <td className="num">{a.e_hull_note ? <span className="small">not assessed †</span> : <Num v={a.e_hull} d={3} />}</td>}
               <td className="num"><Num v={a.amd_nearest} d={3} /></td>
               <td className="small">{a.class}</td><td className="small num">{a.recorded_gaps.length ? a.recorded_gaps.map((g) => g.toFixed(2)).join(', ') : '—'}</td>
               <td className="small">{a.charge_balanced === null ? '—' : a.charge_balanced ? 'yes' : 'no'}</td><td className="num"><Num v={a.relaxation_drop_eV_atom} /></td>
@@ -166,6 +167,12 @@ export default function Study() {
               </div>
             </div>
 
+            {STUDY_EVIDENCE[s.id] && (
+              <div className="note" style={{ marginTop: 16 }} data-testid="study-evidence">
+                <b>What this study checked.</b> {STUDY_EVIDENCE[s.id].checked}. <b>Not checked:</b> {STUDY_EVIDENCE[s.id].notChecked}. <Link to="/limits#studies">All five studies →</Link>
+              </div>
+            )}
+
             <section className="section" id="target-following">
               <h2>Target following</h2>
               <div className="card">
@@ -178,9 +185,10 @@ export default function Study() {
                 <div className="table-wrap" style={{ marginTop: 16 }}>
                   <h3>Known compounds returned unprompted</h3>
                   <table className="table">
-                    <thead><tr><th scope="col">formula</th><th scope="col">label</th><th scope="col">judge (GLLB-SC)</th><th scope="col">E above hull</th><th scope="col">literature</th></tr></thead>
+                    <thead><tr><th scope="col">formula</th><th scope="col">label</th><th scope="col">MEGNet, GLLB-SC head</th><th scope="col">E above hull</th><th scope="col">literature</th></tr></thead>
                     <tbody>{s.rediscoveries.map((r) => <tr key={r.formula}><td><b>{r.formula}</b></td><td className="num"><Num v={r.label_gap} /></td><td className="num"><Num v={r.judge_gap} /></td><td className="num"><Num v={r.e_hull} d={3} /></td><td className="small">{r.literature}</td></tr>)}</tbody>
                   </table>
+                  {s.rediscoveries_note && <p className="small muted" style={{ marginTop: 8 }}>{s.rediscoveries_note}</p>}
                 </div>
               )}
               {s.ablation && (

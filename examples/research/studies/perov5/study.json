@@ -503,7 +503,7 @@
    "sha256": "22a1cf7b314dd425a504715da3de9b0a385deb7564cc2c69974fad38652bff32"
   }
  },
- "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable (within 0.1 eV/atom of the hull), unique and novel candidates; known compounds returned at their measured gaps.",
+ "headline": "Target following rho 0.90–0.98 against the DFT grid, among compositions already in it; the novel candidates (21 within 0.1 eV/atom of a machine-learned hull, unique and novel) all carry a lanthanide absent from the training data, so their readings are extrapolations.",
  "id": "perov5",
  "judges": {
   "cgcnn_p5": {
@@ -518,7 +518,10 @@
  },
  "limits": [
   "A complete grid: novelty and staying inside the training chemistry are mutually exclusive here.",
-  "96% of gaps are exactly zero, so the non-zero region is sparse."
+  "96% of gaps are exactly zero, so the non-zero region is sparse.",
+  "Target following was measured on returned compositions already in the grid (0% novel); random proposals with the same label filter reach rho 0.98 and a 64% hit rate, so most of the gain comes from the filter, not the search.",
+  "The novel candidates, including the 21 within 0.1 eV/atom of the machine-learned hull, all contain a lanthanide absent from Perov-5 (its only lanthanide is La), so their readings are extrapolations; 4 of the 21 fail the formability test.",
+  "Results depend on the seed: two seeds of one configuration put 83% and 57% of their returns on target."
  ],
  "mode": "generation (family: cubic ABX3)",
  "order": 1,
@@ -588,6 +591,7 @@
    "spacegroup": "Pmc2_1"
   }
  ],
+ "rediscoveries_note": "All eight contain an A-site lanthanide (Ce, Pr, Nd or Gd) absent from Perov-5, so their readings are extrapolations. The MEGNet column is its GLLB-SC head, which block S8 measured as unusable on Perov-5 (1.71 eV); the literature column records that the compound has been reported, not a measured gap.",
  "reproduce": [
   {
    "command": "python -m meidnet_eval.scorecard <intake> --models final=desc_full.pt --gap dir_gap --out scorecard/",

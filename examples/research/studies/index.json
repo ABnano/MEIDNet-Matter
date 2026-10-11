@@ -3,7 +3,7 @@
  "studies": [
   {
    "dataset": "Perov-5",
-   "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable (within 0.1 eV/atom of the hull), unique and novel candidates; known compounds returned at their measured gaps.",
+   "headline": "Target following rho 0.90–0.98 against the DFT grid, among compositions already in it; the novel candidates (21 within 0.1 eV/atom of a machine-learned hull, unique and novel) all carry a lanthanide absent from the training data, so their readings are extrapolations.",
    "id": "perov5",
    "mode": "generation (family: cubic ABX3)",
    "order": 1,

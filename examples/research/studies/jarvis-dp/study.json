@@ -2173,7 +2173,8 @@
   "The iron compounds' gaps depend on magnetism and on the functional; the data's OptB88vdW gaps are the reference here.",
   "Thallium compounds are toxic; the screening without Tl, Pb, Cd, Hg, As and Be is the practical shortlist.",
   "No new composition has been checked by DFT yet: that is the next step for any of them.",
-  "The two models were trained by the independent user (200 epochs each) and are not published; the Method page's commands train the same ones."
+  "The two models were trained by the independent user (200 epochs each) and are not published; the Method page's commands train the same ones.",
+  "The judge reads PBE gaps (MEGNet, fidelity 0) while the data record OptB88vdW gaps, so the two models agree only approximately on the level of theory."
  ],
  "mode": "screening (as S0 said), with family and family-free generation beside it",
  "order": 5,
@@ -2430,7 +2431,7 @@
   },
   "S1": {
    "grade": "FAIL",
-   "note": "Target error relative to its spread 0.448 spreads; Target rank correlation 0.782 r"
+   "note": "Metal / non-metal accuracy 0.823 share (not met); Target rank correlation 0.782 r; Latent organised by property 0.332 spreads"
   },
   "S2": {
    "grade": "PASS",
@@ -2438,7 +2439,7 @@
   },
   "S3": {
    "grade": "FAIL",
-   "note": "Composition recovered from the structure latent 4.17 %; Training to generation condition drop -3.12 points"
+   "note": "Composition recovered from the structure latent 4.17 % (not met); Training to generation condition drop -3.12 points; Composition recovered from the property latent alone 0 %"
   },
   "S4": {
    "grade": "INFO",
@@ -2462,7 +2463,7 @@
   },
   "S9": {
    "grade": "WARN",
-   "note": "Targets with enough support 3 targets; Measured label error on the held-out split 0.357 spreads"
+   "note": "Measured label error on the held-out split 0.357 spreads; Targets with enough support 3 targets"
   }
  },
  "window_eV": 0.5

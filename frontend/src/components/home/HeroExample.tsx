@@ -35,7 +35,7 @@ export function HeroExample({ study, example }: { study: Study; example?: Accept
         <div className="card card-tight">
           <div className="micro" style={{ marginBottom: 4 }}>requested gap in, delivered gap out · {points.length} accepted relaxed cells, {bands.length} requests</div>
           <ResponseCurve points={points} bands={bands} fit={cal.linearity} width={420} height={230} compact />
-          <div className="small muted">Fitted response {cal.linearity.intercept.toFixed(2)} + {cal.linearity.slope.toFixed(2)}·x and MAE {cal.accuracy.mae_relaxed_cells.toFixed(2)} eV, both over the {cal.accuracy.of} relaxed cells that passed the contact and bulk tests · stability not assessed.</div>
+          <div className="small muted">Fitted response {cal.linearity.intercept.toFixed(2)} + {cal.linearity.slope.toFixed(2)}·x (R² {cal.linearity.r2.toFixed(2)}) and MAE {cal.accuracy.mae_relaxed_cells.toFixed(2)} eV, both over the {cal.accuracy.of} relaxed cells that passed the contact and bulk tests · stability not assessed.</div>
         </div>
       )}
     </div>

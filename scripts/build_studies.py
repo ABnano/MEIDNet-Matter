@@ -225,7 +225,9 @@ def build_perov5(a, out: str) -> dict:
                     "split_note": "train and test are the CDVAE splits; the validation table of these runs holds 1,419 materials, "
                                   "against 3,787 in the CDVAE validation split"},
         "mode": "generation (family: cubic ABX3)",
-        "headline": "Target following rho 0.90–0.98 against the DFT grid; 21 stable (within 0.1 eV/atom of the hull), unique and novel candidates; known compounds returned at their measured gaps.",
+        "headline": ("Target following rho 0.90–0.98 against the DFT grid, among compositions already in it; the novel candidates (21 within "
+                     "0.1 eV/atom of a machine-learned hull, unique and novel) all carry a lanthanide absent from the training data, so their "
+                     "readings are extrapolations."),
         "verdicts": verdicts,
         "target_following": {"method": "DFT of the whole grid as truth", "rho_range": [0.90, 0.98], "hit_rate_pct_range": [57, 83],
                              "random_hit_pct": 7.7, "label_error_eV_range": [0.18, 0.49], "sun_count": int(dr["SUN"].sum()),
@@ -238,7 +240,13 @@ def build_perov5(a, out: str) -> dict:
         "reproduce": [{"step": "scorecard", "command": "python -m meidnet_eval.scorecard <intake> --models final=desc_full.pt --gap dir_gap --out scorecard/"},
                       {"step": "generation and ablation", "command": "python -m meidnet_eval.eval_generate ... ; python -m meidnet_eval.eval_analyse"}],
         "limits": ["A complete grid: novelty and staying inside the training chemistry are mutually exclusive here.",
-                   "96% of gaps are exactly zero, so the non-zero region is sparse."],
+                   "96% of gaps are exactly zero, so the non-zero region is sparse.",
+                   "Target following was measured on returned compositions already in the grid (0% novel); random proposals with the same label filter reach rho 0.98 and a 64% hit rate, so most of the gain comes from the filter, not the search.",
+                   "The novel candidates, including the 21 within 0.1 eV/atom of the machine-learned hull, all contain a lanthanide absent from Perov-5 (its only lanthanide is La), so their readings are extrapolations; 4 of the 21 fail the formability test.",
+                   "Results depend on the seed: two seeds of one configuration put 83% and 57% of their returns on target."],
+        "rediscoveries_note": ("All eight contain an A-site lanthanide (Ce, Pr, Nd or Gd) absent from Perov-5, so their readings are extrapolations. "
+                               "The MEGNet column is its GLLB-SC head, which block S8 measured as unusable on Perov-5 (1.71 eV); the literature column "
+                               "records that the compound has been reported, not a measured gap."),
         "files": files, "sources": ["eval/results/ablation_summary.json", "eval/results/discovery_report.csv", "journal entries 1–35"],
     }
     write_json(os.path.join(sd, "study.json"), scrub_paths(finite(study)))
@@ -276,7 +284,9 @@ def build_mp_perovskites(a, out: str) -> dict:
         "checkpoints": ["mp-grounded", "mp-control", "cgcnn-mpperov"],
         "reproduce": [{"step": "checkup", "command": "python -m meidnet_eval.pipeline_checkup --ckpt mp_grounded.pt (EVAL_DATA=<intake>)"},
                       {"step": "screening", "command": "python -m meidnet_eval.screen_polymorphs ..."}],
-        "limits": ["634 training structures, 73 prototypes: too sparse for the decoder; screening is the measured mode."],
+        "limits": ["634 training structures, 73 prototypes: too sparse for the decoder; screening is the measured mode.",
+                   "The 19 oxide candidates were checked by relaxation only (two potentials agree on 16 of 16 relaxed space groups): no judge reading, no hull, no DFT. They include Ac, Tl, Hg, Cd and As compounds.",
+                   "The checkup table was graded with the bands of the time; the block verdicts above use today's bands (structure → band gap at 0.64 of the spread now meets its band)."],
         "files": files, "sources": ["eval/results/checkups/MP_checkup.json", "eval/results/MP_screen_novel/", "journal entries 36–44"],
     }
     write_json(os.path.join(sd, "study.json"), scrub_paths(finite(study)))
@@ -317,7 +327,12 @@ def build_user246(a, out: str) -> dict:
                     "Novelty is judged on the reduced composition, which is layout independent."],
         "checkpoints": [], "reproduce": [{"step": "upload adapter", "command": "python -m meidnet_eval.ingest_upload <structures/> <table.xlsx> <out> --props gap dielectric"},
                                         {"step": "preview", "command": "python -m meidnet_eval.preview <intake> --gap <column>"}],
-        "limits": ["Aggregates only: the structures, the property table and the trained checkpoint are the data owner's and are not published."],
+        "limits": ["Aggregates only: the structures, the property table and the trained checkpoint are the data owner's and are not published.",
+                   "Too sparse to generate: 11.3 compositions per element; the decoder rebuilt none of the test compositions, as the data gate predicted, so every candidate comes from screening known structure types.",
+                   "The property error, 0.19 of the gap spread, is 0.65 eV, measured on 34 test structures (roughly 0.48–0.81 eV); metal/non-metal accuracy 1.0 is uninformative, since the data has no zero gaps.",
+                   "The judge is a CGCNN trained on the same data (0.59 eV): it shares the data's blind spots, so its agreement is weaker evidence than a DFT value.",
+                   "7 of the 13 shortlisted candidates contain thallium; no candidate has been checked by DFT.",
+                   "Two counts come from different stages of the run and are not reconciled here: 58 cells compared by the two potentials against 42 relaxed in the funnel, and 13 shortlisted against 10 within 1 eV of the target."],
         "files": {}, "sources": ["meidnet_data/user_246/REPORT.md", "intake/preview.json", "intake/scorecard/scorecard.json", "journal entries 45–52"],
     }
     text = json.dumps(study).lower()
@@ -433,6 +448,10 @@ def build_mp20(a, out: str) -> dict:
     # verdicts through the central bands where measured values exist
     f_ = inst["funnel"]; acc_ = inst["accuracy"]; n_col = int(f_.get("collapsed_on_relaxation", 0)); n_nb = int(f_.get("not_bulk_on_relaxation", 0))
     n_rel_all = int(f_["relaxed"]) + n_col + n_nb
+    set_aside = {(c["formula"], float(c["target"])) for c in inst.get("collapsed_on_relaxation", []) + inst.get("not_bulk_on_relaxation", [])}
+    sound = [m for m in mlip if (m["formula"], float(m["target"])) not in set_aside]
+    drops = sorted(m["tensornet_drop_per_atom"] for m in sound if m.get("tensornet_drop_per_atom") is not None)
+    moves = [m["tensornet_max_displacement"] for m in sound if m.get("tensornet_max_displacement") is not None]
     measured = dict(MP20_MEASURED, S6=dict(MP20_MEASURED["S6"], judge_mae_request=acc_["mae_relaxed_cells"]))
     notes = dict(MP20_VERDICT_NOTES)
     notes["S6"] = (notes["S6"][0], f"judge against the request: {acc_['mae_generated_cells']:.2f} eV on all {f_['generated']} generated cells; on the same "
@@ -478,7 +497,8 @@ def build_mp20(a, out: str) -> dict:
                    f"delivered = {inst['linearity']['intercept']:.2f} + {inst['linearity']['slope']:.2f} × requested (R² {inst['linearity']['r2']:.2f}).",
                    f"Precision ±{inst['precision']['within_target_sd_median']:.1f} eV per structure (the median spread of the delivered gaps for one request).",
                    "Both readings are machine-learning estimates of the PBE band gap MP-20 records; PBE gaps are usually smaller than measured ones.",
-                   "The generated cell is a starting point: relaxation lowers the energy by 1.3–8.7 eV/atom and moves atoms 1.4–2.3 Å; the relaxed cell is the product.",
+                   f"The generated cell is a starting point: relaxation lowered the energy of the {len(sound)} sound cells by {drops[0]:.1f}–{drops[-1]:.0f} eV/atom "
+                   f"(median {drops[len(drops) // 2]:.1f}) and moved atoms by up to {min(moves):.1f}–{max(moves):.1f} Å; the relaxed cell is the product.",
                    f"Of the {n_rel_all} relaxed cells, {n_col} collapsed (closest atoms under 0.6 of their radii; a sound crystal is near 1) and {n_nb} are slabs or sparse cells "
                    f"(an empty layer over 6 Å or a packing fraction under 0.12, lines that 98.7% of the 45,229 known MP-20 crystals meet): all are set aside, and the accepted "
                    f"structures and every calibration number come from the {f_['relaxed']} that remain.",
@@ -516,6 +536,14 @@ DP_CLASS_WORDS = [("absent from the data and the reference set", "in neither the
 DP_ALSO_IN_MP = {"Rb2KInCl6": "also in the Materials Project (mp-aaacehuv, a theoretical entry)"}
 
 
+# a verdict note leads with the metric that decided it: the worst grade first
+GRADE_ORDER = {"FAIL": 0, "WARN": 1, "PASS": 2}
+
+
+def worst_first(metrics: list) -> list:
+    return sorted(metrics, key=lambda m: GRADE_ORDER.get(m.get("verdict") or m.get("grade"), 3))
+
+
 def dp_class(c: str) -> str:
     for old, new in DP_CLASS_WORDS:
         c = c.replace(old, new)
@@ -542,7 +570,8 @@ def build_jarvis_dp(a, out: str) -> dict:
     verdicts = {"S0": {"grade": prev["verdict"], "note": f"{prev['values']['density']:.1f} compositions per element (rule 200): {prev['mode']}; "
                                                          f"family conformance {prev['values']['family_conformance']:.2f}"}}
     for blk, rep in sc["report"]["main"].items():
-        verdicts[blk] = {"grade": rep["verdict"], "note": "; ".join(f"{m['metric']} {m['value']:.3g} {m['unit']}" for m in rep.get("metrics", [])[:2]
+        verdicts[blk] = {"grade": rep["verdict"], "note": "; ".join(f"{m['metric']} {m['value']:.3g} {m['unit']}" + (" (not met)" if (m.get("verdict") or m.get("grade")) == "FAIL" else "")
+                                                                   for m in worst_first(rep.get("metrics", []))[:3]
                                                                    if m.get("value") is not None)}
     routes, accepted, seen, pooled = [], [], set(), {"judge_err": [], "candidates": 0, "consensus": 0, "assessed": 0, "stable": 0}
     stability = None
@@ -678,6 +707,7 @@ def build_jarvis_dp(a, out: str) -> dict:
                    "Cs₂InFeBr₆: the reference set has no cesium halide, so its stability is not assessed; the Materials Project reference (--hull-reference mp) would give it.",
                    "The iron compounds' gaps depend on magnetism and on the functional; the data's OptB88vdW gaps are the reference here.",
                    "Thallium compounds are toxic; the screening without Tl, Pb, Cd, Hg, As and Be is the practical shortlist.",
+                   "The judge reads PBE gaps (MEGNet, fidelity 0) while the data record OptB88vdW gaps, so the two models agree only approximately on the level of theory.",
                    "No new composition has been checked by DFT yet: that is the next step for any of them.",
                    "The two models were trained by the independent user (200 epochs each) and are not published; the Method page's commands train the same ones."],
         "files": files, "sources": ["meidnet_data/jarvis_dp/retest_pypi (the run of the published packages)", "the independent user's package (journey and feedback)", "journal entries 68–70"],

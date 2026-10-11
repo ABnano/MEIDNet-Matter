@@ -31,6 +31,7 @@ export function ResearchNav() {
           )}
         </li>
         <li><NavLink to="/method" end>{N.method}</NavLink></li>
+        <li><NavLink to="/limits" end>{N.limits}</NavLink></li>
       </ul>
       <div className="research-nav-foot"><ExternalLink href={PRISM_SPACE}>{N.prism} ↗</ExternalLink></div>
     </nav>

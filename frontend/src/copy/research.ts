@@ -10,6 +10,7 @@ export const researchNav = {
   studies: 'Case studies',
   pipeline: 'Evaluation pipeline',
   method: 'Methodology',
+  limits: 'Scope and limits',
   prism: 'MEIDNet Prism',
 };
 
@@ -26,6 +27,7 @@ export const home = {
   // which data each stage runs on, under the hero; its link opens the plain-words page of the datasets
   scope: 'Explore and Train run on Perov-5, a public set of 18,928 DFT-computed perovskites; Generate runs on a separate model trained on MP-20; your own data runs on your computer.',
   scopeWhat: 'What is Perov-5?',
+  scopeLimits: 'Scope and limits',
   stages: [
     ['01', 'Explore', 'Structures and properties', 'Property distributions, the learned representation of the dataset, and each material with its nearest neighbours.', '/explore'],
     ['02', 'Train', 'Predictive models', 'A MEIDNet model trained on a Perov-5 subset and evaluated against the full model.', '/train'],
@@ -44,7 +46,7 @@ export const home = {
   prism: 'MEIDNet Prism, the library behind Matter, holds the method\'s documentation, its benchmarks and the Studio.',
   prismCta: 'Open MEIDNet Prism',
   discoveriesTitle: 'What the generator has delivered',
-  discoveriesLead: 'Structures accepted after relaxation by two models of different lineage, both estimating the PBE band gap the data records: generated for a band gap on MP-20, and screened or generated within the double-perovskite family on public JARVIS-DFT data. Hover to pause; click a card to open its study.',
+  discoveriesLead: 'Structures accepted after relaxation by two models of different lineage, both estimating the DFT band gap each dataset records (PBE for MP-20, OptB88vdW for JARVIS-DFT): generated for a band gap on MP-20, and screened or generated within the double-perovskite family on public JARVIS-DFT data. Hover to pause; click a card to open its study.',
   walkthroughTitle: 'How a request becomes a structure, in six steps',
   walkthroughLead: 'An animated walkthrough on a real result: press play, or step through it. One sentence for a newcomer, one for a researcher.',
   featuredTitle: 'The MP-20 study: requested in, delivered out',
@@ -71,7 +73,7 @@ export const datasets = {
   lead: 'Two public datasets of computed crystals. A model learns from one dataset, and what it can do depends on that dataset.',
   perov5Title: 'Perov-5, the example dataset',
   perov5: [
-    'A public set of 18,928 perovskites whose properties were computed with density functional theory (DFT), not measured. Every entry has the same cubic structure of five atoms, ABX₃: an A cation on the corners of the cell, a B cation at its centre and three anion sites on its faces. Only the occupants change: 56 elements fill the cation sites, and the anion sites hold one of seven mixes of oxygen, nitrogen, fluorine and sulfur (O₃, O₂N, ON₂, N₃, O₂F, ONF, O₂S).',
+    'A public set of 18,928 perovskites whose properties were computed with density functional theory (DFT), not measured. Every entry has the same cubic structure of five atoms, ABX₃: an A cation on the corners of the cell, a B cation at its centre and three anion sites on its faces. Only the occupants change: 52 elements fill the two cation sites, and the anion sites hold one of seven mixes of oxygen, nitrogen, fluorine and sulfur (O₃, O₂N, ON₂, N₃, O₂F, ONF, O₂S).',
     'Each entry gives the structure and two numbers: the heat of formation (eV per atom; the lower, the more favourable the compound is to form from its elements) and the direct band gap (eV, computed with the GLLB-SC functional). Only 4% of the entries have a non-zero gap; the others are metals at that level of theory.',
     'Castelli and co-workers at DTU computed the set in 2012 to search for materials that split water with sunlight. The CDVAE benchmark (Xie et al., 2022) fixed its split, 11,356 training, 3,787 validation and 3,785 test materials, and generative models of crystals such as CDVAE and DiffCSP report results on it. The published MEIDNet model was trained on it, so Explore and Train use it here.',
     'What it is not: one structure type only, so a model trained on it chooses the occupants of the sites but no new arrangement of atoms; mostly hypothetical compounds; DFT values, not measurements.',
@@ -110,8 +112,9 @@ export const studies = {
 };
 
 export const play = {
-  familyPointer: 'Need a specific family (double perovskites, a halide variant, your own chemistry)? This generator is family-free and trained on MP-20. Train on your own data instead: Method › Run it on your data, which also has a screening command for small datasets.',
-  familyLink: 'Method › Run it on your data',   // the part of familyPointer the page turns into a link
+  familyPointer: 'Need a specific family (double perovskites, a halide variant, your own chemistry)? This generator is family-free and trained on MP-20. Train on your own data instead: Method › Run it on your data; data too sparse to generate (fewer than hundreds of compositions per element) goes to its screening command, as Scope and limits explains.',
+  familyLink: 'Method › Run it on your data',   // the parts of familyPointer the page turns into links
+  limitsLink: 'Scope and limits',
   h1: 'Generate structures for a band gap',
   lead: 'Family-free generation with the MP-20 symmetry decoder. You ask for one to three band gaps; the server generates cells, reads each cell\'s label from its own structure, keeps the cells whose label falls inside your window, then asks a second model that played no part in generation to read every kept cell; the result shows which cells both place inside the window. Both are machine-learning estimates of the PBE band gap MP-20 records, and PBE gaps are usually smaller than measured ones. Relaxation is not run here: download the cells and relax them locally with the command the result gives you.',
   rangeNote: 'Measured on MP-20: accepted structures came back for 0.5–3 eV requests, with a slope of 0.71 and a precision of about ±0.7 eV per structure; it saturates above 3 eV. Expect few or no accepted structures there.',

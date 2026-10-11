@@ -78,6 +78,8 @@ export interface Study {
   files: Record<string, { bytes: number; sha256: string; media: string }>; sources: string[];
   ablation?: { columns: string[]; rows: Array<Record<string, unknown>>; note: string };
   rediscoveries?: Rediscovery[]; judges?: Record<string, Record<string, unknown>>;
+  /** What the rediscovery table can and cannot show (0.10.3). */
+  rediscoveries_note?: string;
   calibration?: Calibration; accepted?: Accepted[]; accepted_classes?: Record<string, number>;
   pool?: { generated: number; both_judges_generated: number; relaxed: number; accepted: number; collapsed_on_relaxation?: number; not_bulk_on_relaxation?: number };
   checks?: Array<{ stage: string; check: string; status: string; detail: string }>;
