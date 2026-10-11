@@ -6,7 +6,8 @@ import { loadScript } from './loadScript';
  *  shared latent space and a band-gap curve behind it; a drag turns it by hand (the cursor says so; no caption). Drawn by
  *  prism-hero.js (served from /tour/, after prism3d.js), the scene of the Prism landing page, so the two sites show the
  *  method with one picture. */
-const SCRIPTS = ['/tour/prism3d.js', '/tour/prism-hero.js'];
+// relative to the app's base: '/' on the Space, './' on the static mirror, which lives under a sub-path
+const SCRIPTS = [`${import.meta.env.BASE_URL}tour/prism3d.js`, `${import.meta.env.BASE_URL}tour/prism-hero.js`];
 
 type Scene = { redraw: () => void; destroy: () => void };
 

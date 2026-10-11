@@ -7,7 +7,8 @@ import { loadScript } from './loadScript';
  *  a canvas by two plain scripts served from /tour/ (prism3d.js, the small 3D toolkit; prism-tour.js, the scenes and the
  *  player). They came from the MEIDNet Prism landing page and keep their own controls: play, chapters, a seek bar, the
  *  keyboard. The player finds its parts in this markup by their classes, so those names are fixed. */
-const SCRIPTS = ['/tour/prism3d.js', '/tour/prism-tour.js'];
+// relative to the app's base: '/' on the Space, './' on the static mirror, which lives under a sub-path
+const SCRIPTS = [`${import.meta.env.BASE_URL}tour/prism3d.js`, `${import.meta.env.BASE_URL}tour/prism-tour.js`];
 
 /** The handle PrismTour.mount returns for one #tour3d element. */
 export type TourPlayer = { play: () => void; pause: () => void; go: (i: number) => void; seek: (ms: number) => void; redraw?: () => void; destroy?: () => void };

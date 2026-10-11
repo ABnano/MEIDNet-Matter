@@ -39,6 +39,16 @@ describe('the animated tour', () => {
   });
 });
 
+describe('the scripts of both animations', () => {
+  it('load relative to the app base, so the static mirror, which lives under a sub-path, finds them too', () => {
+    for (const f of ['src/components/home/Tour3D.tsx', 'src/components/home/Crystal3D.tsx']) {
+      const src = readFileSync(f, 'utf8');
+      expect(src).toMatch(/import\.meta\.env\.BASE_URL\}tour\//);
+      expect(src).not.toMatch(/['"`]\/tour\//);                       // no address from the site root
+    }
+  });
+});
+
 describe('the crystal of MEIDNet Prism', () => {
   it('renders a described canvas and no caption under it', () => {
     const { container } = render(<Crystal3D />);

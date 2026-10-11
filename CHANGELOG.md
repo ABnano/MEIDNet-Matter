@@ -28,6 +28,8 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   website (https://babu09-meidnet-matter.hf.space/) and to MEIDNet Prism (https://babu09-meidnet-prism.hf.space/).
 
 ### Fixed
+- The static mirror on GitHub Pages draws the crystal and the tour: their scripts are addressed relative to the app's
+  base; they were requested from the site root, which is outside the mirror's sub-path (404).
 - The tour and the crystal start again each time the home page opens; they had stayed blank after a visit to another
   page and back, because the scripts attached once, to the first page they saw.
 
