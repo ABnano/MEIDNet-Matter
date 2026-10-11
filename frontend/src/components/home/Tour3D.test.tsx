@@ -40,15 +40,16 @@ describe('the animated tour', () => {
 });
 
 describe('the crystal of MEIDNet Prism', () => {
-  it('renders a described canvas with its caption', () => {
-    render(<Crystal3D />);
+  it('renders a described canvas and no caption under it', () => {
+    const { container } = render(<Crystal3D />);
     expect(screen.getByRole('img', { name: /cubic ABX3 perovskite/ })).toBeInTheDocument();
-    expect(screen.getByText(/drag to rotate/)).toBeInTheDocument();
+    expect(container.querySelector('figcaption')).toBeNull();         // a caption appears only if the scene fails to load
   });
   it('ships the scene as a function the page mounts on each canvas, without the lettering of the Prism headline', () => {
     const hero = readFileSync('public/tour/prism-hero.js', 'utf8');
     expect(hero).toMatch(/window\.PrismHero = \{mount: mount\}/);
     expect(hero).toMatch(/destroy: function/);
     expect(hero).not.toMatch(/data-mol/);
+    expect(hero).toMatch(/ctx\.globalAlpha \*= fade/);              // a panel turning edge-on fades out, no stray line
   });
 });

@@ -69,7 +69,7 @@ try {
   await connect();
   // 0. landing
   await goto(`${BASE}/`);
-  check('landing: headline', /Explore materials|From a target property/.test(await text('h1')), await text('h1'));   // 0.10.0 home (0.4.0 kept for older builds)
+  check('landing: headline', /From Materials Data|Explore materials|From a target property/.test(await text('h1')), await text('h1'));   // 0.10.x home (earlier homes kept for older builds)
   await shot('landing.png');
   // 1. the demo goal
   check('landing: demo CTA', await click('[data-testid="cta-demo"]'));

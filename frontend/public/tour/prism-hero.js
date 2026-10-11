@@ -1,7 +1,9 @@
 /* The crystal of the MEIDNet Prism landing page, for MEIDNet Matter: a cubic ABX3 perovskite turning slowly, with three
    panels behind it (its crystal graph, the shared latent space, a band-gap curve). Copied from Prism's prism-hero.js
-   with two changes: the headline lettering of that page is left out, and the scene is a function the app calls on each
-   canvas it renders (PrismHero.mount), because this single-page app renders a new canvas whenever the home page opens.
+   with these changes: the headline lettering of that page is left out; a panel turning edge-on fades out, and the floor
+   grid fades from the middle, so that no sliver or stray line shows at any angle; and the scene is a function the app
+   calls on each canvas it renders (PrismHero.mount), because this single-page app renders a new canvas whenever the
+   home page opens.
    The handle it returns redraws the scene after a theme change (redraw) and stops it when the page is left (destroy).
    Needs prism3d.js (window.Prism3D), loaded first. No libraries: a small canvas renderer (painter's algorithm). */
 (function () {
@@ -52,6 +54,13 @@
 
     function drawPanel(P, dark) {
       var corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (c) { return proj(panelPoint(P, c[0], c[1])); });
+      // how squarely the panel faces the viewer: its drawn area against its face-on area at that depth. A panel turning
+      // edge-on fades out instead of collapsing into a sliver or a stray line (Matter's change to the Prism scene)
+      var area = 0;
+      for (var k = 0; k < 4; k++) { var p0 = corners[k], p1 = corners[(k + 1) % 4]; area += p0[0] * p1[1] - p1[0] * p0[1]; }
+      var sc = proj(P.c)[3], face = Math.abs(area) / 2 / (4 * P.h[0] * P.h[1] * sc * sc), fade = P3.T.clamp((face - 0.2) / 0.3);
+      if (fade < 0.02) return;
+      ctx.save(); ctx.globalAlpha *= fade * fade * (3 - 2 * fade);
       poly(corners);
       var g = ctx.createLinearGradient(corners[3][0], corners[3][1], corners[1][0], corners[1][1]);
       g.addColorStop(0, dark ? "rgba(51,65,85,.55)" : "rgba(255,255,255,.78)");
@@ -97,6 +106,7 @@
       ctx.font = "500 " + Math.round(Math.max(10, Math.min(12.5, W / 46))) + "px 'IBM Plex Mono', ui-monospace, monospace";
       ctx.fillStyle = dark ? "rgba(203,213,225,.85)" : "rgba(71,85,105,.9)";
       ctx.fillText(P.label, Math.max(4, Math.min(tl[0] + 2, W - ctx.measureText(P.label).width - 4)), tl[1] - 7);   // inside the canvas
+      ctx.restore();
     }
 
     function draw() {
@@ -105,11 +115,20 @@
       cam = P3.camera({cx: W * 0.52, cy: H * 0.5, scale: Math.min(W, H * 1.1) / 8.3, yaw: yaw, pitch: pitch});
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       ctx.clearRect(0, 0, W, H);
-      // floor grid
-      ctx.lineWidth = 1; ctx.strokeStyle = dark ? "rgba(148,163,184,.12)" : "rgba(100,116,139,.14)";
+      // floor grid, fading with the distance from the middle, so that it has no hard edge (Matter's change)
+      ctx.lineWidth = 1;
+      var gc = dark ? "148,163,184" : "100,116,139", g0 = dark ? 0.2 : 0.22;
       for (var g = -3; g <= 3; g += 0.75) {
-        var a = proj([g, -2.05, -3]), b = proj([g, -2.05, 3]), c = proj([-3, -2.05, g]), d = proj([3, -2.05, g]);
-        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.moveTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.stroke();
+        for (var n = 0; n < 12; n++) {
+          var s0 = -3 + n * 0.5, s1 = s0 + 0.5, sm = s0 + 0.25;
+          [[g, s0, g, s1, Math.hypot(g, sm)], [s0, g, s1, g, Math.hypot(sm, g)]].forEach(function (e) {
+            var al = g0 * (1 - P3.T.clamp((e[4] - 1.6) / 1.4));
+            if (al < 0.004) return;
+            var a = proj([e[0], -2.05, e[1]]), b = proj([e[2], -2.05, e[3]]);
+            ctx.strokeStyle = "rgba(" + gc + "," + al.toFixed(3) + ")";
+            ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+          });
+        }
       }
       // the cation's shadow on the floor
       var f = proj([0, -2.05, 0]), sh = ctx.createRadialGradient(f[0], f[1], 0, f[0], f[1], 2.0 * f[3]);

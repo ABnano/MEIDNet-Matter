@@ -341,7 +341,7 @@
      }},
 
     {block: "outro", title: "Your turn", ms: 4600,
-     cap: "Your turn: explore the data, train a small model and generate candidates for a band gap of your choice, with the evidence for each.",
+     cap: "Your turn: explore the data, train a model and generate candidates for a band gap of your choice, with the evidence for each.",
      draw: function (t) {
        P.crystal(ctx, cam(480, 250, 120, -0.6 + 0.9 * t, -0.35), cell(FOUND[0].e), {dark: th.dark, alpha: th.dark ? 0.07 : 0.1, glass: 0.6});
        var a = T.out(T.seg(t, 0, 0.25));
@@ -417,7 +417,7 @@
       var blk = BLOCKS[bi];
       cap.innerHTML = (blk ? '<b style="color:' + tc(blk.id) + '">' + blk.name + ".</b> " : "") + sc.cap;
       root.style.setProperty("--t3c", blk ? blk.c : COL.family);
-      var dest = {data: ["/explore", "Explore the data →"], model: ["/train", "Train a small model →"], family: ["/p/perov5-demo/goal", "Search within a family →"],
+      var dest = {data: ["/explore", "Explore the data →"], model: ["/train", "Train a model →"], family: ["/p/perov5-demo/goal", "Search within a family →"],
                   rules: ["/p/perov5-demo/goal", "Set rules and targets →"], targets: ["/generate", "Generate for a band gap →"],
                   search: ["/generate", "Generate for a band gap →"], candidates: ["/studies", "See the case studies →"]}[blk ? blk.id : ""] || ["/explore", "Start exploring →"];
       open.setAttribute("href", dest[0]); open.textContent = dest[1];

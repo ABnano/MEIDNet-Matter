@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { home as H } from '@/copy/research';
 import { loadScript } from './loadScript';
 
-/** MEIDNet Prism's crystal: a cubic ABX3 perovskite turning slowly, with its crystal graph, the shared latent space and a
- *  band-gap curve behind it; a drag turns it by hand. Drawn by prism-hero.js (served from /tour/, after prism3d.js), the
- *  scene of the Prism landing page, so the two sites show the method with one picture. */
+/** MEIDNet Prism's crystal, the visual of the hero: a cubic ABX3 perovskite turning slowly, with its crystal graph, the
+ *  shared latent space and a band-gap curve behind it; a drag turns it by hand (the cursor says so; no caption). Drawn by
+ *  prism-hero.js (served from /tour/, after prism3d.js), the scene of the Prism landing page, so the two sites show the
+ *  method with one picture. */
 const SCRIPTS = ['/tour/prism3d.js', '/tour/prism-hero.js'];
 
 type Scene = { redraw: () => void; destroy: () => void };
@@ -32,7 +33,7 @@ export function Crystal3D() {
   return (
     <figure className="scene">
       <canvas id="hero3d" ref={canvas} role="img" aria-label={H.crystalAria}></canvas>
-      <figcaption>{failed ? H.crystalFallback : H.crystalCaption}</figcaption>
+      {failed && <figcaption>{H.crystalFallback}</figcaption>}
     </figure>
   );
 }

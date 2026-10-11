@@ -64,7 +64,7 @@ export function SiteFooter({ wide = false }: { wide?: boolean }) {
   return (
     <footer className="site">
       <div className={wide ? 'wrap-narrow wrap-research' : 'wrap-narrow'}>
-        <span>MEIDNet Matter: explore a dataset, train a small model, generate candidates, with the evidence for each. MEIDNet is the engine.</span>
+        <span>MEIDNet Matter: from materials data to inverse design, with the evidence for every candidate. MEIDNet is the engine.</span>
         <Link to="/explore">Explore</Link>
         <Link to="/train">Train</Link>
         <Link to="/generate">Generate</Link>

@@ -5,13 +5,20 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 ## [Unreleased]
 
 ### Added
-- Home page, in this order: the headline beside Prism's crystal, a cubic perovskite turning beside its crystal graph,
-  the shared latent space and a band-gap curve; then "How it works, in one minute": a few words on the method with a
-  link to MEIDNet Prism, the library behind Matter, and the animated tour of the Prism landing page (data, model,
-  family, rules, targets, search, candidates), as wide as the page and without a frame, with its own controls, each
-  chapter's link opening the page of this app that does that step; then the accepted-structure example.
+- Home page, kept minimal and in this order: the pitch beside Prism's crystal, a cubic perovskite turning beside its
+  crystal graph, the shared latent space and a band-gap curve, filling the right of the hero as on the Prism landing
+  page; then the animated tour of the Prism landing page (data, model, family, rules, targets, search, candidates), as
+  wide as the page and without a frame, with its own controls, each chapter's link opening the page of this app that
+  does that step; then the accepted-structure example.
 
 ### Changed
+- The pitch: "From Materials Data to Inverse Design", one sentence on what the workspace does (explore structures and
+  properties, develop and evaluate predictive models, discover candidate materials guided by target properties), the
+  buttons Explore materials and Inverse design, and the example dataset in one line. The page title and description
+  follow it. The newcomer's note on band gaps, the paragraph above the tour and the crystal's caption are gone, and the
+  three stage cards say what each stage does in one sentence.
+- The crystal's panels fade out as they turn edge-on, and its floor grid fades from the middle, so that no sliver or
+  stray line shows at any angle.
 - The citation moves from the home page to the Methodology page (How to cite).
 
 ### Fixed

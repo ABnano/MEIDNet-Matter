@@ -12,8 +12,8 @@ import { home as H, researchNav as RN } from '@/copy/research';
 /** Which accepted structure to show first: a new composition, charge balanced, asked for a gap between 1 and 3 eV. */
 const score = (a: Accepted) => (a.class.startsWith('new composition') ? 4 : 0) + (a.charge_balanced ? 2 : 0) + (a.requested >= 1 && a.requested <= 3 ? 3 : 0) + (a.flag ? -2 : 0);
 
-/** The front door: the headline beside MEIDNet Prism's turning crystal, then the one-minute tour of how it works, then a
- *  real result, the three stages, and the research one step away. */
+/** The front door, kept minimal: the pitch beside MEIDNet Prism's turning crystal, then the one-minute tour of how it
+ *  works, then a real result, the three stages, and the research one step away. */
 export default function Home() {
   const mp20 = useResource<Study>('studies/mp20', (s) => research.study('mp20', s));
   const dp = useResource<Study>('studies/jarvis-dp', (s) => research.study('jarvis-dp', s));
@@ -30,7 +30,7 @@ export default function Home() {
       <MarketingHeader />
       <main className="wrap-narrow" id="main">
         <section className="hero">
-          <div>
+          <div className="hero-copy">
             <div className="eyebrow">{H.eyebrow}</div>
             <h1>{H.h1}</h1>
             <p className="lead">{H.lead}</p>
@@ -39,18 +39,11 @@ export default function Home() {
               <Link to="/generate" className="btn btn-lg">{H.ctaGenerate}</Link>
             </div>
             <div className="scope-line">{H.example} <Link to="/p/perov5-demo/goal" data-testid="cta-demo">{H.ctaDemo} →</Link></div>
-            <p className="plain">{H.plain}</p>
           </div>
           <Crystal3D />
         </section>
 
         <section className="section how" id="how">
-          <div className="how-head">
-            <div className="micro">{H.tourTitle}</div>
-            <h2>{H.ideaTitle}</h2>
-            <p className="muted">{H.ideaText}</p>
-            <p className="small muted">{H.ideaPrism} <ExternalLink href={PRISM_SPACE}>{H.prismCta} ↗</ExternalLink></p>
-          </div>
           <Tour3D />
         </section>
 
@@ -66,7 +59,7 @@ export default function Home() {
                 <h2 style={{ margin: '4px 0 2px' }}>{title}</h2>
                 <div className="muted">{sub}</div>
                 <p className="small muted" style={{ marginTop: 8 }}>{text}</p>
-                <span className="small">{title === 'Explore' ? 'Open the data →' : title === 'Train' ? 'Train a small model →' : 'Generate structures →'}</span>
+                <span className="small">{title === 'Explore' ? 'Open the data →' : title === 'Train' ? 'Train a model →' : 'Generate candidates →'}</span>
               </Link>
             ))}
           </div>
@@ -95,7 +88,7 @@ export default function Home() {
         </section>
 
         <section className="section">
-          <div className="card"><h3>Open source</h3><p className="muted">The code of Matter is on GitHub under the MIT licence; the engine is the MEIDNet package, vendored here as a snapshot with its provenance recorded. The same three stages run from Python against this server (Method › Python).</p><ExternalLink href="https://github.com/ABnano/MEIDNet-Matter" className="btn">GitHub ↗</ExternalLink></div>
+          <div className="card"><h3>Open source</h3><p className="muted">Matter is open source under the MIT licence. Its engine is the MEIDNet package, and every step also runs from Python.</p><ExternalLink href="https://github.com/ABnano/MEIDNet-Matter" className="btn">GitHub ↗</ExternalLink></div>
         </section>
       </main>
       <SiteFooter />
