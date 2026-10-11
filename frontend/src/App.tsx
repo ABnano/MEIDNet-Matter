@@ -53,7 +53,7 @@ const TITLES: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
 ];
 
 /** The home page's title: the same words as index.html's <title>, which the page loads with. */
-export const HOME_TITLE = 'MEIDNet Matter — from materials data to inverse design';
+export const HOME_TITLE = 'MEIDNet Matter — from target properties to crystal structures';
 
 export function pageTitle(pathname: string): string {
   if (pathname === '/') return HOME_TITLE;

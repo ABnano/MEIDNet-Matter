@@ -18,7 +18,7 @@ export const BLOCKS = ['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9
 export const BLOCK_NAMES: Record<string, string> = { S0: 'Data gate', S1: 'Encoder', S2: 'Alignment', S3: 'Decoder', S4: 'Labels', S5: 'Search', S6: 'End to end', S7: 'Validation', S8: 'Judges', S9: 'Readiness' };
 export const home = {
   eyebrow: 'MEIDNet Matter',
-  h1: 'From Materials Data to Inverse Design',
+  h1: 'From Target Properties to Crystal Structures',
   lead: 'Explore crystal structures and properties, develop and evaluate predictive models, and discover candidate materials guided by target properties, all within an interactive scientific workspace.',
   ctaExplore: 'Explore materials',
   ctaGenerate: 'Inverse design',

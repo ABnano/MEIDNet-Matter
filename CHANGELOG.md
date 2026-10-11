@@ -12,7 +12,7 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   does that step; then the accepted-structure example.
 
 ### Changed
-- The pitch: "From Materials Data to Inverse Design", one sentence on what the workspace does (explore structures and
+- The pitch: "From Target Properties to Crystal Structures", one sentence on what the workspace does (explore structures and
   properties, develop and evaluate predictive models, discover candidate materials guided by target properties), the
   buttons Explore materials and Inverse design, and the example dataset in one line. The page title and description
   follow it. The newcomer's note on band gaps, the paragraph above the tour and the crystal's caption are gone, and the
