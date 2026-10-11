@@ -24,6 +24,8 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
 - The crystal's panels fade out as they turn edge-on, and its floor grid fades from the middle, so that no sliver or
   stray line shows at any angle.
 - The citation moves from the home page to the Methodology page (How to cite).
+- The Hugging Face card follows the website: the pitch as its description, the logo on top, and the links to the
+  website (https://babu09-meidnet-matter.hf.space/) and to MEIDNet Prism (https://babu09-meidnet-prism.hf.space/).
 
 ### Fixed
 - The tour and the crystal start again each time the home page opens; they had stayed blank after a visit to another

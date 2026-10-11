@@ -49,22 +49,31 @@ sdk: docker
 app_port: 7860
 pinned: true
 license: mit
-short_description: Ask for a band gap, get crystal structures with evidence
+short_description: From target properties to crystal structures
 thumbnail: https://babu09-meidnet-matter.hf.space/og.png
 tags: [materials, inverse-design, generative, crystal, perovskite, multimodal, search-engine, chemistry]
 models: [Babu09/MEIDNet]
 ---
 
+<p align="center"><img src="https://babu09-meidnet-matter.hf.space/og.png" width="640" alt="MEIDNet Matter"></p>
+
 # MEIDNet Matter
 
-**What:** crystal structures for a requested band gap, each with the evidence for it.  
+**From target properties to crystal structures.** Explore crystal structures and properties, develop and evaluate
+predictive models, and discover candidate materials guided by target properties, all within an interactive scientific
+workspace. Every candidate comes with its evidence and its limits.
+
+**The website:** https://babu09-meidnet-matter.hf.space/ (the app on its own page) · **The method and its library:**
+MEIDNet Prism, https://babu09-meidnet-prism.hf.space/
+
+**What:** crystal structures for a requested band gap, each with the evidence for it.
 **For:** materials scientists choosing candidates to check by DFT, and anyone learning inverse design.  
 **Input:** one to three band-gap values (live, on MP-20); on your own computer, your own structures and properties.  
 **Output:** CIF files with two machine-learning readings of the PBE gap, charge balance, novelty against MP-20, and the
 command that relaxes them locally.  
 **Time:** seconds to a few minutes per request on the shared CPU, depending on how many structures you ask for; relaxation and DFT run on your side.
 
-MEIDNet is the engine; MEIDNet Prism (https://babu09-meidnet.hf.space) is where to learn the method and benchmark it.
+MEIDNet is the engine; MEIDNet Prism (https://babu09-meidnet-prism.hf.space) is where to learn the method and benchmark it.
 Matter runs family-free generation live (MP-20, the symmetry decoder, two readings per cell: the generator's label and a
 second model) and the Perov-5 demo within a structural family; the same stages run on your own data locally (Method page).
 
@@ -77,9 +86,9 @@ lives. The same site, readable on any network, is mirrored at https://abnano.git
 and the demo search stay here); Prism's is at https://abnano.github.io/MEIDNet/. Turning on secure DNS in the browser
 usually opens this page too.
 
-* [Open the app](https://babu09-meidnet-matter.hf.space/) · [Mirror](https://abnano.github.io/MEIDNet-Matter/) · [Code](https://github.com/ABnano/MEIDNet-Matter) ·
-  [Engine](https://github.com/ABnano/MEIDNet) · [Model](https://huggingface.co/Babu09/MEIDNet) ·
-  [Paper](https://doi.org/10.1038/s41524-026-02153-3)
+* [Open the website](https://babu09-meidnet-matter.hf.space/) · [Mirror](https://abnano.github.io/MEIDNet-Matter/) · [Code](https://github.com/ABnano/MEIDNet-Matter) ·
+  [MEIDNet Prism](https://babu09-meidnet-prism.hf.space/) · [Engine](https://github.com/ABnano/MEIDNet) ·
+  [Model](https://huggingface.co/Babu09/MEIDNet) · [Paper](https://doi.org/10.1038/s41524-026-02153-3)
 
 What happens on this shared Space: nothing is uploaded in this version; a search's run folder lives on the
 container's disk, is removed after an hour of inactivity and on every restart, and is never used to train anything.
