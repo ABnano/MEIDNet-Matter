@@ -12,6 +12,10 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   does that step; then the accepted-structure example.
 
 ### Changed
+- A new Matter logo in the MEIDNet Prism family: target-property streams enter Prism's glass octahedron, and a soft
+  spectrum leaves it into a glass crystal unit cell. It is the header and footer mark, the browser-tab icon (with a
+  simpler drawing for 16 px) and, as the full logo with the wordmark, the social preview and Hugging Face card image.
+  Chosen from three designs judged against Prism's logo; scripts/brand/ regenerates it.
 - The pitch: "From Target Properties to Crystal Structures", one sentence on what the workspace does (explore structures and
   properties, develop and evaluate predictive models, discover candidate materials guided by target properties), the
   buttons Explore materials and Inverse design, and the example dataset in one line. The page title and description
