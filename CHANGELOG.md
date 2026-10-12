@@ -14,6 +14,11 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   element, 549 on the same split; judge qualification picks its head on the reporting rows; verdicts carry no interval;
   averaged ionic radii make CsPbBr₃ and CsPbCl₃ fail the octahedral factor) and what the site does not do.
 - Each study page says what the study checked and what it did not, with a link to the five side by side.
+- The reading pages (every page but the home page) take MEIDNet Prism's heading colours: maroon titles and section
+  headings with Prism's underline and accent bar, blue sub-headings and table headers, in both themes. Two workflow
+  diagrams in Prism's palette: on Methodology, the six steps from a requested property to an accepted structure; on
+  Scope and limits, the route the data gate chooses for a dataset (generation, screening or candidate sets) and the check
+  every route ends with. The levels of evidence carry a coloured marker, from the strongest to the weakest.
 - Scope and limits is written in full sentences: levels of evidence, data requirements, validation by study, structural
   scope, demonstrated capabilities, known open issues, and the limitations of the hosted service in one paragraph.
 - Home page, kept minimal and in this order: the pitch beside Prism's crystal, a cubic perovskite turning beside its

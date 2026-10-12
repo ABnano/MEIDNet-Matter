@@ -16,6 +16,17 @@ export const limits = {
   scales: 'Two scales are used for model error. The readiness report and the training page describe an error below 0.25 of the property\'s spread as good and below 0.5 as fair, whereas block S1 of the evaluation pipeline accepts errors up to 0.7. The former characterises the precision of a single model; the latter is an acceptance threshold.',
   dataTitle: 'Data requirements',
   dataLead: 'The content of a dataset predicts success better than its size. For each task, the table gives the deciding factor, the cases in which the method succeeded or failed, and the expected behaviour when the requirement is not met.',
+  route: {
+    input: { title: 'Your dataset', sub: 'Crystal structures with one or more computed or measured properties', color: 'var(--c-data)' },
+    gate: { title: 'Data gate (block S0), before training', sub: 'Distinct compositions per element, share of zero values, shared property profiles and fit to a structural family', color: 'var(--c-rules)' },
+    routes: [
+      { title: 'Generation without a family', sub: 'Several hundred compositions per element and many structure types. Example: MP-20.', color: 'var(--c-model)' },
+      { title: 'Screening within a family', sub: 'Fewer compositions per element; the data fit one structural family. Examples: the external upload, MP perovskites, the double perovskites.', color: 'var(--c-family)' },
+      { title: 'Candidate sets', sub: 'A complete grid of one structure type, in which most materials share their property profile. Example: Perov-5.', color: 'var(--c-targets)' },
+    ],
+    check: { title: 'The same check on every route', sub: 'Label read from the structure, independent judge, relaxation by two potentials and both readings repeated; DFT confirmation remains to be done.', color: 'var(--c-candidates)' },
+    caption: 'Which route a dataset supports. The data gate decides before any model is trained.',
+  },
   dataHead: ['task', 'deciding factor', 'succeeded', 'failed', 'when the requirement is not met'],
   data: [
     ['Property prediction from structure', 'A well-posed property: continuous, with few zero values and few materials sharing the same property profile', '166 training structures (external upload: r = 0.97; MAE 0.65 eV on a spread of 3.62 eV)', '897 training structures (double perovskites, 35% zero gaps): metals and non-metals separated correctly for 82% of test structures, below the 85% threshold', 'Band-gap errors of about 0.6–0.7 eV, largely independent of dataset size. When most values are zero, few rows carry information (Perov-5: 441 non-zero band gaps among 11,356 training structures).'],

@@ -3,6 +3,17 @@ import { ExternalLink, MarketingHeader, PRISM_LIMITS, SiteFooter } from '@/compo
 import { ResearchLayout } from '@/components/research/ResearchNav';
 import { method as M } from '@/copy/research';
 import { landing as L } from '@/copy/landing';
+import { FlowDiagram, type DiagramBox } from '@/components/research/Diagrams';
+
+/** The generation workflow of the live site (MP-20, without a family), in the order the Mechanism cards describe it. */
+const FLOW: DiagramBox[] = [
+  { title: 'Target', sub: 'The requested band gap is encoded as an anchor in the shared latent space', color: 'var(--c-targets)' },
+  { title: 'Decode', sub: 'The symmetry decoder predicts a space group and the independent sites', color: 'var(--c-model)' },
+  { title: 'Read back', sub: 'The cell is encoded again and its label is read from the structure', color: 'var(--c-data)' },
+  { title: 'Judge', sub: 'An independent model reads the same cell; both readings must fall inside the window', color: 'var(--c-rules)' },
+  { title: 'Relax', sub: 'Two machine-learning potentials relax the cell, and both readings are repeated', color: 'var(--c-search)' },
+  { title: 'Proposal', sub: 'An accepted structure, to be confirmed by DFT', color: 'var(--c-candidates)' },
+];
 
 const MECHANISM: Array<[string, string]> = [
   ['Two encoders, one latent space', 'A structure encoder (an equivariant graph network over the cell) and a property encoder map a crystal and its property vector to points on the same unit sphere; a contrastive objective pulls matching pairs together. A decoder reads a point back into a cell, and a property head reads properties from a point.'],
@@ -51,6 +62,7 @@ export default function Method() {
         <section id="mechanism">
           <h2>Mechanism</h2>
           <p className="note" data-testid="engine-version" style={{ marginBottom: 12 }}><b>Which engine this page describes.</b> Matter runs a development snapshot of the MEIDNet engine, meidnet 2.4.0.dev4, vendored in its repository: it adds the symmetry decoder trained on MP-20 and samples at the target&apos;s anchor. The released MEIDNet package that MEIDNet Prism documents (2.3) searches differently: it moves latent points towards the target by gradient descent and places each decoded composition on a family prototype, so it creates no new arrangement of atoms. Prism&apos;s scope page states that version&apos;s limits: <ExternalLink href={PRISM_LIMITS}>scope and limits of the released package ↗</ExternalLink></p>
+          <FlowDiagram steps={FLOW} caption="From a requested property to an accepted structure (generation without a family, MP-20). Cells that collapse or are not bulk-like after relaxation are set aside." testId="generation-flow" />
           <div className="stack" style={{ gap: 12 }}>{MECHANISM.map(([t, d], i) => <div className="card card-tight step-card" key={t}><div className="n">{i + 1}</div><h3>{t}</h3><p className="muted small" style={{ margin: 0 }}>{d}</p></div>)}</div>
         </section>
         <section className="section" id="strengths">

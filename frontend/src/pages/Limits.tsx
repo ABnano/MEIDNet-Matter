@@ -1,8 +1,13 @@
+import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { ExternalLink, MarketingHeader, PRISM_LIMITS, SiteFooter } from '@/components/shell';
 import { ResearchLayout } from '@/components/research/ResearchNav';
 import { STUDY_DATASETS } from '@/copy/research';
 import { limits as L, STUDY_EVIDENCE } from '@/copy/limits';
+import { RouteDiagram } from '@/components/research/Diagrams';
+
+// the levels of evidence from the strongest to the weakest: green, blue, amber, grey
+const EVIDENCE_COLOURS = ['var(--good)', 'var(--info)', 'var(--warn)', 'var(--faint)'];
 
 /** One statement of scope and limits: how to read a result, what a dataset needs, what each study checked, which crystal
  *  structures the routes produce, what the measurements support, the pipeline's known open issues, and what the site
@@ -20,7 +25,7 @@ export default function Limits() {
           <div className="table-wrap">
             <table className="table">
               <thead><tr><th scope="col">evidence</th><th scope="col">what it means</th><th scope="col">for example</th></tr></thead>
-              <tbody>{L.evidence.map(([k, d, e]) => <tr key={k}><td><b>{k}</b></td><td className="small">{d}</td><td className="small muted">{e}</td></tr>)}</tbody>
+              <tbody>{L.evidence.map(([k, d, e], i) => <tr key={k}><td><span className="ev-dot" style={{ '--k': EVIDENCE_COLOURS[i] } as CSSProperties} /><b>{k}</b></td><td className="small">{d}</td><td className="small muted">{e}</td></tr>)}</tbody>
             </table>
           </div>
           <p className="small muted" style={{ marginTop: 8 }}>{L.scales}</p>
@@ -29,6 +34,7 @@ export default function Limits() {
         <section className="section" id="data">
           <h2>{L.dataTitle}</h2>
           <p className="muted">{L.dataLead}</p>
+          <RouteDiagram {...L.route} testId="route-diagram" />
           <div className="table-wrap">
             <table className="table">
               <thead><tr>{L.dataHead.map((h) => <th scope="col" key={h}>{h}</th>)}</tr></thead>

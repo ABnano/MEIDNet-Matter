@@ -429,3 +429,40 @@ select.input { width: 100%; max-width: 100%; }
   .t3-open { margin-left: 0; width: 100%; }
   .hero-result .hero-example { grid-template-columns: 1fr; }
 }
+
+/* Reading pages: every page but the home page (whose main carries no .page class). The heading colours of MEIDNet
+   Prism (maroon titles and section headings, blue sub-headings), a little more air for long text, and the two diagram
+   kinds: a workflow (coloured steps joined by arrows) and a route (one input, a gate, three outcomes, a shared check). */
+main.page .page-head h1 { color: var(--h-head); }
+main.page .page-head h1::after { content: ""; display: block; width: 3.4rem; height: 4px; border-radius: 2px; margin-top: .45em; background: linear-gradient(90deg, var(--h-head), var(--h-sub)); }
+main.page .page-head p { font-size: 1.04em; line-height: 1.7; }
+main.page section > h2 { color: var(--h-head); position: relative; padding-left: .8rem; }
+main.page section > h2::before { content: ""; position: absolute; left: 0; top: .14em; bottom: .14em; width: 4px; border-radius: 2px; background: var(--h-head); }
+main.page h3 { color: var(--h-sub); }
+main.research-main p, main.research-main li { line-height: 1.65; }
+main.research-main .note { border-left: 3px solid var(--h-sub); }
+main.research-main .table thead th { color: var(--h-sub); }
+.ev-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--k); margin-right: 8px; }
+
+.flow { margin: var(--s-5) 0 var(--s-6); }
+.flow-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 26px; }
+.flow-step { position: relative; background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--k); border-radius: var(--r-2); padding: 10px 12px 12px; }
+.flow-step + .flow-step::before { content: "→"; position: absolute; left: -21px; top: 50%; transform: translateY(-50%); color: var(--faint); font-weight: 700; }
+.flow-n { font-family: var(--mono); font-size: var(--fs-micro); color: var(--k); font-weight: 700; letter-spacing: .04em; }
+.flow-step b { display: block; font-family: var(--display); font-size: 14px; margin: 2px 0 4px; color: var(--ink); }
+.flow-sub { display: block; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.flow figcaption, .route figcaption { margin-top: var(--s-2); }
+
+.route { margin: var(--s-5) 0 var(--s-6); display: grid; gap: 24px; }
+.route-box { position: relative; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--k); border-radius: var(--r-2); padding: 10px 14px; }
+.route-box b { display: block; font-family: var(--display); font-size: 14px; color: var(--ink); margin-bottom: 2px; }
+.route-box span { display: block; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.route-in, .route-gate, .route-check { width: 100%; max-width: 620px; margin: 0 auto; }
+.route-gate::before, .route-outs::before, .route-check::before { content: "↓"; position: absolute; left: 50%; top: -22px; transform: translateX(-50%); color: var(--faint); font-weight: 700; }
+.route-outs { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); }
+
+@media (max-width: 900px) {
+  .flow-steps { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .flow-step + .flow-step::before { content: "↓"; left: 50%; top: -22px; transform: translateX(-50%); }
+  .route-outs { grid-template-columns: minmax(0, 1fr); }
+}
