@@ -25,6 +25,6 @@ describe('the Scope and limits page', () => {
   it('tells a newcomer with their own data where to start', () => {
     render(<MemoryRouter><Limits /></MemoryRouter>);
     expect(screen.getByRole('link', { name: 'How to start →' })).toHaveAttribute('href', '/start-with-my-data');
-    expect(screen.getByTestId('small-data')).toHaveTextContent(/A few hundred structures train a property model, not a generator/);
+    expect(screen.getByTestId('small-data')).toHaveTextContent(/Small datasets support property prediction, not generation/);
   });
 });

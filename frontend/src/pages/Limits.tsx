@@ -81,7 +81,7 @@ export default function Limits() {
 
         <section className="section" id="site">
           <h2>{L.siteTitle}</h2>
-          <ul>{L.site.map((s) => <li key={s}>{s}</li>)}</ul>
+          <p>{L.site}</p>
           <p className="small muted">{L.engine} <ExternalLink href={PRISM_LIMITS}>{L.engineLink}</ExternalLink></p>
         </section>
       </ResearchLayout>

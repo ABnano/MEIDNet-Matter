@@ -14,6 +14,8 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   element, 549 on the same split; judge qualification picks its head on the reporting rows; verdicts carry no interval;
   averaged ionic radii make CsPbBr₃ and CsPbCl₃ fail the octahedral factor) and what the site does not do.
 - Each study page says what the study checked and what it did not, with a link to the five side by side.
+- Scope and limits is written in full sentences: levels of evidence, data requirements, validation by study, structural
+  scope, demonstrated capabilities, known open issues, and the limitations of the hosted service in one paragraph.
 - Home page, kept minimal and in this order: the pitch beside Prism's crystal, a cubic perovskite turning beside its
   crystal graph, the shared latent space and a band-gap curve, filling the right of the hero as on the Prism landing
   page; then the animated tour of the Prism landing page (data, model, family, rules, targets, search, candidates), as
