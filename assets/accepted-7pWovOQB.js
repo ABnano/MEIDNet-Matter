@@ -1,0 +1,1 @@
+const t=s=>s.class.includes("contradicts")?"contradicted":s.class.startsWith("rediscovered")||s.class.includes("confirms")?"rediscovered":s.class.startsWith("new composition")&&s.charge_balanced===!1?"implausible":"candidate",i=s=>s.some(e=>{const c=t(e);return c==="contradicted"||c==="implausible"});export{t as g,i as h};

@@ -1,0 +1,38 @@
+# generated using pymatgen
+data_PrCl2
+_symmetry_space_group_name_H-M   'P 1'
+_cell_length_a   7.58354425
+_cell_length_b   7.58354425
+_cell_length_c   6.76009274
+_cell_angle_alpha   90.00000000
+_cell_angle_beta   90.00000000
+_cell_angle_gamma   90.00000000
+_symmetry_Int_Tables_number   1
+_chemical_formula_structural   PrCl2
+_chemical_formula_sum   'Pr4 Cl8'
+_cell_volume   388.77390299
+_cell_formula_units_Z   4
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+  1  'x, y, z'
+loop_
+ _atom_site_type_symbol
+ _atom_site_label
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+  Cl  Cl0  1  0.28912237  0.38342124  0.00000000  1
+  Cl  Cl1  1  0.38342124  0.28912237  0.00000000  1
+  Cl  Cl2  1  0.71087763  0.38342124  1.00000000  1
+  Cl  Cl3  1  0.61657876  0.28912237  0.00000000  1
+  Cl  Cl4  1  0.38342124  0.71087763  0.00000000  1
+  Cl  Cl5  1  0.28912237  0.61657876  0.00000000  1
+  Cl  Cl6  1  0.61657876  0.71087763  1.00000000  1
+  Cl  Cl7  1  0.71087763  0.61657876  1.00000000  1
+  Pr  Pr8  1  -0.00000000  0.50000000  0.58892700  1
+  Pr  Pr9  1  1.00000000  0.50000000  0.41107300  1
+  Pr  Pr10  1  0.50000000  -0.00000000  0.58892700  1
+  Pr  Pr11  1  0.50000000  1.00000000  0.41107300  1

@@ -1,0 +1,46 @@
+# generated using pymatgen
+data_AlCdGaBr2
+_symmetry_space_group_name_H-M   'P 1'
+_cell_length_a   15.06033707
+_cell_length_b   4.81555223
+_cell_length_c   10.74308872
+_cell_angle_alpha   90.00000000
+_cell_angle_beta   111.53985596
+_cell_angle_gamma   90.00000000
+_symmetry_Int_Tables_number   1
+_chemical_formula_structural   AlCdGaBr2
+_chemical_formula_sum   'Al4 Cd4 Ga4 Br8'
+_cell_volume   724.71747171
+_cell_formula_units_Z   4
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+  1  'x, y, z'
+loop_
+ _atom_site_type_symbol
+ _atom_site_label
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+  Ga  Ga0  1  0.70739141  0.78187886  0.95836729  1
+  Ga  Ga1  1  0.70739141  0.71812114  0.45836729  1
+  Ga  Ga2  1  0.29260859  0.21812114  0.04163271  1
+  Ga  Ga3  1  0.29260859  0.28187886  0.54163271  1
+  Al  Al4  1  0.28028107  0.86337763  0.33192325  1
+  Al  Al5  1  0.28028107  0.63662237  0.83192325  1
+  Al  Al6  1  0.71971893  0.13662237  0.66807675  1
+  Al  Al7  1  0.71971893  0.36337763  0.16807675  1
+  Cd  Cd8  1  0.87408623  0.87167455  0.47866154  1
+  Cd  Cd9  1  0.12591377  0.12832545  0.52133846  1
+  Cd  Cd10  1  0.12591377  0.37167455  0.02133846  1
+  Cd  Cd11  1  0.87408623  0.62832545  0.97866154  1
+  Br  Br12  1  0.46543244  0.44608635  0.01389050  1
+  Br  Br13  1  0.53456756  0.55391365  0.98610950  1
+  Br  Br14  1  0.53456756  0.94608635  0.48610950  1
+  Br  Br15  1  0.46543244  0.05391365  0.51389050  1
+  Br  Br16  1  0.71884400  0.64600122  0.89141342  1
+  Br  Br17  1  0.71884400  0.85399878  0.39141342  1
+  Br  Br18  1  0.28115600  0.35399878  0.10858658  1
+  Br  Br19  1  0.28115600  0.14600122  0.60858658  1

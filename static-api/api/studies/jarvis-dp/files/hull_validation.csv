@@ -1,0 +1,13 @@
+material_id,formula,e_hull_dft,e_hull_mlip,competing_phases,decomposition,reference_outlier
+Sr2HoTaO6,Sr2HoTaO6,0.0,0.0,26,Sr2HoTaO6,False
+Ba2TlSbO6,Ba2TlSbO6,0.0,0.0,39,Ba2TlSbO6,False
+Rb2AgAuBr6,Rb2AgAuBr6,0.0,0.0118,33,"RbAgBr3, RbAuBr3",False
+LiCo(CO3)2,LiCo(CO3)2,0.0,0.0513,50,"CO2, Co3O4, Li2CO3, LiCo2O4",False
+Rb2LiTbCl6,Rb2LiTbCl6,0.0,0.0,18,TbRb2LiCl6,False
+Rb2TlSbCl6,Rb2TlSbCl6,0.0132,0.0,29,Rb2TlSbCl6,False
+Rb2GaAuBr6,Rb2GaAuBr6,0.0358,0.0799,28,"Au, GaBr3, RbAuBr3, RbBr",False
+Ca2TaBiO6,Ca2TaBiO6,0.0633,0.0327,29,"Ca2Ta2O7, CaBi2O4, CaO",False
+Mg2CrSbO6,Mg2CrSbO6,0.0866,0.0686,28,"MgCr2O4, MgO, MgSb2O6",False
+Mg2NiSbO6,Mg2NiSbO6,0.1212,0.0704,38,"MgNi2O4, MgO, MgSb2O6",False
+Na2ScAgF6,Na2ScAgF6,0.1778,0.1533,27,"AgF, Na3ScF6, ScF3",False
+Cs2LiNdF6,Cs2LiNdF6,5.7787,0.0,10,Cs2LiNdF6,True

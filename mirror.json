@@ -1,0 +1,10 @@
+{
+ "site": "MEIDNet Matter, static mirror",
+ "matter": "0.10.2",
+ "engine": "2.4.0.dev4",
+ "commit": "6eea56399230f8804d1235acf23847d417c12980",
+ "built_utc": "2026-10-12T07:27:50Z",
+ "live_app": "https://huggingface.co/spaces/Babu09/MEIDNet-Matter",
+ "files": 284,
+ "bytes": 1728582
+}
