@@ -26,8 +26,6 @@ export const home = {
   ctaDemo: 'Search within the Perov-5 family',
   // which data each stage runs on, under the hero; its link opens the plain-words page of the datasets
   scope: 'Explore and Train run on Perov-5, a public set of 18,928 DFT-computed perovskites; Generate runs on a separate model trained on MP-20; your own data runs on your computer.',
-  scopeWhat: 'What is Perov-5?',
-  scopeLimits: 'Scope and limits',
   stages: [
     ['01', 'Explore', 'Structures and properties', 'Property distributions, the learned representation of the dataset, and each material with its nearest neighbours.', '/explore'],
     ['02', 'Train', 'Predictive models', 'A MEIDNet model trained on a Perov-5 subset and evaluated against the full model.', '/train'],
@@ -64,6 +62,7 @@ export const explore = {
   histNote: '96% of the band gaps are exactly zero (metals at the level of theory the data was computed with, GLLB-SC), so the histogram draws the zero count apart; the readiness checks grade the band gap on the materials with a non-zero gap.',
   next: 'Seen enough of the data? Train a small model on 1,500 of these materials and watch it learn.',
   what: 'What Perov-5 is, in plain words →',
+  demo: 'Search within the Perov-5 family →',
 };
 
 /** The two datasets behind the three stages, in words a newcomer can follow. The research overview shows them; the home

@@ -14,6 +14,9 @@ All notable changes to MEIDNet Matter are listed here. The format follows Keep a
   element, 549 on the same split; judge qualification picks its head on the reporting rows; verdicts carry no interval;
   averaged ionic radii make CsPbBr₃ and CsPbCl₃ fail the octahedral factor) and what the site does not do.
 - Each study page says what the study checked and what it did not, with a link to the five side by side.
+- The line under the hero states the scope alone; the Perov-5 demo is linked from Explore. Scope and limits opens with
+  DFT as the step before synthesis and the MEIDNet paper's DFT check of its Perov-5 candidates (140 generated, 19 passed
+  the screen), with links to the paper and its record on Prism; the open-issues and hosted-service sections are removed.
 - The reading pages (every page but the home page) take MEIDNet Prism's heading colours: maroon titles and section
   headings with Prism's underline and accent bar, blue sub-headings and table headers, in both themes. Two workflow
   diagrams in Prism's palette: on Methodology, the six steps from a requested property to an accepted structure; on

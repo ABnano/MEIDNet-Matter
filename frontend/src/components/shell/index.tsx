@@ -16,6 +16,7 @@ export const PRISM_SCORE = `${PRISM_DOCS}/benchmarks/compatibility.html`;
 export const PRISM_ECOSYSTEM = `${PRISM_DOCS}/ecosystem.html`;
 export const PRISM_LIMITS = `${PRISM_DOCS}/understand/limits.html`;
 export const PRISM_PEROV5 = `${PRISM_DOCS}/benchmarks/perov5.html`;
+export const PRISM_PAPER_DFT = `${PRISM_DOCS}/benchmarks/results/paper-inverse-design.html`;
 export const GITHUB = 'https://github.com/ABnano/MEIDNet-Matter';
 export const ENGINE = 'https://github.com/ABnano/MEIDNet';
 

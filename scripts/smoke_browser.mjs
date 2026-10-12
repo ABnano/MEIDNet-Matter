@@ -72,7 +72,8 @@ try {
   check('landing: headline', /From Target Properties|From Materials Data|Explore materials|From a target property/.test(await text('h1')), await text('h1'));   // 0.10.x home (earlier homes kept for older builds)
   await shot('landing.png');
   // 1. the demo goal
-  check('landing: demo CTA', await click('[data-testid="cta-demo"]'));
+  await goto(`${BASE}/explore`);                                    // 0.10.3: the demo link sits on Explore, not on the home page
+  check('explore: demo link', await click('[data-testid="cta-demo"]'));
   check('goal: summary rendered', await waitFor(`(document.querySelector('[data-testid="goal-summary"]')||{}).textContent?.includes('Eg')`, 30000), await text('[data-testid="goal-summary"]'));
   // 2. change the band-gap target to 1.5 eV, make sure Pb is excluded
   check('goal: set band gap 1.5', await type('[data-testid="target-dir_gap"]', '1.5'));

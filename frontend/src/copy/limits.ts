@@ -4,14 +4,18 @@
 
 export const limits = {
   h1: 'Scope and limits',
-  lead: 'This page summarises the evidence behind the results reported on this site, the conditions under which the method has been shown to work, and its known limitations. All figures are taken from the five case studies. None of the results involves new DFT calculations or experiments; newly proposed structures therefore remain proposals until they are confirmed by DFT.',
+  lead: 'This page summarises the evidence behind the results reported on this site, the conditions under which the method has been shown to work, and its known limitations. All figures are taken from the five case studies.',
+  leadDft: 'Before a candidate is considered for synthesis, it should pass a DFT calculation. For Perov-5, the MEIDNet paper carried out this validation: 140 candidates generated from property targets with the published model were screened for stability, uniqueness and novelty, 19 passed, and the candidates were checked by DFT.',
+  leadSite: 'The candidates generated in the case studies on this site have not yet been calculated with DFT; they remain proposals until they are.',
+  paperLink: 'The MEIDNet paper ↗',
+  paperRecordLink: 'Its DFT-validated record on MEIDNet Prism ↗',
   evidenceTitle: 'Levels of evidence',
   evidenceLead: 'Each reported quantity rests on one of four levels of evidence, listed from the strongest to the weakest.',
   evidence: [
     ['DFT reference', 'A value computed with density functional theory and recorded in the dataset or in a public database (Perov-5, MP-20, JARVIS-DFT), at the level of theory of that database.', 'Ba₂MgWO₆, returned for a 3 eV request and recorded at 2.82 eV'],
     ['Model estimate', 'A machine-learning prediction made from the structure, either by the generating model or by an independent model of different lineage (the judge). The error of each model is measured on the test split of its dataset.', 'Judge error of 0.10 eV on MP-20 and 0.82 eV on the double perovskites'],
     ['Machine-learned hull', 'The energy above the convex hull, computed with a machine-learning interatomic potential against a reference set of known crystals. It serves as a screen and has been calibrated on few known materials.', 'Calibration on 12 known double perovskites: rank correlation 0.47 (0.77 without one outlier)'],
-    ['Proposal', 'A candidate that satisfies the model estimates and the checks but has no DFT reference. It indicates a calculation worth performing rather than a result.', 'All new compositions reported on this site'],
+    ['Proposal', 'A candidate that satisfies the model estimates and the checks but has no DFT reference. It indicates a calculation worth performing rather than a result.', 'The new compositions from the case studies on this site'],
   ] as Array<[string, string, string]>,
   scales: 'Two scales are used for model error. The readiness report and the training page describe an error below 0.25 of the property\'s spread as good and below 0.5 as fair, whereas block S1 of the evaluation pipeline accepts errors up to 0.7. The former characterises the precision of a single model; the latter is an acceptance threshold.',
   dataTitle: 'Data requirements',
@@ -57,22 +61,6 @@ export const limits = {
     'An independent user reproduced the pipeline from the published packages on public data (JARVIS-DFT double perovskites), obtaining seven new charge-balanced compositions that await DFT confirmation and one known compound at its recorded band gap; the four accepted structures that were contradicted by DFT or are not charge balanced are reported.',
     'Each step reports the candidates it rejects; on MP-20, for example, 20 of 37 relaxed cells collapsed and were excluded.',
   ],
-  openTitle: 'Known open issues',
-  openLead: 'The following weaknesses of the pipeline have been identified. Each will be addressed through a new measurement and recorded in the changelog.',
-  open: [
-    'The generation threshold is being re-measured in the units used by the data gate (see above).',
-    'A judge is qualified on up to 80 test structures, and its best-performing output head is selected on the same structures; the reported error is therefore optimistic.',
-    'Verdicts are reported without sample sizes or confidence intervals, and several lie within sampling error of their thresholds (double perovskites: metal/non-metal accuracy 0.82 against a threshold of 0.85; judge error 0.50 against a threshold of 0.5 of the spread).',
-    'Retrieval is graded relative to chance, which depends on the size of the test split; the grade is therefore harder to attain for small datasets.',
-    'Metal/non-metal accuracy is graded even for datasets that contain no metals, where it carries no information (external upload: 1.0).',
-    'The tolerance and octahedral factors use ionic radii averaged over all oxidation states, which underestimates the radii of all anions except oxygen; with the current bounds, CsPbBr₃ and CsPbCl₃ fail the octahedral-factor test.',
-    'Two counts reported for the external upload come from different stages of the run and have not been reconciled: 58 cells compared by the two potentials against 42 relaxed cells in the funnel, and 13 shortlisted candidates against 10 within 1 eV of the target.',
-    'The check-up table of the Materials Project perovskites was graded with an earlier version of the reference bands.',
-  ],
-  siteTitle: 'Limitations of the hosted service',
-  site: 'This site is a demonstration service with limited resources. It does not accept uploads; analyses of your own data are run locally with the meidnet-matter package. No structural relaxation or DFT calculation is performed on the server: the Generate page returns unrelaxed cells together with the command needed to relax them locally. Generation is shared between users and limited to one job per session, with at most three targets and ten structures per target and a run time of eight minutes; results are deleted after one hour. The Train page fits a model to 1,500 Perov-5 materials for 10 to 50 epochs to illustrate the training process; this model is not used for generation.',
-  engine: 'The site runs a development snapshot of the MEIDNet engine (meidnet 2.4.0.dev4). The scope and limitations of the released package, version 2.3.1, are documented on MEIDNet Prism:',
-  engineLink: 'Scope, limitations and roadmap ↗',
 };
 
 /** One row per study: the data, the route the data gate chose, what results were checked against, what was not. */
@@ -80,7 +68,7 @@ export const STUDY_EVIDENCE: Record<string, { data: string; route: string; check
   perov5: {
     data: '18,928 cubic ABX₃ perovskites (DFT; GLLB-SC gaps)',
     route: 'candidate sets',
-    checked: 'Perov-5\'s own DFT values of the returned compositions; a CGCNN judge (0.59 eV on non-zero gaps); an ML hull against Materials Project phases; literature',
+    checked: 'Perov-5\'s own DFT values of the returned compositions; a CGCNN judge (0.59 eV on non-zero gaps); an ML hull against Materials Project phases; literature. The candidates of the MEIDNet paper, generated with the published Perov-5 model, were checked by DFT',
     notChecked: 'The novel candidates: all contain a lanthanide absent from Perov-5, so their readings are extrapolations; no DFT',
   },
   'mp-perovskites': {

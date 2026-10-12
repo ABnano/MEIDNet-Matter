@@ -44,7 +44,7 @@ export default function Home() {
               <Link to="/explore" className="btn btn-primary btn-lg" data-testid="cta-explore">{H.ctaExplore}</Link>
               <Link to="/generate" className="btn btn-lg">{H.ctaGenerate}</Link>
             </div>
-            <div className="scope-line">{H.scope} <Link to="/research#perov5" data-testid="what-perov5">{H.scopeWhat}</Link> · <Link to="/limits" data-testid="scope-limits">{H.scopeLimits}</Link> · <Link to="/p/perov5-demo/goal" data-testid="cta-demo">{H.ctaDemo} →</Link></div>
+            <div className="scope-line">{H.scope}</div>
           </div>
           <Crystal3D />
         </section>

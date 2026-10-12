@@ -10,9 +10,9 @@ import Limits from './Limits';
 afterEach(cleanup);
 
 describe('the Scope and limits page', () => {
-  it('has the seven sections the home page and the study pages link to', () => {
+  it('has the five sections the study pages link to, and points to the DFT validation of the paper', () => {
     render(<MemoryRouter initialEntries={['/limits']}><Limits /></MemoryRouter>);
-    for (const id of ['evidence', 'data', 'studies', 'structures', 'strengths', 'open', 'site']) expect(document.getElementById(id), id).not.toBeNull();
+    for (const id of ['evidence', 'data', 'studies', 'structures', 'strengths']) expect(document.getElementById(id), id).not.toBeNull();
     expect(screen.getByRole('heading', { level: 1, name: 'Scope and limits' })).toBeInTheDocument();
   });
   it('lists all five studies, each linked to its page', () => {

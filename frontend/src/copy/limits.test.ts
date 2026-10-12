@@ -32,7 +32,7 @@ describe('the scope-and-limits statement', () => {
   });
   it('says the generation threshold is provisional, and why', () => {
     expect(limits.thresholdNote).toMatch(/218.*rows per cation element.*549/);
-    expect(limits.open[0]).toMatch(/re-measured/);
+    expect(limits.leadDft).toMatch(/140 candidates .* 19 passed, and the candidates were checked by DFT/);
   });
   it('matches the studies\' own limits where both speak', () => {
     expect(study('mp20').limits.join(' ')).toMatch(/1\.2–17 eV\/atom \(median 5\.4\) and moved atoms by up to 0\.4–9\.7 Å/);

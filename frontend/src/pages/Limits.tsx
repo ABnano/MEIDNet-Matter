@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
-import { ExternalLink, MarketingHeader, PRISM_LIMITS, SiteFooter } from '@/components/shell';
+import { ExternalLink, MarketingHeader, PRISM_PAPER_DFT, SiteFooter } from '@/components/shell';
+import { landing } from '@/copy/landing';
 import { ResearchLayout } from '@/components/research/ResearchNav';
 import { STUDY_DATASETS } from '@/copy/research';
 import { limits as L, STUDY_EVIDENCE } from '@/copy/limits';
@@ -17,7 +18,7 @@ export default function Limits() {
     <>
       <MarketingHeader wide />
       <ResearchLayout>
-        <div className="page-head"><h1>{L.h1}</h1><p>{L.lead}</p></div>
+        <div className="page-head"><h1>{L.h1}</h1><p>{L.lead}</p><p data-testid="dft-lead">{L.leadDft} <ExternalLink href={`https://doi.org/${landing.doi}`}>{L.paperLink}</ExternalLink> · <ExternalLink href={PRISM_PAPER_DFT}>{L.paperRecordLink}</ExternalLink> {L.leadSite}</p></div>
 
         <section id="evidence">
           <h2>{L.evidenceTitle}</h2>
@@ -79,17 +80,6 @@ export default function Limits() {
           <ul>{L.strengths.map((s) => <li key={s}>{s}</li>)}</ul>
         </section>
 
-        <section className="section" id="open">
-          <h2>{L.openTitle}</h2>
-          <p className="muted">{L.openLead}</p>
-          <ul>{L.open.map((s) => <li key={s}>{s}</li>)}</ul>
-        </section>
-
-        <section className="section" id="site">
-          <h2>{L.siteTitle}</h2>
-          <p>{L.site}</p>
-          <p className="small muted">{L.engine} <ExternalLink href={PRISM_LIMITS}>{L.engineLink}</ExternalLink></p>
-        </section>
       </ResearchLayout>
       <SiteFooter wide />
     </>
